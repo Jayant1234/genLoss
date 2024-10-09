@@ -93,7 +93,8 @@ def split_data_into_10_parts(data):
     
     # Split the indices into 10 roughly equal parts
     parts = torch.split(indices, data.shape[1] // 10)
-    
+    parts = list(parts)
+
     # If there are any remaining indices (because data.shape[1] may not be perfectly divisible by 10),
     # add them to the last part
     if len(parts) > 10:
