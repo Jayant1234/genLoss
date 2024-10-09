@@ -157,50 +157,49 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_w
         print(f"Features shape: {features_cumulative.shape}, Labels shape: {labels_cumulative.shape}")
         
         # Training loop for the current cumulative dataset
-		
-		for epoch in range(max_epochs):  # Set max_epochs or use a stopping condition like a small training loss
-			model.train()
-			
-			# Shuffle indices for each epoch to get new batches
-			shuffled_indices = torch.randperm(features_cumulative.shape[0])
-			features_cumulative = features_cumulative[shuffled_indices]
-			labels_cumulative = labels_cumulative[shuffled_indices]
+        for epoch in range(max_epochs):  # Set max_epochs or use a stopping condition like a small training loss
+            model.train()
 
-			batch_size = args.batch_size
-			num_batches = math.ceil(features_cumulative.shape[0] / batch_size)
+            # Shuffle indices for each epoch to get new batches
+            shuffled_indices = torch.randperm(features_cumulative.shape[0])
+            features_cumulative = features_cumulative[shuffled_indices]
+            labels_cumulative = labels_cumulative[shuffled_indices]
 
-			for batch_idx in range(num_batches):
-				# Extract batch data
-				batch_features_cumulative = features_cumulative[batch_idx * batch_size : (batch_idx + 1) * batch_size]
-				batch_labels_cumulative = labels_cumulative[batch_idx * batch_size : (batch_idx + 1) * batch_size]
+            batch_size = args.batch_size
+            num_batches = math.ceil(features_cumulative.shape[0] / batch_size)
+
+            for batch_idx in range(num_batches):
+                # Extract batch data
+                batch_features_cumulative = features_cumulative[batch_idx * batch_size : (batch_idx + 1) * batch_size]
+                batch_labels_cumulative = labels_cumulative[batch_idx * batch_size : (batch_idx + 1) * batch_size]
 
 
-				optimizer.zero_grad()
+                optimizer.zero_grad()
 
-				# Calculate losses
-				outputs_cumulative = model(batch_features_cumulative)
-				loss_cumulative = criterion(outputs_cumulative, batch_labels_cumulative.long())
+                # Calculate losses
+                outputs_cumulative = model(batch_features_cumulative)
+                loss_cumulative = criterion(outputs_cumulative, batch_labels_cumulative.long())
 
-				outputs_new = model(features_new_repeated)
-				generalization_loss = criterion(outputs_new, labels_new_repeated.long())
+                outputs_new = model(features_new_repeated)
+                generalization_loss = criterion(outputs_new, labels_new_repeated.long())
 
-				# Combined loss
-				combined_loss = loss_cumulative + lambda_weight * generalization_loss
-				combined_loss.backward()
-				optimizer.step()
-				scheduler.step()
-				total_steps += 1
+                # Combined loss
+                combined_loss = loss_cumulative + lambda_weight * generalization_loss
+                combined_loss.backward()
+                optimizer.step()
+                scheduler.step()
+                total_steps += 1
 
-				print(f"Part {i}, Epoch {epoch+1}, Step {total_steps}, Batch {batch_idx+1}/{num_batches}, Loss: {combined_loss.item():.4f}, Loss Cumulative: {loss_cumulative.item():.4f}, Generalization Loss: {generalization_loss.item():.4f}")
+                print(f"Part {i}, Epoch {epoch+1}, Step {total_steps}, Batch {batch_idx+1}/{num_batches}, Loss: {combined_loss.item():.4f}, Loss Cumulative: {loss_cumulative.item():.4f}, Generalization Loss: {generalization_loss.item():.4f}")
 
-				# Save training metrics
-				train_losses.append(loss_cumulative.item())
-				train_accuracies.append((outputs_cumulative.argmax(dim=-1) == batch_labels_cumulative).float().mean().item())
-				its.append(total_steps)
+                # Save training metrics
+                train_losses.append(loss_cumulative.item())
+                train_accuracies.append((outputs_cumulative.argmax(dim=-1) == batch_labels_cumulative).float().mean().item())
+                its.append(total_steps)
 
-			# Stop training for this part when the cumulative loss is zero (or very close)
-			if loss_cumulative.item() < 1e-6:
-				break
+            # Stop training for this part when the cumulative loss is zero (or very close)
+            if loss_cumulative.item() < 1e-6:
+                break
 
         
             # Validation
