@@ -129,7 +129,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_w
     train_accuracies = []
     val_accuracies = []
     its = []
-    
+    max_epochs=500
     for i in range(1, len(training_parts) + 1):
         # Accumulate parts
         print(f"Accumulating data for Part {i}")
