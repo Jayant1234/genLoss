@@ -106,7 +106,7 @@ def split_data_into_10_parts(data):
     
     return labeled_parts
 
-def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_weight=1.5):
+def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_weight):
     criterion = nn.CrossEntropyLoss()
     
     cumulative_indices = torch.tensor([], dtype=torch.long)
@@ -375,6 +375,7 @@ if __name__ == "__main__":
     parser.add_argument("--weight_decay", type=float, default=0)
     parser.add_argument("--method_type", default="progressive")
     parser.add_argument("--optimizer", default="Adam")
+    parser.add_argument("--lambda_weight", default=1.5)
 
     # Grokfast
     parser.add_argument("--filter", type=str, choices=["none", "ma", "ema", "fir"], default="none")
