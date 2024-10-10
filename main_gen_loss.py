@@ -117,7 +117,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_w
     validation_data = data[:, validation_indices]
     
     # Separate features and labels for validation data
-    features_validation = validation_data[:4].to(device)
+    features_validation = validation_data[:4].T.to(device)
     labels_validation = validation_data[4].to(device)
     
     # Remove the last part from the training parts
@@ -140,10 +140,10 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_w
         print(f"Cumulative data shape after adding Part {i}: {cumulative_data.shape}")
         
         # Separate features and labels (assuming x, y -> result as features -> label)
-        features_cumulative = cumulative_data[:4].to(device)  # Using x, op, y as features
+        features_cumulative = cumulative_data[:4].T.to(device)  # Using x, op, y as features
         labels_cumulative = cumulative_data[4].to(device)       # Using result as label
         
-        features_new = new_data[:4].to(device)  # Features from newly added part
+        features_new = new_data[:4].T.to(device)  # Features from newly added part
         labels_new = new_data[4].to(device)       # Labels from newly added part
 
         # Create matching sizes for old data and new data by repeating the smaller dataset
