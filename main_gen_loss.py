@@ -168,18 +168,18 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_w
 
             batch_size = args.batch_size
             num_batches = math.ceil(features_cumulative.shape[0] / batch_size)
-
+            print("num_batch",num_batches)
+            print("batch_size",batch_size)
             for batch_idx in range(num_batches):
                 # Extract batch data
                 batch_features_cumulative = features_cumulative[batch_idx * batch_size : (batch_idx + 1) * batch_size]
                 batch_labels_cumulative = labels_cumulative[batch_idx * batch_size : (batch_idx + 1) * batch_size]
 
-
                 optimizer.zero_grad()
 
                 # Calculate losses
                 outputs_cumulative = model(batch_features_cumulative)
-                print("Shape of outputs cumulative, batch cumulative:",outputs_cumulative.shape, batch_labels_cumulative.shape)
+                print("Shape of outputs cumulative, batch_features_cumulative, batch cumulative:",outputs_cumulative.shape, batch_features_cumulative.shape, batch_labels_cumulative.shape)
                 loss_cumulative = criterion(outputs_cumulative, batch_labels_cumulative)
 
                 outputs_new = model(features_new_repeated)
