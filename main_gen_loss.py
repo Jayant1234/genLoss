@@ -194,7 +194,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_w
                 outputs_new = model(features_new_repeated.T)
                 # Reshape the output and labels for cross-entropy
                 outputs_new = outputs_new.permute(1, 0, 2).reshape(-1, outputs_new.shape[-1])  # Shape: (batch_size * seq_len, num_tokens)
-                labels_new_repeated = labels_new_repeated.unsqueeze(1).expand(-1, 4).reshape(-1)  # Shape: (batch_size * seq_len)
+                labels_new_repeated = labels_new_repeated.unsqueeze(0).repeat(4, 1).T.reshape(-1)  # Shape: (batch_size * seq_len)
 
                 generalization_loss = criterion(outputs_new, labels_new_repeated)
 
