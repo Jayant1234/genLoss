@@ -171,9 +171,13 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_w
             print("num_batch",num_batches)
             print("batch_size",batch_size)
             for batch_idx in range(num_batches):
-                # Extract batch data
-                batch_features_cumulative = features_cumulative[batch_idx * batch_size : (batch_idx + 1) * batch_size]
-                batch_labels_cumulative = labels_cumulative[batch_idx * batch_size : (batch_idx + 1) * batch_size]
+                # Calculate the start and end indices for the current batch
+                start_idx = batch_idx * batch_size
+                end_idx = min(start_idx + batch_size, features_cumulative.shape[0])  # Prevent out-of-bounds indexing
+
+                # Extract the features and labels for the current batch
+                batch_features_cumulative = features_cumulative[start_idx:end_idx]
+                batch_labels_cumulative = labels_cumulative[start_idx:end_idx]
 
                 optimizer.zero_grad()
 
