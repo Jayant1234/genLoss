@@ -179,10 +179,11 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_w
 
                 # Calculate losses
                 outputs_cumulative = model(batch_features_cumulative)
-                loss_cumulative = criterion(outputs_cumulative, batch_labels_cumulative.long())
+                print("Shape of outputs cumulative, batch cumulative:",outputs_cumulative.shape, batch_labels_cumulative.shape)
+                loss_cumulative = criterion(outputs_cumulative, batch_labels_cumulative)
 
                 outputs_new = model(features_new_repeated)
-                generalization_loss = criterion(outputs_new, labels_new_repeated.long())
+                generalization_loss = criterion(outputs_new, labels_new_repeated)
 
                 # Combined loss
                 combined_loss = loss_cumulative + lambda_weight * generalization_loss
