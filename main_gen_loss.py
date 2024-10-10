@@ -185,9 +185,17 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_w
                 # Calculate losses
                 outputs_cumulative = model(batch_features_cumulative.T)
                 print("Shape of outputs cumulative, batch_features_cumulative, batch cumulative:",outputs_cumulative.shape, batch_features_cumulative.shape, batch_labels_cumulative.shape)
+                # Reshape the output and labels for cross-entropy
+                outputs_cumulative = outputs_cumulative.permute(1, 0, 2).reshape(-1, outputs_cumulative.shape[-1])  # Shape: (batch_size * seq_len, num_tokens)
+                batch_labels_cumulative = batch_labels_cumulative.repeat(4)  # Shape: (batch_size * seq_len)
+
                 loss_cumulative = criterion(outputs_cumulative, batch_labels_cumulative)
 
                 outputs_new = model(features_new_repeated.T)
+                # Reshape the output and labels for cross-entropy
+                outputs_new = outputs_new.permute(1, 0, 2).reshape(-1, outputs_new.shape[-1])  # Shape: (batch_size * seq_len, num_tokens)
+                labels_new_repeated = labels_new_repeated.repeat(4)  # Shape: (batch_size * seq_len)
+
                 generalization_loss = criterion(outputs_new, labels_new_repeated)
 
                 # Combined loss
