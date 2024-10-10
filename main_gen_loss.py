@@ -147,10 +147,10 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_w
         labels_new = new_data[4].to(device)       # Labels from newly added part
 
         # Create matching sizes for old data and new data by repeating the smaller dataset
-        if features_cumulative.shape[1] > features_new.shape[1] and features_new.shape[1] > 0:
-            repeats = features_cumulative.shape[1] // features_new.shape[1] + 1
-            features_new_repeated = features_new.repeat(repeats, 1)[:features_cumulative.shape[1]]
-            labels_new_repeated = labels_new.repeat(repeats)[:features_cumulative.shape[1]]
+        if features_cumulative.shape[0] > features_new.shape[0] and features_new.shape[0] > 0:
+            repeats = features_cumulative.shape[0] // features_new.shape[0] + 1
+            features_new_repeated = features_new.repeat(repeats, 1)[:features_cumulative.shape[0]]
+            labels_new_repeated = labels_new.repeat(repeats)[:features_cumulative.shape[0]]
         else:
             features_new_repeated = features_new
             labels_new_repeated = labels_new
@@ -162,12 +162,12 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_w
             model.train()
 
             # Shuffle indices for each epoch to get new batches
-            shuffled_indices = torch.randperm(features_cumulative.shape[1])
+            shuffled_indices = torch.randperm(features_cumulative.shape[0])
             features_cumulative = features_cumulative[shuffled_indices]
             labels_cumulative = labels_cumulative[shuffled_indices]
 
             batch_size = args.batch_size
-            num_batches = math.ceil(features_cumulative.shape[1] / batch_size)
+            num_batches = math.ceil(features_cumulative.shape[0] / batch_size)
             print("num_batch",num_batches)
             print("batch_size",batch_size)
             for batch_idx in range(num_batches):
@@ -208,7 +208,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_w
             model.eval()
             val_loss = 0
             val_accuracy = 0
-            val_num_batches = math.ceil(features_validation.shape[1] / batch_size)
+            val_num_batches = math.ceil(features_validation.shape[0] / batch_size)
 
             with torch.no_grad():
                 for val_batch_idx in range(val_num_batches):
