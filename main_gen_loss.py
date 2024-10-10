@@ -178,6 +178,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_w
                 # Extract the features and labels for the current batch
                 batch_features_cumulative = features_cumulative[start_idx:end_idx]
                 batch_labels_cumulative = labels_cumulative[start_idx:end_idx]
+                print("Shape of batch_labels_cumulative, batch_features_cumulative:",batch_labels_cumulative.shape, batch_features_cumulative.shape)
 
                 optimizer.zero_grad()
 
