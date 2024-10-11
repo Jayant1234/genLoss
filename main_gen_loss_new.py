@@ -135,11 +135,13 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
         if i<len(training_parts):  
             gen_data_indices = training_parts[f"part_{i}"]
             gen_data = data[:, gen_data_indices]
+            print(f"gen data shape with Part {i}: {gen_data.shape}")
+
 
         for i in range(max_epochs):
             
             if cumulative_indices.numel() == 0: # first case
-                print("First case was implemented")
+                print("First case switch of train and gen data happens")
                 train_data=gen_data
                 gen_data =None
             
