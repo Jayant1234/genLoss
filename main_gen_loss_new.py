@@ -129,13 +129,11 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
         print(f"Accumulating data for Part {i}")
         
         train_data = data[:, cumulative_indices]
+        print(f"Cumulative training data shape before adding Part {i}: {train_data.shape}")
         gen_data=None
         if i<len(training_parts):  
             gen_data_indices = training_parts[f"part_{i}"]
             gen_data = data[:, gen_data_indices]
-            
-        print(f"Cumulative data shape after adding Part {i}: {cumulative_data.shape}")
-        
 
         for i in range(max_epochs):
             
