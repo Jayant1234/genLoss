@@ -120,7 +120,6 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
     # Containers to save training and validation metrics
     its, train_acc, gen_acc, val_acc, gen_loss, train_loss, val_loss = [], [], [], [], [], [], []
     max_epochs= 2000 #int(args.budget//10)
-    e=0 # epoch counter
     i=0 # iteration counter
     cutoff=1e-6
     gen_loss_type= 'standard' #MSE, KLdivergence are other options
