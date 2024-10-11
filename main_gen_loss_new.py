@@ -142,6 +142,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
             
             if cumulative_indices.numel() == 0: # first case
                 print("First case switch of train and gen data happens")
+                print("Is gen_data None?:", bool(gen_data is None))
                 train_data=gen_data
                 gen_data =None
             
