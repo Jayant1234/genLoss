@@ -139,6 +139,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
         for i in range(max_epochs):
             
             if cumulative_indices.numel() == 0: # first case
+                print("First case was implemented")
                 train_data=gen_data
                 gen_data =None
             
