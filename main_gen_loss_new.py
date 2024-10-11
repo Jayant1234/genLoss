@@ -112,7 +112,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
     
     # Use the last part as the validation set
     validation_indices = parts[f"part_{10}"]
-    validation_data = data[:, validation_indices]
+    valid_data = data[:, validation_indices]
     
     # Remove the last part from the training parts
     training_parts = {k: parts[k] for k in list(parts.keys())[:-1]}
@@ -146,7 +146,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
             if gen_data is not None: 
                 gen_data =   gen_data[:, torch.randperm(gen_data.shape[1])]
             
-            for train_data, gen_data, is_train in [(train_data, gen_data, True), (validation_data, None, False)]:
+            for train_data, gen_data, is_train in [(train_data, gen_data, True), (valid_data, None, False)]:
                 
                 model.train(is_train)
                 
