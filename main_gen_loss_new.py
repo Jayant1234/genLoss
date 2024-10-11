@@ -154,14 +154,13 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
             for train_data, gen_data, is_train in [(train_data, gen_data, True), (valid_data, None, False)]:
                 
                 model.train(is_train)
-                
-                total_train_loss = 0
-                total_train_acc = 0
-                total_gen_loss = 0
-                total_gen_acc = 0
-                
+
                 if gen_data is not None and train_data is not None and is_train is False:
-                    
+                    total_train_loss = 0
+                    total_train_acc = 0
+                    total_gen_loss = 0
+                    total_gen_acc = 0
+                    print("This ran")
                     # Create matching sizes for gen data and new data by repeating the gen dataset
                     if train_data.shape[1] > gen_data.shape[1] and gen_data.shape[1] > 0:
                         repeats = train_data.shape[1] // gen_data.shape[1] + 1
