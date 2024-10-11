@@ -105,7 +105,7 @@ def split_data_into_10_parts(data):
     
     return labeled_parts
     
-def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_weight, args):
+def train_progressive(model, parts, data, optimizer, scheduler, device, args):
 
     cumulative_indices = torch.tensor([], dtype=torch.long)
     total_steps = 0  # Track the total number of steps taken
@@ -121,9 +121,9 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_w
     its, train_acc, gen_acc, val_acc, gen_loss, train_loss, val_loss = [], [], [], [], [], [], []
     max_epochs= int(args.budget//10)
     cutoff=1e-6
-    gen_loss_type= 'standard' #MSE, KLdivergence are other options.
+    gen_loss_type= 'standard' #MSE, KLdivergence are other options
     pbar = tqdm()
-    
+    lambda_weight = args.lambda_weight
     for i in range(1, len(training_parts)+1):
         # Accumulate parts
         print(f"Accumulating data for Part {i}")
@@ -449,7 +449,7 @@ def main(args):
     
     if args.method_type =="progressive":
         parts=split_data_into_10_parts(data)
-        train_progressive(model, parts, data, optimizer, scheduler, device, lambda_weight, args)
+        train_progressive(model, parts, data, optimizer, scheduler, device, args)
     else: 
         train_baseline(model, train_data, valid_data, optimizer, scheduler, device, args)
 
