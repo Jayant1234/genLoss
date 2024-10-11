@@ -160,7 +160,8 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                 total_gen_loss = 0
                 total_gen_acc = 0
                 
-                if gen_data is not None and train_data is not None: 
+                if gen_data is not None and train_data is not None and is_train is False:
+                    
                     # Create matching sizes for gen data and new data by repeating the gen dataset
                     if train_data.shape[1] > gen_data.shape[1] and gen_data.shape[1] > 0:
                         repeats = train_data.shape[1] // gen_data.shape[1] + 1
