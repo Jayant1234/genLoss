@@ -146,7 +146,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
             if gen_data is not None: 
                 gen_data =   gen_data[:, torch.randperm(gen_data.shape[1])]
             
-            for train_data, gen_data, is_train in [(train_data, gen_data, True), (valid_data, None, False)]:
+            for train_data, gen_data, is_train in [(train_data, gen_data, True), (validation_data, None, False)]:
                 
                 model.train(is_train)
                 
