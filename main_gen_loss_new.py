@@ -120,6 +120,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
     # Containers to save training and validation metrics
     its, train_acc, gen_acc, val_acc, gen_loss, train_loss, val_loss = [], [], [], [], [], [], []
     max_epochs= int(args.budget//10)
+    e=0 # epoch counter
     cutoff=1e-6
     gen_loss_type= 'standard' #MSE, KLdivergence are other options
     pbar = tqdm()
@@ -282,7 +283,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
 
                 torch.save(results, f"results/res_{args.label}.pt")
             pbar.update(1)
-        
+            e+=1
         
         if i<len(training_parts):
             cumulative_indices = torch.cat((cumulative_indices, training_parts[f"part_{i}"]))
