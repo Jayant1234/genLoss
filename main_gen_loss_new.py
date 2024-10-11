@@ -119,7 +119,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
     
     # Containers to save training and validation metrics
     its, train_acc, gen_acc, val_acc, gen_loss, train_loss, val_loss = [], [], [], [], [], [], []
-    max_epochs= int(args.budget//10)
+    max_epochs= 2000 #int(args.budget//10)
     e=0 # epoch counter
     i=0 # iteration counter
     cutoff=1e-6
@@ -168,8 +168,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                     # torch.split faster than dataloader with tensor
                     train_batches = torch.split(train_data, args.batch_size, dim=1)
                     gen_batches = torch.split(gen_data, args.batch_size, dim=1)
-                    assert train_batches.shape == gen_batches.shape
-                    
+
                     for train_input,gen_input in train_batches,gen_batches:
                         train_input = train_input.to(device)
                         gen_input = gen_input.to(device)
