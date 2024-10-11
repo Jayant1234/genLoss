@@ -118,7 +118,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, lambda_w
     training_parts = {k: parts[k] for k in list(parts.keys())[:-1]}
     
     # Containers to save training and validation metrics
-    its, train_acc, gen_acc, val_acc, gen_loss, train_loss, val_loss = [], [], [], [] [], [], []
+    its, train_acc, gen_acc, val_acc, gen_loss, train_loss, val_loss = [], [], [], [], [], [], []
     max_epochs= int(args.budget//10)
     cutoff=1e-6
     gen_loss_type= 'standard' #MSE, KLdivergence are other options.
