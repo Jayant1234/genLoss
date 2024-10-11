@@ -431,7 +431,7 @@ def main(args):
     data = multiplication_mod_p_data(args.p, eq_token, op_token)
 
     train_idx, valid_idx = torch.randperm(data.shape[1]).split(data.shape[1] // 2)
-    train_data, valid_data =  [:, train_idx], data[:, valid_idx]
+    train_data, valid_data = data[:, train_idx], data[:, valid_idx]
 
     # For most experiments we used AdamW optimizer with learning rate 10−3,
     # weight decay 1, β1 = 0.9, β2 = 0.98
