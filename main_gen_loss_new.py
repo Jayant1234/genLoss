@@ -253,8 +253,9 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                 steps = torch.arange(len(train_acc)).numpy() # steps calculation is tricky so will leave it for future. 
                 plt.plot(steps, train_acc, label="train")
                 plt.plot(steps, val_acc, label="val")
+                plt.plot(steps, gen_acc, label="gen")
                 plt.legend()
-                plt.title("Modular Multiplication (training on 50% of data)")
+                plt.title("Modular Multiplication (training on 90% of data)")
                 plt.xlabel("Epochs")
                 plt.ylabel("Accuracy")
                 plt.xscale("log", base=10)
@@ -264,6 +265,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
 
                 plt.plot(steps, train_loss, label="train")
                 plt.plot(steps, val_loss, label="val")
+                plt.plot(steps, gen_loss, label="gen")
                 plt.legend()
                 plt.title("Modular Multiplication (training on 50% of data)")
                 plt.xlabel("Optimization Steps")
