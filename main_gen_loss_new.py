@@ -138,15 +138,14 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
             gen_data = data[:, gen_data_indices]
             print(f"gen data shape with Part {part}: {gen_data.shape}")
 
+        if cumulative_indices.numel() == 0: # first case
+            print("First case switch of train and gen data happens")
+            print("Is gen_data None?:", bool(gen_data is None))
+            train_data=gen_data
+            gen_data =None
 
         for epoch in range(max_epochs):
-            
-            if cumulative_indices.numel() == 0: # first case
-                print("First case switch of train and gen data happens")
-                print("Is gen_data None?:", bool(gen_data is None))
-                train_data=gen_data
-                gen_data =None
-            
+
             train_data = train_data[:, torch.randperm(train_data.shape[1])]
             
             if gen_data is not None: 
