@@ -121,24 +121,25 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
     its, train_acc, gen_acc, val_acc, gen_loss, train_loss, val_loss = [], [], [], [], [], [], []
     max_epochs= int(args.budget//10)
     e=0 # epoch counter
+    i=0 # iteration counter
     cutoff=1e-6
     gen_loss_type= 'standard' #MSE, KLdivergence are other options
     pbar = tqdm()
     lambda_weight = args.lambda_weight
-    for i in range(1, len(training_parts)+1):
+    for part in range(1, len(training_parts)+1):
         # Accumulate parts
-        print(f"Accumulating data for Part {i}")
+        print(f"Accumulating data for Part {part}")
         
         train_data = data[:, cumulative_indices]
-        print(f"Cumulative training data shape before adding Part {i}: {train_data.shape}")
+        print(f"Cumulative training data shape before adding Part {part}: {train_data.shape}")
         gen_data=None
-        if i<len(training_parts):  
-            gen_data_indices = training_parts[f"part_{i}"]
+        if part<len(training_parts):  
+            gen_data_indices = training_parts[f"part_{part}"]
             gen_data = data[:, gen_data_indices]
-            print(f"gen data shape with Part {i}: {gen_data.shape}")
+            print(f"gen data shape with Part {part}: {gen_data.shape}")
 
 
-        for i in range(max_epochs):
+        for epoch in range(max_epochs):
             
             if cumulative_indices.numel() == 0: # first case
                 print("First case switch of train and gen data happens")
@@ -289,8 +290,8 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
             pbar.update(1)
             e+=1
         
-        if i<len(training_parts):
-            cumulative_indices = torch.cat((cumulative_indices, training_parts[f"part_{i}"]))
+        if part<len(training_parts):
+            cumulative_indices = torch.cat((cumulative_indices, training_parts[f"part_{part}"]))
 
     
     
