@@ -160,7 +160,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                 
                 model.train(is_train)
 
-                if gen_data is not None and train_data is not None and is_train is True:
+                if gen_data is not None and train_data is not None and is_train:
                     total_train_loss = 0
                     total_train_acc = 0
                     total_gen_loss = 0
@@ -187,14 +187,14 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                             g_loss = F.cross_entropy(gen_logits[-1], gen_input[-1])
                             total_gen_loss += g_loss.item() * gen_input.shape[-1]
                             loss= t_loss + lambda_weight*g_loss
+                        
+                        model.zero_grad()
+                        loss.backward()
 
-                            model.zero_grad()
-                            loss.backward()
-
-                            optimizer.step()
-                            scheduler.step()
-                            i += 1
-                            total_steps+=1
+                        optimizer.step()
+                        scheduler.step()
+                        i += 1
+                        total_steps+=1
 
                         acc = (train_logits[-1].argmax(-1) == train_input[-1]).float().mean()
                         total_train_acc += acc.item() * train_input.shape[-1]
@@ -205,8 +205,8 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                     train_acc.append(total_train_acc / train_data.shape[-1])
                     train_loss.append(total_train_loss / train_data.shape[-1])
                     its.append(i)
-                    gen_acc.append(total_gen_acc / train_data.shape[-1])
-                    gen_loss.append(total_gen_loss / train_data.shape[-1])
+                    gen_acc.append(total_gen_acc / gen_data.shape[-1])
+                    gen_loss.append(total_gen_loss / gen_data.shape[-1])
                 else:
                     total_loss = 0
                     total_acc = 0
@@ -237,8 +237,8 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                     if is_train:
                         train_acc.append(total_acc / train_data.shape[-1])
                         train_loss.append(total_loss / train_data.shape[-1])
-                        gen_acc.append(0)
-                        gen_loss.append(0)
+                        #gen_acc.append(0)
+                        #gen_loss.append(0)
                         its.append(i)
                     else:
                         val_acc.append(total_acc / valid_data.shape[-1])
@@ -246,7 +246,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
             if args.save_weights:
                 do_save = e <= 500 or (e > 500 and (e + 1) % 100 == 0) or e == int(args.budget) // steps_per_epoch - 1
             else:
-                do_save = (e + 1) % 100 == 0
+                do_save = e <= 500 or (e > 500 and (e + 1) % 100 == 0)
             if do_save:
                 steps = torch.arange(len(train_acc)).numpy() # steps calculation is tricky so will leave it for future. 
                 plt.plot(steps, train_acc, label="train")
