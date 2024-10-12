@@ -116,10 +116,11 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
     
     # Remove the last part from the training parts
     training_parts = {k: parts[k] for k in list(parts.keys())[:-1]}
-    
+    print("Training parts are:",training_parts)
     # Containers to save training and validation metrics
     its, train_acc, gen_acc, val_acc, gen_loss, train_loss, val_loss = [], [], [], [], [], [], []
     max_epochs= 2000 #int(args.budget//10)
+    e=0 # epoch counter
     i=0 # iteration counter
     cutoff=1e-6
     gen_loss_type= 'standard' #MSE, KLdivergence are other options
@@ -142,6 +143,11 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
             print("Is gen_data None?:", bool(gen_data is None))
             train_data=gen_data
             gen_data =None
+        if gen_data is not None and cumulative_indices.numel() != 0:
+            # Create matching sizes for gen data and new data by repeating the gen dataset
+            if train_data.shape[1] > gen_data.shape[1] and gen_data.shape[1] > 0:
+                repeats = train_data.shape[1] // gen_data.shape[1] + 1
+                gen_data = gen_data.repeat(1,repeats)[:, :train_data.shape[1]]
 
         for epoch in range(max_epochs):
 
@@ -154,16 +160,11 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                 
                 model.train(is_train)
 
-                if gen_data is not None and train_data is not None and is_train is False:
+                if gen_data is not None and train_data is not None and is_train is True:
                     total_train_loss = 0
                     total_train_acc = 0
                     total_gen_loss = 0
                     total_gen_acc = 0
-                    print("This ran")
-                    # Create matching sizes for gen data and new data by repeating the gen dataset
-                    if train_data.shape[1] > gen_data.shape[1] and gen_data.shape[1] > 0:
-                        repeats = train_data.shape[1] // gen_data.shape[1] + 1
-                        gen_data = gen_data.repeat(1,repeats)[:, :train_data.shape[1]]
                     # torch.split faster than dataloader with tensor
                     train_batches = torch.split(train_data, args.batch_size, dim=1)
                     gen_batches = torch.split(gen_data, args.batch_size, dim=1)
@@ -207,7 +208,6 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                     gen_acc.append(total_gen_acc / train_data.shape[-1])
                     gen_loss.append(total_gen_loss / train_data.shape[-1])
                 else:
-                    model.train(is_train)
                     total_loss = 0
                     total_acc = 0
                     
@@ -243,7 +243,6 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                     else:
                         val_acc.append(total_acc / valid_data.shape[-1])
                         val_loss.append(total_loss / valid_data.shape[-1])
-
             if args.save_weights:
                 do_save = e <= 500 or (e > 500 and (e + 1) % 100 == 0) or e == int(args.budget) // steps_per_epoch - 1
             else:
@@ -292,10 +291,8 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
             pbar.update(1)
             e+=1
         
-        if part<len(training_parts):
+        if part<len(training_parts)+1:
             cumulative_indices = torch.cat((cumulative_indices, training_parts[f"part_{part}"]))
-
-    
     
     pbar.close()
     
