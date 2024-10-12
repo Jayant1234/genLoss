@@ -237,8 +237,8 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                     if is_train:
                         train_acc.append(total_acc / train_data.shape[-1])
                         train_loss.append(total_loss / train_data.shape[-1])
-                        #gen_acc.append(0)
-                        #gen_loss.append(0)
+                        gen_acc.append(0)
+                        gen_loss.append(0)
                         its.append(i)
                     else:
                         val_acc.append(total_acc / valid_data.shape[-1])
