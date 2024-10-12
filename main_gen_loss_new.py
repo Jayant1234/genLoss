@@ -156,17 +156,17 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
             if gen_data is not None: 
                 gen_data =   gen_data[:, torch.randperm(gen_data.shape[1])]
             
-            for data, gen_data, is_train in [(train_data, gen_data, True), (valid_data, None, False)]:
+            for the_data, gen_data, is_train in [(train_data, gen_data, True), (valid_data, None, False)]:
                 
                 model.train(is_train)
 
-                if gen_data is not None and data is not None and is_train:
+                if gen_data is not None and the_data is not None and is_train:
                     total_train_loss = 0
                     total_train_acc = 0
                     total_gen_loss = 0
                     total_gen_acc = 0
                     # torch.split faster than dataloader with tensor
-                    train_batches = torch.split(data, args.batch_size, dim=1)
+                    train_batches = torch.split(the_data, args.batch_size, dim=1)
                     gen_batches = torch.split(gen_data, args.batch_size, dim=1)
                     # Print the count of batches
                     print(f"Number of train batches: {len(train_batches)}")
@@ -212,7 +212,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                     total_acc = 0
                     
                     # torch.split faster than dataloader with tensor
-                    dl = torch.split(data, args.batch_size, dim=1)
+                    dl = torch.split(the_data, args.batch_size, dim=1)
                     for input in dl:
                         input = input.to(device)
 
