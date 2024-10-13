@@ -116,7 +116,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
     
     # Remove the last part from the training parts
     training_parts = {k: parts[k] for k in list(parts.keys())[:-1]}
-    print("Training parts are:",training_parts)
+    #print("Training parts are:",training_parts)
     # Containers to save training and validation metrics
     its, train_acc, gen_acc, val_acc, gen_loss, train_loss, val_loss = [], [], [], [], [], [], []
     max_epochs= 2000 #int(args.budget//10)
@@ -156,18 +156,18 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
             if gen_data is not None: 
                 gen_data =   gen_data[:, torch.randperm(gen_data.shape[1])]
             
-            for the_data, gen_data, is_train in [(train_data, gen_data, True), (valid_data, None, False)]:
+            for the_data, g_data, is_train in [(train_data, gen_data, True), (valid_data, None, False)]:
                 
                 model.train(is_train)
 
-                if gen_data is not None and the_data is not None and is_train:
+                if g_data is not None and the_data is not None and is_train:
                     total_train_loss = 0
                     total_train_acc = 0
                     total_gen_loss = 0
                     total_gen_acc = 0
                     # torch.split faster than dataloader with tensor
                     train_batches = torch.split(the_data, args.batch_size, dim=1)
-                    gen_batches = torch.split(gen_data, args.batch_size, dim=1)
+                    gen_batches = torch.split(g_data, args.batch_size, dim=1)
                     # Print the count of batches
                     print(f"Number of train batches: {len(train_batches)}")
                     print(f"Number of gen batches: {len(gen_batches)}")
