@@ -169,8 +169,8 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                     train_batches = torch.split(the_data, args.batch_size, dim=1)
                     gen_batches = torch.split(g_data, args.batch_size, dim=1)
                     # Print the count of batches
-                    print(f"Number of train batches: {len(train_batches)}")
-                    print(f"Number of gen batches: {len(gen_batches)}")
+                    #print(f"Number of train batches: {len(train_batches)}")
+                    #print(f"Number of gen batches: {len(gen_batches)}")
 
                     for train_input,gen_input in zip(train_batches,gen_batches):
                         train_input = train_input.to(device)
