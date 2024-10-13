@@ -469,8 +469,8 @@ if __name__ == "__main__":
     parser.add_argument("--weight_decay", type=float, default=0)
     parser.add_argument("--optimizer", default="Adam")
     parser.add_argument("--method_type", default="progressive")
-    parser.add_argument("--lambda_weight", default=5)
-    parser.add_argument("--max_epochs", default=200)
+    parser.add_argument("--lambda_weight", type=int, default=5)
+    parser.add_argument("--max_epochs",type=int, default=200)
     # Grokfast
     parser.add_argument("--filter", type=str, choices=["none", "ma", "ema", "fir"], default="none")
     parser.add_argument("--alpha", type=float, default=0.99)
