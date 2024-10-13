@@ -119,7 +119,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
     #print("Training parts are:",training_parts)
     # Containers to save training and validation metrics
     its, train_acc, gen_acc, val_acc, gen_loss, train_loss, val_loss = [], [], [], [], [], [], []
-    max_epochs= 2000 #int(args.budget//10)
+    max_epochs= args.max_epochs #int(args.budget//10)
     e=0 # epoch counter
     i=0 # iteration counter
     cutoff=1e-6
@@ -469,7 +469,8 @@ if __name__ == "__main__":
     parser.add_argument("--weight_decay", type=float, default=0)
     parser.add_argument("--optimizer", default="Adam")
     parser.add_argument("--method_type", default="progressive")
-    parser.add_argument("--lambda_weight", default=1.5)
+    parser.add_argument("--lambda_weight", default=5)
+    parser.add_argument("--max_epochs", default=200)
     # Grokfast
     parser.add_argument("--filter", type=str, choices=["none", "ma", "ema", "fir"], default="none")
     parser.add_argument("--alpha", type=float, default=0.99)
