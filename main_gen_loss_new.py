@@ -246,10 +246,8 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                     else:
                         val_acc.append(total_acc / valid_data.shape[-1])
                         val_loss.append(total_loss / valid_data.shape[-1])
-            if args.save_weights:
-                do_save = e <= 500 or (e > 500 and (e + 1) % 100 == 0) or e == int(args.budget) // steps_per_epoch - 1
-            else:
-                do_save = e <= 500 or (e > 500 and (e + 1) % 100 == 0)
+
+            do_save = e <= 500 or (e > 500 and (e + 1) % 10 == 0)
             if do_save:
                 steps = torch.arange(len(train_acc)).numpy() # steps calculation is tricky so will leave it for future. 
                 plt.plot(steps, train_acc, label="train")
@@ -474,7 +472,7 @@ if __name__ == "__main__":
     parser.add_argument("--optimizer", default="Adam")
     #Generalization Loss
     parser.add_argument("--method_type", default="progressive")
-    parser.add_argument("--lambda_weight", type=int, default=5)
+    parser.add_argument("--lambda_weight", type=int, default=2)
     parser.add_argument("--max_epochs",type=int, default=20)
     parser.add_argument("--last_max_epochs",type=int, default=200)
     parser.add_argument("--min_error",type=float, default=1e-6)
