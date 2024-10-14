@@ -119,8 +119,8 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
     #print("Training parts are:",training_parts)
     # Containers to save training and validation metrics
     its, train_acc, gen_acc, val_acc, gen_loss, train_loss, val_loss = [], [], [], [], [], [], []
-    max_epochs= args.max_epochs #int(args.budget//10)
-    e=0 # epoch counter
+
+    e=0 # total epoch counter
     i=0 # iteration counter
     cutoff=1e-6
     gen_loss_type= 'standard' #MSE, KLdivergence are other options
@@ -148,8 +148,9 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
             if train_data.shape[1] > gen_data.shape[1] and gen_data.shape[1] > 0:
                 repeats = train_data.shape[1] // gen_data.shape[1] + 1
                 gen_data = gen_data.repeat(1,repeats)[:, :train_data.shape[1]]
- 
-        for epoch in range(max_epochs):
+
+        epochs=0 #epoch counter for concentrated training
+        while epochs <= args.max_epochs:
 
             train_data = train_data[:, torch.randperm(train_data.shape[1])]
             
@@ -240,6 +241,10 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                         gen_acc.append(0)
                         gen_loss.append(0)
                         its.append(i)
+                        #the fitting condition is applied here in first and last training
+                        if total_loss> args.min_error and epochs==args.max_epochs: # perform more training if this happens
+                            epochs-=1 # 1 more epoch!
+                            
                     else:
                         val_acc.append(total_acc / valid_data.shape[-1])
                         val_loss.append(total_loss / valid_data.shape[-1])
@@ -290,6 +295,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                 torch.save(results, f"results/res_{args.label}.pt")
             pbar.update(1)
             e+=1
+            epochs+=1
         
         if part<len(training_parts)+1:
             cumulative_indices = torch.cat((cumulative_indices, training_parts[f"part_{part}"]))
@@ -468,9 +474,11 @@ if __name__ == "__main__":
     parser.add_argument("--beta2", type=float, default=0.98)
     parser.add_argument("--weight_decay", type=float, default=0)
     parser.add_argument("--optimizer", default="Adam")
+    #Generalization Loss
     parser.add_argument("--method_type", default="progressive")
     parser.add_argument("--lambda_weight", type=int, default=5)
     parser.add_argument("--max_epochs",type=int, default=200)
+    parser.add_argument("--min_error",type=float, default=1e-6)
     # Grokfast
     parser.add_argument("--filter", type=str, choices=["none", "ma", "ema", "fir"], default="none")
     parser.add_argument("--alpha", type=float, default=0.99)
