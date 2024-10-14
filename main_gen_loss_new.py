@@ -208,7 +208,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                     its.append(i)
                     gen_acc.append(total_gen_acc / gen_data.shape[-1])
                     gen_loss.append(total_gen_loss / gen_data.shape[-1])
-                    gen_loss_counter=total_gen_loss
+                    gen_loss_counter=total_gen_loss / gen_data.shape[-1]
 
                 else:
                     total_loss = 0
