@@ -105,13 +105,13 @@ def split_data_into_n_parts(data,n_parts):
     
     return labeled_parts
     
-def train_progressive(model, parts, data, valid_data, optimizer, scheduler, device, args):
+def train_progressive(model, training_parts, data, valid_data, optimizer, scheduler, device, args):
 
     cumulative_indices = torch.tensor([], dtype=torch.long)
     total_steps = 0  # Track the total number of steps taken
     
     # Remove the last part from the training parts
-    training_parts = {k: parts[k] for k in list(parts.keys())}
+    #training_parts = {k: parts[k] for k in list(parts.keys())}
     #print("Training parts are:",training_parts)
     # Containers to save training and validation metrics
     its, train_acc, gen_acc, val_acc, gen_loss, train_loss, val_loss = [], [], [], [], [], [], []
