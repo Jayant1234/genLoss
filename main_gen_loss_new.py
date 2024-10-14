@@ -448,7 +448,7 @@ def main(args):
     )
     
     if args.method_type =="progressive":
-        train_progressive(model, parts, train_data, valid_data, optimizer, scheduler, device, args)
+        train_progressive(model, train_data, valid_data, optimizer, scheduler, device, args)
     else: 
         train_baseline(model, train_data, valid_data, optimizer, scheduler, device, args)
 
