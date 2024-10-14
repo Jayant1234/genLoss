@@ -148,7 +148,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
             if train_data.shape[1] > gen_data.shape[1] and gen_data.shape[1] > 0:
                 repeats = train_data.shape[1] // gen_data.shape[1] + 1
                 gen_data = gen_data.repeat(1,repeats)[:, :train_data.shape[1]]
-
+ 
         for epoch in range(max_epochs):
 
             train_data = train_data[:, torch.randperm(train_data.shape[1])]
@@ -256,7 +256,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                 plt.title("Modular Multiplication (training on 90% of data)")
                 plt.xlabel("Epochs")
                 plt.ylabel("Accuracy")
-                plt.xscale("log", base=10)
+                #plt.xscale("log", base=10)
                 plt.grid()
                 plt.savefig(f"results/acc_{args.label}.png", dpi=150)
                 plt.close()
@@ -268,7 +268,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                 plt.title("Modular Multiplication (training on 50% of data)")
                 plt.xlabel("Optimization Steps")
                 plt.ylabel("Loss")
-                plt.xscale("log", base=10)
+                #plt.xscale("log", base=10)
                 plt.grid()
                 plt.savefig(f"results/loss_{args.label}.png", dpi=150)
                 plt.close()
@@ -293,7 +293,7 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
         
         if part<len(training_parts)+1:
             cumulative_indices = torch.cat((cumulative_indices, training_parts[f"part_{part}"]))
-    
+    print("Total number of optimizer steps:", total_steps)
     pbar.close()
     
     return its, train_acc, gen_acc, val_acc, gen_loss, train_loss, val_loss
