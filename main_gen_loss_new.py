@@ -150,7 +150,8 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                 gen_data = gen_data.repeat(1,repeats)[:, :train_data.shape[1]]
 
         epochs=0 #epoch counter for concentrated training
-        while epochs <= args.max_epochs:
+        max_epochs_counter = args.last_max_epochs if part == len(training_parts) else args.max_epochs
+        while epochs <= max_epochs_counter:
 
             train_data = train_data[:, torch.randperm(train_data.shape[1])]
             
@@ -241,9 +242,6 @@ def train_progressive(model, parts, data, optimizer, scheduler, device, args):
                         gen_acc.append(0)
                         gen_loss.append(0)
                         its.append(i)
-                        #the fitting condition is applied here in first and last training
-                        if total_loss> args.min_error and epochs==args.max_epochs: # perform more training if this happens
-                            epochs-=1 # 1 more epoch!
                             
                     else:
                         val_acc.append(total_acc / valid_data.shape[-1])
@@ -477,7 +475,8 @@ if __name__ == "__main__":
     #Generalization Loss
     parser.add_argument("--method_type", default="progressive")
     parser.add_argument("--lambda_weight", type=int, default=5)
-    parser.add_argument("--max_epochs",type=int, default=200)
+    parser.add_argument("--max_epochs",type=int, default=20)
+    parser.add_argument("--last_max_epochs",type=int, default=200)
     parser.add_argument("--min_error",type=float, default=1e-6)
     # Grokfast
     parser.add_argument("--filter", type=str, choices=["none", "ma", "ema", "fir"], default="none")
