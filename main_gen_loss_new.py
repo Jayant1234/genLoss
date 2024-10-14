@@ -476,7 +476,7 @@ if __name__ == "__main__":
     parser.add_argument("--lambda_weight", type=int, default=2)
     parser.add_argument("--max_epochs",type=int, default=20)
     parser.add_argument("--last_max_epochs",type=int, default=200)
-    parser.add_argument("--min_error",type=float, default=1e-6)
+    parser.add_argument("--min_error",type=float, default=1e-3)
     parser.add_argument("--parts",type=int, default=10)
     
     # Grokfast
