@@ -449,7 +449,7 @@ def main(args):
     )
     
     if args.method_type =="progressive":
-        parts=split_data_into_10_parts(data,args.parts)
+        parts=split_data_into_n_parts(data,args.parts)
         train_progressive(model, parts, train_data, valid_data, optimizer, scheduler, device, args)
     else: 
         train_baseline(model, train_data, valid_data, optimizer, scheduler, device, args)
