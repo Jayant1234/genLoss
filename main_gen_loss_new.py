@@ -128,7 +128,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
         train_data = data[:, cumulative_indices]
         print(f"Cumulative training data shape before adding Part {part}: {train_data.shape}")
         gen_data=None
-        if part<len(training_parts):  
+        if part<len(training_parts) or part==1:  #part==1 is for baseline case
             gen_data_indices = training_parts[f"part_{part}"]
             gen_data = data[:, gen_data_indices]
             print(f"gen data shape with Part {part}: {gen_data.shape}")
@@ -440,8 +440,18 @@ def main(args):
 
     data = multiplication_mod_p_data(args.p, eq_token, op_token)
 
-    train_idx, valid_idx = torch.randperm(data.shape[1]).split(data.shape[1] // 2)
+    # Get the number of columns (data points)
+    num_data_points = data.shape[1]
+
+    # Compute the 90-10 split point
+    split_point = int(0.9 * num_data_points)
+
+    # Shuffle the data indices
+    train_idx, valid_idx = torch.randperm(num_data_points).split([split_point, num_data_points - split_point])
+
+    # Split the data
     train_data, valid_data = data[:, train_idx], data[:, valid_idx]
+
 
     # For most experiments we used AdamW optimizer with learning rate 10−3,
     # weight decay 1, β1 = 0.9, β2 = 0.98
@@ -474,6 +484,7 @@ if __name__ == "__main__":
     parser.add_argument("--beta2", type=float, default=0.98)
     parser.add_argument("--weight_decay", type=float, default=0)
     parser.add_argument("--optimizer", default="Adam")
+
     #Generalization Loss
     parser.add_argument("--method_type", default="progressive")
     parser.add_argument("--lambda_weight", type=int, default=2)
