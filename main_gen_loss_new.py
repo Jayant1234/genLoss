@@ -258,7 +258,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                 plt.title("Modular Multiplication (training on 90% of data)")
                 plt.xlabel("Epochs")
                 plt.ylabel("Accuracy")
-                #plt.xscale("log", base=10)
+                plt.xscale("log", base=10)
                 plt.grid()
                 plt.savefig(f"results/acc_{args.label}.png", dpi=150)
                 plt.close()
