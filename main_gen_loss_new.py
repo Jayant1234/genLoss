@@ -294,7 +294,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
             e+=1
             epochs+=1
             
-            if gen_loss_counter < args.min_error:
+            if gen_loss_counter < args.min_error/part:
                         break
 
     
