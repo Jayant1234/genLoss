@@ -145,10 +145,12 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                 gen_data = gen_data.repeat(1,repeats)[:, :train_data.shape[1]]
 
         epochs=0 #epoch counter for concentrated training
+        
         max_epochs_counter = args.last_max_epochs if part == len(training_parts) else args.max_epochs
+        
+        gen_loss_counter=10# counter to stop the training when gen loss is sufficiently minimized
+
         while epochs <= max_epochs_counter:
-            
-            gen_loss_counter=10# counter to stop the training when gen loss is sufficiently minimized
             
             train_data = train_data[:, torch.randperm(train_data.shape[1])]
             
@@ -292,9 +294,10 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
             e+=1
             epochs+=1
             
-            if gen_loss_counter<args.min_error:
+            if gen_loss_counter < args.min_error:
                         break
-        
+
+    
         if part<len(training_parts)+1:
             cumulative_indices = torch.cat((cumulative_indices, training_parts[f"part_{part}"]))
     print("Total number of optimizer steps:", total_steps)
