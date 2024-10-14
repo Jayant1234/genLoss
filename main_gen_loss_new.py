@@ -86,17 +86,17 @@ def multiplication_mod_p_data(p, eq_token, op_token):
     # is a seperate token"
     return torch.stack([x, op, y, eq, result])
 
-def split_data_into_10_parts(data):
+def split_data_into_n_parts(data,n_parts):
     # Shuffle the data indices
     indices = torch.randperm(data.shape[1])
     
     # Split the indices into 10 roughly equal parts
-    parts = torch.split(indices, data.shape[1] // 10)
+    parts = torch.split(indices, data.shape[1] // n_parts)
     parts = list(parts)
 
     # If there are any remaining indices (because data.shape[1] may not be perfectly divisible by 10),
     # add them to the last part
-    if len(parts) > 10:
+    if len(parts) > n_parts:
         parts[-2] = torch.cat((parts[-2], parts[-1]))
         parts = parts[:-1]
     
@@ -105,17 +105,13 @@ def split_data_into_10_parts(data):
     
     return labeled_parts
     
-def train_progressive(model, parts, data, optimizer, scheduler, device, args):
+def train_progressive(model, parts, data, valid_data, optimizer, scheduler, device, args):
 
     cumulative_indices = torch.tensor([], dtype=torch.long)
     total_steps = 0  # Track the total number of steps taken
     
-    # Use the last part as the validation set
-    validation_indices = parts[f"part_{10}"]
-    valid_data = data[:, validation_indices]
-    
     # Remove the last part from the training parts
-    training_parts = {k: parts[k] for k in list(parts.keys())[:-1]}
+    training_parts = {k: parts[k] for k in list(parts.keys())}
     #print("Training parts are:",training_parts)
     # Containers to save training and validation metrics
     its, train_acc, gen_acc, val_acc, gen_loss, train_loss, val_loss = [], [], [], [], [], [], []
@@ -453,8 +449,8 @@ def main(args):
     )
     
     if args.method_type =="progressive":
-        parts=split_data_into_10_parts(data)
-        train_progressive(model, parts, data, optimizer, scheduler, device, args)
+        parts=split_data_into_10_parts(data,args.parts)
+        train_progressive(model, parts, train_data, valid_data, optimizer, scheduler, device, args)
     else: 
         train_baseline(model, train_data, valid_data, optimizer, scheduler, device, args)
 
@@ -476,6 +472,8 @@ if __name__ == "__main__":
     parser.add_argument("--max_epochs",type=int, default=20)
     parser.add_argument("--last_max_epochs",type=int, default=200)
     parser.add_argument("--min_error",type=float, default=1e-6)
+    parser.add_argument("--parts",type=int, default=10)
+    
     # Grokfast
     parser.add_argument("--filter", type=str, choices=["none", "ma", "ema", "fir"], default="none")
     parser.add_argument("--alpha", type=float, default=0.99)
