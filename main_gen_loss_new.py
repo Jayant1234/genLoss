@@ -444,7 +444,7 @@ def main(args):
     num_data_points = data.shape[1]
 
     # Compute the 90-10 split point
-    split_point = int(0.9 * num_data_points)
+    split_point = int(0.5 * num_data_points)
 
     # Shuffle the data indices
     train_idx, valid_idx = torch.randperm(num_data_points).split([split_point, num_data_points - split_point])
@@ -478,7 +478,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--p", type=int, default=97)
     parser.add_argument("--budget", type=int, default=3e5)
-    parser.add_argument("--batch_size", type=int, default=512)
+    parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--beta1", type=float, default=0.9)
     parser.add_argument("--beta2", type=float, default=0.98)
