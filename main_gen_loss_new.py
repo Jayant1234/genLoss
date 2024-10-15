@@ -496,7 +496,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--p", type=int, default=97)
     parser.add_argument("--budget", type=int, default=3e5)
-    parser.add_argument("--batch_size", type=int, default=16)
+    parser.add_argument("--batch_size", type=int, default=512)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--beta1", type=float, default=0.9)
     parser.add_argument("--beta2", type=float, default=0.98)
@@ -511,7 +511,9 @@ if __name__ == "__main__":
     parser.add_argument("--min_error",type=float, default=1e-3)
     parser.add_argument("--parts",type=int, default=10)
     parser.add_argument("--early_stopping", action="store_true", help="Enable early stopping")
-    
+    parser.add_argument("--part_wise", action="store_true", help="Enable early stopping")
+
+
     # Grokfast
     parser.add_argument("--filter", type=str, choices=["none", "ma", "ema", "fir"], default="none")
     parser.add_argument("--alpha", type=float, default=0.99)
