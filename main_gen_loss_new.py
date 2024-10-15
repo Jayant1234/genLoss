@@ -110,10 +110,17 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
     cumulative_indices = torch.tensor([], dtype=torch.long)
     total_steps = 0  # Track the total number of steps taken
     
-    training_parts=split_data_into_n_parts(data,args.parts)
+    parts=split_data_into_n_parts(data,args.parts)
+    # Use the last part as the validation set
+    internal_val_indices = parts[f"part_{args.parts}"]
+    internal_val_data = data[:, internal_val_indices]
+
+    
+    # Remove the last part from the training parts
+    training_parts = {k: parts[k] for k in list(parts.keys())[:-1]}
     #print("Training parts are:",training_parts)
     # Containers to save training and validation metrics
-    its, train_acc, gen_acc, val_acc, gen_loss, train_loss, val_loss = [], [], [], [], [], [], []
+    its, train_acc, gen_acc, val_acc, in_val_loss, in_val_acc, gen_loss, train_loss, val_loss = [], [], [], [], [], [], [], [], []
 
     e=0 # total epoch counter
     i=0 # iteration counter
@@ -148,7 +155,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
         
         max_epochs_counter = args.last_max_epochs if part == len(training_parts) else args.max_epochs
         
-        gen_loss_counter=10# counter to stop the training when gen loss is sufficiently minimized
+        internal_val_counter=[]# counter to stop the training when gen loss is sufficiently minimized
 
         while epochs <= max_epochs_counter:
             
@@ -157,7 +164,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
             if gen_data is not None: 
                 gen_data =   gen_data[:, torch.randperm(gen_data.shape[1])]
             
-            for the_data, g_data, is_train in [(train_data, gen_data, True), (valid_data, None, False)]:
+            for the_data, g_data, is_train, is_in in [(train_data, gen_data, True, False), (valid_data, None, False, False), (internal_val_data, None, False, True)]:
                 
                 model.train(is_train)
 
@@ -245,8 +252,13 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                         its.append(i)
                             
                     else:
-                        val_acc.append(total_acc / valid_data.shape[-1])
-                        val_loss.append(total_loss / valid_data.shape[-1])
+                        if is_in:
+                            in_val_acc.append(total_acc / internal_val_data.shape[-1])
+                            in_val_loss.append(total_loss / internal_val_data.shape[-1])
+
+                        else:
+                            val_acc.append(total_acc / valid_data.shape[-1])
+                            val_loss.append(total_loss / valid_data.shape[-1])
 
             do_save = e <= 500 or (e > 500 and (e + 1) % 10 == 0)
             if do_save:
@@ -254,6 +266,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                 plt.plot(steps, train_acc, label="train")
                 plt.plot(steps, val_acc, label="val")
                 plt.plot(steps, gen_acc, label="gen")
+                plt.plot(steps, in_val_acc, label="in_val")
                 plt.legend()
                 plt.title("Modular Multiplication (training on 90% of data)")
                 plt.xlabel("Epochs")
@@ -266,6 +279,8 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                 plt.plot(steps, train_loss, label="train")
                 plt.plot(steps, val_loss, label="val")
                 plt.plot(steps, gen_loss, label="gen")
+                plt.plot(steps, in_val_loss, label="in_val")
+
                 plt.legend()
                 plt.title("Modular Multiplication (training on 50% of data)")
                 plt.xlabel("Optimization Steps")
@@ -294,8 +309,8 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
             e+=1
             epochs+=1
             
-            if gen_loss_counter < args.min_error/part:
-                        break
+            if in_val_loss[-1] > in_val_loss[-2] and part>1 and part< len(training_parts)+1:
+                break
 
     
         if part<len(training_parts)+1:
