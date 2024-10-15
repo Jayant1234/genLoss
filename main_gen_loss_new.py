@@ -315,7 +315,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
             epochs+=1
             
             if len(in_val_loss) >2 and args.early_stopping:
-                if in_val_loss[-1] > in_val_loss[-2] and part>1 and part < len(training_parts):
+                if in_val_loss[-1] > in_val_loss[-2] and part>1:
                     break
 
     
