@@ -128,7 +128,9 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
     gen_loss_type= 'standard' #MSE, KLdivergence are other options
     pbar = tqdm()
     lambda_weight = args.lambda_weight
+    
     part=1
+    repetition =0
     while(part <= len(training_parts)+1):
         # Accumulate parts
         print(f"Accumulating data for Part {part}")
@@ -320,8 +322,10 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
         if part<len(training_parts)+1:
             cumulative_indices = torch.cat((cumulative_indices, training_parts[f"part_{part}"]))
 
-        if part==len(training_parts)+1 and args.is_repeat:# is_repeat is used for early stopping
-            part=2
+        if part==len(training_parts)+1 and args.is_repeat and repetition <25:# is_repeat is used for early stopping
+            part=1
+            repetition+=1
+            cumulative_indices = torch.tensor([], dtype=torch.long)
         part+=1
         
     print("Total number of optimizer steps:", total_steps)
