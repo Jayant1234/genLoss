@@ -268,12 +268,13 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                 plt.plot(steps, gen_acc, label="gen")
                 plt.plot(steps, in_val_acc, label="in_val")
                 plt.legend()
-                plt.title("Modular Multiplication (training on 90% of data)")
+                plt.title("Modular Multiplication")
                 plt.xlabel("Epochs")
                 plt.ylabel("Accuracy")
                 plt.xscale("log", base=10)
                 plt.grid()
-                plt.savefig(f"results/acc_{args.label}.png", dpi=150)
+                file_name = f"results/acc_method_{args.method_type}_lambda_{args.lambda_weight}_maxepochs_{args.max_epochs}_lastmaxepochs_{args.last_max_epochs}_minerror_{args.min_error}_parts_{args.parts}.png"
+                plt.savefig(file_name, dpi=150)
                 plt.close()
 
                 plt.plot(steps, train_loss, label="train")
@@ -287,7 +288,8 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                 plt.ylabel("Loss")
                 #plt.xscale("log", base=10)
                 plt.grid()
-                plt.savefig(f"results/loss_{args.label}.png", dpi=150)
+                file_name = f"results/loss_method_{args.method_type}_lambda_{args.lambda_weight}_maxepochs_{args.max_epochs}_lastmaxepochs_{args.last_max_epochs}_minerror_{args.min_error}_parts_{args.parts}.png"
+                plt.savefig(file_name, dpi=150)
                 plt.close()
 
                 results = {
@@ -309,7 +311,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
             e+=1
             epochs+=1
             
-            if len(in_val_loss) >2:
+            if len(in_val_loss) >2 and args.early_stopping:
                 if in_val_loss[-1] > in_val_loss[-2] and part>1 and part < len(training_parts):
                     break
 
@@ -508,6 +510,7 @@ if __name__ == "__main__":
     parser.add_argument("--last_max_epochs",type=int, default=200)
     parser.add_argument("--min_error",type=float, default=1e-3)
     parser.add_argument("--parts",type=int, default=10)
+    parser.add_argument("--early_stopping", action="store_true", help="Enable early stopping")
     
     # Grokfast
     parser.add_argument("--filter", type=str, choices=["none", "ma", "ema", "fir"], default="none")
