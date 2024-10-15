@@ -128,7 +128,8 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
     gen_loss_type= 'standard' #MSE, KLdivergence are other options
     pbar = tqdm()
     lambda_weight = args.lambda_weight
-    for part in range(1, len(training_parts)+1):
+    part=1
+    while(part <= len(training_parts)+1):
         # Accumulate parts
         print(f"Accumulating data for Part {part}")
         
@@ -153,7 +154,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
 
         epochs=0 #epoch counter for concentrated training
         
-        max_epochs_counter = args.last_max_epochs if part == len(training_parts) else args.max_epochs
+        max_epochs_counter = args.last_max_epochs if part == len(training_parts)+1 else args.max_epochs
         
         internal_val_counter=[]# counter to stop the training when gen loss is sufficiently minimized
 
@@ -318,6 +319,11 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
     
         if part<len(training_parts)+1:
             cumulative_indices = torch.cat((cumulative_indices, training_parts[f"part_{part}"]))
+
+        if part==len(training_parts)+1 and args.is_repeat:# is_repeat is used for early stopping
+            part=2
+        part+=1
+        
     print("Total number of optimizer steps:", total_steps)
     pbar.close()
     
@@ -512,6 +518,7 @@ if __name__ == "__main__":
     parser.add_argument("--parts",type=int, default=10)
     parser.add_argument("--early_stopping", action="store_true", help="Enable early stopping")
     parser.add_argument("--part_wise", action="store_true", help="Enable early stopping")
+    parser.add_argument("--is_repeat", action="store_true", help="for early stopping so we can repeat generalization")
 
 
     # Grokfast
