@@ -362,7 +362,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
         if part<len(training_parts)+1:
             cumulative_indices = torch.cat((cumulative_indices, training_parts[f"part_{part}"]))
 
-        if part==len(training_parts)+1 and args.early_stopping and repetition <25:# is_repeat is used for early stopping
+        if part==len(training_parts) and args.early_stopping and repetition <25:# is_repeat is used for early stopping
             part=1
             repetition+=1
             cumulative_indices = torch.tensor([], dtype=torch.long)
