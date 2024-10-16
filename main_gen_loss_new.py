@@ -135,11 +135,14 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
         # Accumulate parts
         print(f"Accumulating data for Part {part}")
         
+        if part<=len(training_parts)+1:
+            cumulative_indices = torch.cat((cumulative_indices, training_parts[f"part_{part}"]))
+            
         train_data = data[:, cumulative_indices]
         print(f"Cumulative training data shape before adding Part {part}: {train_data.shape}")
         gen_data=None
-        if part<=len(training_parts) or part==1:  #part==1 is for baseline case
-            gen_data_indices = training_parts[f"part_{part}"]
+        if part<len(training_parts) or part==1:  #part==1 is for baseline case
+            gen_data_indices = training_parts[f"part_{part+1}"]
             gen_data = data[:, gen_data_indices]
             print(f"gen data shape with Part {part}: {gen_data.shape}")
 
