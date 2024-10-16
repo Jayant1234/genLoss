@@ -131,11 +131,11 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
     
     part=1
     repetition =0
-    while(part <= len(training_parts)+1):
+    while(part < len(training_parts)+1):
         # Accumulate parts
         print(f"Accumulating data for Part {part}")
         
-        if part<=len(training_parts)+1:
+        if part<len(training_parts)+1:
             cumulative_indices = torch.cat((cumulative_indices, training_parts[f"part_{part}"]))
             
         train_data = data[:, cumulative_indices]
