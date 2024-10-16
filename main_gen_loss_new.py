@@ -202,19 +202,19 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                             g_loss = g_loss_per_sample.mean()
                             total_gen_loss += g_loss.item() * gen_input.shape[-1]
                             if args.loss_type =="cross_entropy": 
-                                loss= t_loss + lambda_weight*g_loss
+                                loss= (1-lambda_weight)*t_loss + lambda_weight*g_loss
                             elif args.loss_type =="mse": 
-                                loss= t_loss + 0.5*lambda_weight*(g_loss-t_loss).pow(2)
+                                loss= (1-lambda_weight)*t_loss + 0.5*lambda_weight*(g_loss-t_loss).pow(2)
                             elif args.loss_type =="mae":  
-                                loss= t_loss + lambda_weight*torch.abs(g_loss-t_loss)
+                                loss= (1-lambda_weight)*t_loss + lambda_weight*torch.abs(g_loss-t_loss)
                             elif args.loss_type =='huber':
                                 huber_loss_fn = SmoothL1Loss(beta=delta)  # beta parameter is the delta in PyTorch 1.6+
-                                loss= t_loss + lambda_weight*huber_loss_fn(t_loss, g_loss)
+                                loss= (1-lambda_weight)*t_loss + lambda_weight*huber_loss_fn(t_loss, g_loss)
                             elif args.loss_type =='relative_difference': 
                                 epsilon = 1e-8  # Small constant to prevent division by zero
                                 denominator = t_loss + g_loss + epsilon
                                 gap_loss = torch.abs(t_loss - g_loss) / denominator
-                                loss= t_loss + lambda_weight* gap_loss
+                                loss= (1-lambda_weight)*t_loss + lambda_weight* gap_loss
                             elif args.loss_type == 'earth_mover': 
                                 # Sort the losses
                                 losses_seen_sorted, _ = torch.sort(t_loss_per_sample)
@@ -222,7 +222,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
 
                                 # Compute Wasserstein distance
                                 gap_loss = torch.mean(torch.abs(losses_seen_sorted - losses_unseen_sorted))
-                                loss= t_loss + lambda_weight* gap_loss
+                                loss= (1-lambda_weight)*t_loss + lambda_weight* gap_loss
                             elif args.loss_type == 'kl': 
                                 # Compute KL divergence from seen to unseen
                                 kl_divergence = F.kl_div(t_loss_per_sample, g_loss_per_sample, reduction='batchmean')
@@ -234,7 +234,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                                 )
 
                                 # Choose one of the KL divergence measures
-                                loss= t_loss + lambda_weight* kl_divergence_symmetric
+                                loss= (1-lambda_weight)*t_loss + lambda_weight* kl_divergence_symmetric
                                 
                         model.zero_grad()
                         loss.backward()
@@ -552,7 +552,7 @@ if __name__ == "__main__":
 
     #Generalization Loss
     parser.add_argument("--method_type", default="progressive")
-    parser.add_argument("--lambda_weight", type=int, default=2)
+    parser.add_argument("--lambda_weight", type=int, default=0.9)
     parser.add_argument("--max_epochs",type=int, default=20)
     parser.add_argument("--last_max_epochs",type=int, default=200)
     parser.add_argument("--min_error",type=float, default=1e-3)
