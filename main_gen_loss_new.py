@@ -190,15 +190,52 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                         with torch.set_grad_enabled(is_train):
                             train_logits = model(train_input[:-1])
                             # calculate loss only on the answer part of the equation (last element
-                            t_loss = F.cross_entropy(train_logits[-1], train_input[-1])
+                            t_loss_per_sample = F.cross_entropy(train_logits[-1], train_input[-1], reduction='none')
+                            # Compute average loss
+                            t_loss = t_loss_per_sample.mean()
+
                             total_train_loss += t_loss.item() * train_input.shape[-1]
                             
                             gen_logits = model(gen_input[:-1])
                             # calculate loss only on the answer part of the equation (last element
-                            g_loss = F.cross_entropy(gen_logits[-1], gen_input[-1])
+                            g_loss_per_sample = F.cross_entropy(gen_logits[-1], gen_input[-1],reduction='none')
+                            g_loss = g_loss_per_sample.mean()
                             total_gen_loss += g_loss.item() * gen_input.shape[-1]
-                            loss= t_loss + lambda_weight*g_loss
-                        
+                            if args.loss_type =="cross_entropy": 
+                                loss= t_loss + lambda_weight*g_loss
+                            elif args.loss_type =="mse": 
+                                loss= t_loss + 0.5*lambda_weight*(g_loss-t_loss).pow(2)
+                            elif args.loss_type =="mae":  
+                                loss= t_loss + lambda_weight*torch.abs(g_loss-t_loss)
+                            elif args.loss_type =='huber':
+                                huber_loss_fn = SmoothL1Loss(beta=delta)  # beta parameter is the delta in PyTorch 1.6+
+                                loss= t_loss + lambda_weight*huber_loss_fn(t_loss, g_loss)
+                            elif args.loss_type =='relative_difference': 
+                                epsilon = 1e-8  # Small constant to prevent division by zero
+                                denominator = t_loss + g_loss + epsilon
+                                gap_loss = torch.abs(t_loss - g_loss) / denominator
+                                loss= t_loss + lambda_weight* gap_loss
+                            elif args.loss_type == 'earth_mover': 
+                                # Sort the losses
+                                losses_seen_sorted, _ = torch.sort(t_loss)
+                                losses_unseen_sorted, _ = torch.sort(g_loss)
+
+                                # Compute Wasserstein distance
+                                gap_loss = torch.mean(torch.abs(losses_seen_sorted - losses_unseen_sorted))
+                                loss= t_loss + lambda_weight* gap_loss
+                            elif args.loss_type == 'kl': 
+                                # Compute KL divergence from seen to unseen
+                                kl_divergence = F.kl_div(t_loss_per_sample, g_loss_per_sample, reduction='batchmean')
+
+                                # Alternatively, compute symmetric KL divergence
+                                kl_divergence_symmetric = 0.5 * (
+                                    F.kl_div(g_loss_per_sample, t_loss_per_sample, reduction='batchmean') +
+                                    F.kl_div(t_loss_per_sample, g_loss_per_sample, reduction='batchmean')
+                                )
+
+                                # Choose one of the KL divergence measures
+                                loss= t_loss + lambda_weight* kl_divergence_symmetric
+                                
                         model.zero_grad()
                         loss.backward()
 
@@ -276,7 +313,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                 plt.ylabel("Accuracy")
                 plt.xscale("log", base=10)
                 plt.grid()
-                file_name = f"results/acc_method_{args.method_type}_lambda_{args.lambda_weight}_maxepochs_{args.max_epochs}_lastmaxepochs_{args.last_max_epochs}_minerror_{args.min_error}_parts_{args.parts}.png"
+                file_name = f"results/acc_method_{args.method_type}_loss_type_{args.loss_type}_lambda_{args.lambda_weight}_maxepochs_{args.max_epochs}_lastmaxepochs_{args.last_max_epochs}_minerror_{args.min_error}_parts_{args.parts}.png"
                 plt.savefig(file_name, dpi=150)
                 plt.close()
 
@@ -291,7 +328,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                 plt.ylabel("Loss")
                 #plt.xscale("log", base=10)
                 plt.grid()
-                file_name = f"results/loss_method_{args.method_type}_lambda_{args.lambda_weight}_maxepochs_{args.max_epochs}_lastmaxepochs_{args.last_max_epochs}_minerror_{args.min_error}_parts_{args.parts}.png"
+                file_name = f"results/loss_method_{args.method_type}_loss_type_{args.loss_type}_lambda_{args.lambda_weight}_maxepochs_{args.max_epochs}_lastmaxepochs_{args.last_max_epochs}_minerror_{args.min_error}_parts_{args.parts}.png"
                 plt.savefig(file_name, dpi=150)
                 plt.close()
 
@@ -322,7 +359,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
         if part<len(training_parts)+1:
             cumulative_indices = torch.cat((cumulative_indices, training_parts[f"part_{part}"]))
 
-        if part==len(training_parts)+1 and args.is_repeat and repetition <25:# is_repeat is used for early stopping
+        if part==len(training_parts)+1 and args.early_stopping and repetition <25:# is_repeat is used for early stopping
             part=1
             repetition+=1
             cumulative_indices = torch.tensor([], dtype=torch.long)
@@ -522,8 +559,15 @@ if __name__ == "__main__":
     parser.add_argument("--parts",type=int, default=10)
     parser.add_argument("--early_stopping", action="store_true", help="Enable early stopping")
     parser.add_argument("--part_wise", action="store_true", help="Enable early stopping")
-    parser.add_argument("--is_repeat", action="store_true", help="for early stopping so we can repeat generalization")
-
+    parser.add_argument("--loss_type", default="cross_entropy",  choices=[
+        "cross_entropy", 
+        "mse", 
+        "mae", 
+        "huber", 
+        "relative_difference", 
+        "earth_mover", 
+        "kl"
+        ])
 
     # Grokfast
     parser.add_argument("--filter", type=str, choices=["none", "ma", "ema", "fir"], default="none")
