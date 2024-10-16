@@ -138,7 +138,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
         train_data = data[:, cumulative_indices]
         print(f"Cumulative training data shape before adding Part {part}: {train_data.shape}")
         gen_data=None
-        if part<len(training_parts) or part==1:  #part==1 is for baseline case
+        if part<=len(training_parts) or part==1:  #part==1 is for baseline case
             gen_data_indices = training_parts[f"part_{part}"]
             gen_data = data[:, gen_data_indices]
             print(f"gen data shape with Part {part}: {gen_data.shape}")
@@ -217,8 +217,8 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                                 loss= t_loss + lambda_weight* gap_loss
                             elif args.loss_type == 'earth_mover': 
                                 # Sort the losses
-                                losses_seen_sorted, _ = torch.sort(t_loss)
-                                losses_unseen_sorted, _ = torch.sort(g_loss)
+                                losses_seen_sorted, _ = torch.sort(t_loss_per_sample)
+                                losses_unseen_sorted, _ = torch.sort(g_loss_per_sample)
 
                                 # Compute Wasserstein distance
                                 gap_loss = torch.mean(torch.abs(losses_seen_sorted - losses_unseen_sorted))
