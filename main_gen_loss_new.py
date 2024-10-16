@@ -552,7 +552,7 @@ if __name__ == "__main__":
 
     #Generalization Loss
     parser.add_argument("--method_type", default="progressive")
-    parser.add_argument("--lambda_weight", type=int, default=0.9)
+    parser.add_argument("--lambda_weight", type=float, default=0.9)
     parser.add_argument("--max_epochs",type=int, default=20)
     parser.add_argument("--last_max_epochs",type=int, default=200)
     parser.add_argument("--min_error",type=float, default=1e-3)
