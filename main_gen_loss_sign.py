@@ -560,7 +560,7 @@ if __name__ == "__main__":
     parser.add_argument("--optimizer", default="Adam")
 
     #Generalization Loss
-    parser.add_argument("--method_type", default="progressive_signed")
+    parser.add_argument("--method_type", default="progressive_group")
     parser.add_argument("--lambda_weight", type=float, default=0.9)
     parser.add_argument("--max_epochs",type=int, default=20)
     parser.add_argument("--last_max_epochs",type=int, default=200)
