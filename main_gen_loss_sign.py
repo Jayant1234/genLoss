@@ -240,10 +240,10 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                                     if param.grad is not None:
                                         # Exclude bias or single-element parameters
                                         if len(param.shape) > 1:
-                                            avg_grad = param.grad.mean()
-                                            param.grad.fill_(avg_grad)  # Replace with averaged gradient
+                                            sum_grad = param.grad.sum()  
+                                            param.grad.fill_(sum_grad)  # Replace with averaged gradient
                                             # Manual parameter update
-                                            print(".", end="")
+                                            #print(".", end="")
                                             param.data -= param.grad #optimizer.param_groups[0]['lr']
                             model.zero_grad()
                             t_loss.backward()
