@@ -266,7 +266,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                                     # Final mask: retain agreement or allow disagreement with (100 - p)% probability
                                     #final_mask = mask + (1 - mask) * noise_mask.float()
                                     # Apply the mask to gradient B
-                                    param.grad = g_B * final_mask  # Overwrite .grad with masked gradient
+                                    param.grad = g_B * mask  # Overwrite .grad with masked gradient
 
                         optimizer.step()
                         scheduler.step()
