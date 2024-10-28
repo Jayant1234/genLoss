@@ -243,7 +243,8 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                                             avg_grad = param.grad.mean()
                                             param.grad.fill_(avg_grad)  # Replace with averaged gradient
                                             # Manual parameter update
-                                            param.data -= 10*param.grad * optimizer.param_groups[0]['lr']
+                                            print(".", end="")
+                                            param.data -= param.grad #optimizer.param_groups[0]['lr']
                             model.zero_grad()
                             t_loss.backward()
 
