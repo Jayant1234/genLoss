@@ -556,7 +556,7 @@ def main(args):
         optimizer, lambda update: 1 if update > 10 else update / 10
     )
     
-    if args.method_type =="progressive":
+    if args.method_type =="progressive_signed":
         train_progressive(model, train_data, valid_data, optimizer, scheduler, device, args)
     else: 
         train_baseline(model, train_data, valid_data, optimizer, scheduler, device, args)
@@ -575,12 +575,12 @@ if __name__ == "__main__":
     parser.add_argument("--optimizer", default="Adam")
 
     #Generalization Loss
-    parser.add_argument("--method_type", default="progressive")
+    parser.add_argument("--method_type", default="progressive_signed")
     parser.add_argument("--lambda_weight", type=float, default=0.9)
     parser.add_argument("--max_epochs",type=int, default=20)
     parser.add_argument("--last_max_epochs",type=int, default=200)
     parser.add_argument("--min_error",type=float, default=1e-3)
-    parser.add_argument("--parts",type=int, default=10)
+    parser.add_argument("--parts",type=int, default=8)
     parser.add_argument("--early_stopping", action="store_true", help="Enable early stopping")
     parser.add_argument("--part_wise", action="store_true", help="Enable early stopping")
     parser.add_argument("--loss_type", default="cross_entropy",  choices=[
