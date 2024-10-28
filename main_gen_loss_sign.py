@@ -135,9 +135,6 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
         # Accumulate parts
         print(f"Accumulating data for Part {part}")
         
-        if part<len(training_parts)+1:
-            cumulative_indices = torch.cat((cumulative_indices, training_parts[f"part_{part}"]))
-            
         train_data = data[:, cumulative_indices]
         print(f"Cumulative training data shape before adding Part {part}: {train_data.shape}")
         gen_data=None
@@ -204,69 +201,52 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                             g_loss_per_sample = F.cross_entropy(gen_logits[-1], gen_input[-1],reduction='none')
                             g_loss = g_loss_per_sample.mean()
                             total_gen_loss += g_loss.item() * gen_input.shape[-1]
-                            if args.loss_type =="cross_entropy": 
-                                loss= (1-lambda_weight)*t_loss + lambda_weight*g_loss
-                            elif args.loss_type =="mse": 
-                                loss= (1-lambda_weight)*t_loss + 0.5*lambda_weight*(g_loss-t_loss).pow(2)
-                            elif args.loss_type =="mae":  
-                                loss= (1-lambda_weight)*t_loss + lambda_weight*torch.abs(g_loss-t_loss)
-                            elif args.loss_type =='huber':
-                                huber_loss_fn = SmoothL1Loss(beta=delta)  # beta parameter is the delta in PyTorch 1.6+
-                                loss= (1-lambda_weight)*t_loss + lambda_weight*huber_loss_fn(t_loss, g_loss)
-                            elif args.loss_type =='relative_difference': 
-                                epsilon = 1e-8  # Small constant to prevent division by zero
-                                denominator = t_loss + g_loss + epsilon
-                                gap_loss = torch.abs(t_loss - g_loss) / denominator
-                                loss= (1-lambda_weight)*t_loss + lambda_weight* gap_loss
-                            elif args.loss_type == 'earth_mover': 
-                                # Sort the losses
-                                losses_seen_sorted, _ = torch.sort(t_loss_per_sample)
-                                losses_unseen_sorted, _ = torch.sort(g_loss_per_sample)
 
-                                # Compute Wasserstein distance
-                                gap_loss = torch.mean(torch.abs(losses_seen_sorted - losses_unseen_sorted))
-                                loss= (1-lambda_weight)*t_loss + lambda_weight* gap_loss
-                            elif args.loss_type == 'kl': 
-                                # Compute KL divergence from seen to unseen
-                                kl_divergence = F.kl_div(t_loss_per_sample, g_loss_per_sample, reduction='batchmean')
-
-                                # Alternatively, compute symmetric KL divergence
-                                kl_divergence_symmetric = 0.5 * (
-                                    F.kl_div(g_loss_per_sample, t_loss_per_sample, reduction='batchmean') +
-                                    F.kl_div(t_loss_per_sample, g_loss_per_sample, reduction='batchmean')
-                                )
-
-                                # Choose one of the KL divergence measures
-                                loss= (1-lambda_weight)*t_loss + lambda_weight* kl_divergence_symmetric
                         model.zero_grad()
                         g_loss.backward() 
-                        # Step 2: Create a dictionary to store the sign of Task A's gradients for each parameter
-                        grad_signs_taskA = {}
-                        with torch.no_grad():  # Disable gradient tracking
-                            for param in model.parameters():
-                                if param.grad is not None:
-                                    grad_signs_taskA[param] = torch.sign(param.grad.clone())  # Store sign of gradients for Task A
-                                
-                        model.zero_grad()
-                        t_loss.backward()
-                        with torch.no_grad():  # Use no_grad to prevent tracking in autograd
-                            for param in model.parameters():
-                                if param.grad is not None:
-                                    # Assume g_A and g_B are the gradients for task A and B, stored separately for each parameter
-                                    sign_A = grad_signs_taskA[param]  # Retrieve precomputed gradient for task A
-                                    g_B = param.grad       # Retrieve gradient for task B (computed with loss.backward)
+                        
+                        if args.method_type == "progressive_signed": 
+                            # Step 2: Create a dictionary to store the sign of Task A's gradients for each parameter
+                            grad_signs_taskA = {}
+                            with torch.no_grad():  # Disable gradient tracking
+                                for param in model.parameters():
+                                    if param.grad is not None:
+                                        grad_signs_taskA[param] = torch.sign(param.grad.clone())  # Store sign of gradients for Task A
+                            model.zero_grad()
+                            t_loss.backward()
+                            
+                            with torch.no_grad():  # Use no_grad to prevent tracking in autograd
+                                for param in model.parameters():
+                                    if param.grad is not None:
+                                        # Assume g_A and g_B are the gradients for task A and B, stored separately for each parameter
+                                        sign_A = grad_signs_taskA[param]  # Retrieve precomputed gradient for task A
+                                        g_B = param.grad       # Retrieve gradient for task B (computed with loss.backward)
 
-                                    # Calculate the mask based on sign matching
-                                    sign_B = torch.sign(param.grad)
-                                    mask = (sign_A == sign_B).float()  # 1 where signs match, 0 where they differ
-                                    # Random mask to control zeroing out disagreements p% of the time
-                                    #p=50
-                                    #noise_mask = torch.rand_like(g_B) >= (p / 100)  # True with probability (100 - p)%
-                                    
-                                    # Final mask: retain agreement or allow disagreement with (100 - p)% probability
-                                    #final_mask = mask + (1 - mask) * noise_mask.float()
-                                    # Apply the mask to gradient B
-                                    param.grad = g_B * mask  # Overwrite .grad with masked gradient
+                                        # Calculate the mask based on sign matching
+                                        sign_B = torch.sign(param.grad)
+                                        mask = (sign_A == sign_B).float()  # 1 where signs match, 0 where they differ
+                                        # Random mask to control zeroing out disagreements p% of the time
+                                        #p=50
+                                        #noise_mask = torch.rand_like(g_B) >= (p / 100)  # True with probability (100 - p)%
+                                        
+                                        # Final mask: retain agreement or allow disagreement with (100 - p)% probability
+                                        #final_mask = mask + (1 - mask) * noise_mask.float()
+                                        # Apply the mask to gradient B
+                                        param.grad = g_B * mask  # Overwrite .grad with masked gradient
+                                # Apply custom gradient transformation and manually update
+                        elif args.method_type == "progressive_group": 
+                            with torch.no_grad():
+                                for param in model.parameters():
+                                    if param.grad is not None:
+                                        # Exclude bias or single-element parameters
+                                        if len(param.shape) > 1:
+                                            avg_grad = param.grad.mean()
+                                            param.grad.fill_(avg_grad)  # Replace with averaged gradient
+                                        
+                                        # Manual parameter update
+                                        param.data -= param.grad * optimizer.param_groups[0]['lr']
+                            model.zero_grad()
+                            t_loss.backward()
 
                         optimizer.step()
                         scheduler.step()
@@ -561,7 +541,7 @@ def main(args):
         optimizer, lambda update: 1 if update > 10 else update / 10
     )
     
-    if args.method_type =="progressive_signed":
+    if args.method_type == "progressive_signed" or "progressive_group":
         train_progressive(model, train_data, valid_data, optimizer, scheduler, device, args)
     else: 
         train_baseline(model, train_data, valid_data, optimizer, scheduler, device, args)
