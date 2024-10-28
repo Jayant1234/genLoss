@@ -259,9 +259,14 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                                     # Calculate the mask based on sign matching
                                     sign_B = torch.sign(param.grad)
                                     mask = (sign_A == sign_B).float()  # 1 where signs match, 0 where they differ
-
+                                    # Random mask to control zeroing out disagreements p% of the time
+                                    p=20
+                                    noise_mask = torch.rand_like(g_B) >= (p / 100)  # True with probability (100 - p)%
+                                    
+                                    # Final mask: retain agreement or allow disagreement with (100 - p)% probability
+                                    final_mask = mask + (1 - mask) * noise_mask.float()
                                     # Apply the mask to gradient B
-                                    param.grad = g_B * mask  # Overwrite .grad with masked gradient
+                                    param.grad = g_B * final_mask  # Overwrite .grad with masked gradient
 
                         optimizer.step()
                         scheduler.step()
