@@ -69,6 +69,14 @@ class Decoder(nn.Module):
         logits = self.head(h)
         return logits
 
+def calculate_weight_norm(model):
+    total_norm = 0.0
+    for param in model.parameters():
+        if param.requires_grad:  # Only consider parameters with gradients
+            param_norm = param.data.norm(2)  # L2 norm of the parameter
+            total_norm += param_norm.item() ** 2
+    total_norm = total_norm ** 0.5  # Take the square root to get the L2 norm
+    return total_norm
 
 def multiplication_mod_p_data(p, eq_token, op_token):
     """x◦y = x/y (mod p) for 0 ≤ x < p, 0 < y < p
@@ -235,6 +243,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                                         param.grad = g_B * mask  # Overwrite .grad with masked gradient
                                 # Apply custom gradient transformation and manually update
                         elif args.method_type == "progressive_group": 
+                            print("weight norm before the group gradient:", calculate_weight_norm(model))
                             with torch.no_grad():
                                 for param in model.parameters():
                                     if param.grad is not None:
@@ -245,6 +254,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                                             # Manual parameter update
                                             #print(".", end="")
                                             param.data -= param.grad #optimizer.param_groups[0]['lr']
+                            print("weight norm after the group gradient:", calculate_weight_norm(model))
                             model.zero_grad()
                             t_loss.backward()
 
