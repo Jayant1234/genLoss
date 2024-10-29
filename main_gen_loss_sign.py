@@ -253,7 +253,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                                             param.grad.fill_(sum_grad)  # Replace with averaged gradient
                                             # Manual parameter update
                                             #print(".", end="")
-                                            param.data -= param.grad #optimizer.param_groups[0]['lr']
+                                            param.data -= param.grad * optimizer.param_groups[0]['lr']
                             print("weight norm after the group gradient:", calculate_weight_norm(model))
                             model.zero_grad()
                             t_loss.backward()
