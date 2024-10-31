@@ -115,18 +115,20 @@ def split_data_into_n_parts(data,n_parts):
     
 def train_progressive(model, data, valid_data, optimizer, scheduler, device, args):
 
-    cumulative_indices = torch.tensor([], dtype=torch.long)
     total_steps = 0  # Track the total number of steps taken
     
-    parts=split_data_into_n_parts(data,args.parts)
-    # Use the last part as the validation set
-    internal_val_indices = parts[f"part_{args.parts}"]
-    internal_val_data = data[:, internal_val_indices]
+    parts = split_data_into_n_parts(data,args.parts)
 
-    
-    # Remove the last part from the training parts
-    training_parts = {k: parts[k] for k in list(parts.keys())[:-1]}
-    #print("Training parts are:",training_parts)
+    # Initialize cumulative_indices and val_indices
+    cumulative_indices = torch.tensor([])
+    for part in range(args.parts-1):  # Loop through all parts except the last one
+        cumulative_indices = torch.cat((cumulative_indices, parts[f"part_{part+1}"]))
+    train_data= data[:, cumulative_indices]
+
+    # Use the last part as validation indices
+    gen_indices = parts[f"part_{args.parts}"]
+    gen_data = data[:, gen_indices]
+
     # Containers to save training and validation metrics
     its, train_acc, gen_acc, val_acc, in_val_loss, in_val_acc, gen_loss, train_loss, val_loss = [], [], [], [], [], [], [], [], []
 
@@ -136,254 +138,203 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
     gen_loss_type= 'standard' #MSE, KLdivergence are other options
     pbar = tqdm()
     lambda_weight = args.lambda_weight
+
+
+    print(f"Shape of train data is: {train_data.shape}")
+    print(f"Shape of gen data is: {gen_data.shape}")
+    gen_data=None
     
-    part=1
-    repetition =0
-    while(part < len(training_parts)+1):
-        # Accumulate parts
-        print(f"Accumulating data for Part {part}")
+    epochs=0 #epoch counter for concentrated training
+
+    while epochs <= args.last_max_epochs:
         
-        train_data = data[:, cumulative_indices]
-        print(f"Cumulative training data shape before adding Part {part}: {train_data.shape}")
-        gen_data=None
-        if part<len(training_parts) or part==1:  #part==1 is for baseline case
-            gen_data_indices = training_parts[f"part_{part+1}"]
-            gen_data = data[:, gen_data_indices]
-            print(f"gen data shape with Part {part}: {gen_data.shape}")
-
-        if cumulative_indices.numel() == 0: # first case
-            print("First case switch of train and gen data happens")
-            print("Is gen_data None?:", bool(gen_data is None))
-            train_data=gen_data
-            gen_data =None
-        if gen_data is not None and cumulative_indices.numel() != 0:
-            # Create matching sizes for gen data and new data by repeating the gen dataset
-            if train_data.shape[1] > gen_data.shape[1] and gen_data.shape[1] > 0:
-                repeats = train_data.shape[1] // gen_data.shape[1] + 1
-                gen_data = gen_data.repeat(1,repeats)[:, :train_data.shape[1]]
-
-        epochs=0 #epoch counter for concentrated training
+        train_data = train_data[:, torch.randperm(train_data.shape[1])]
         
-        max_epochs_counter = args.last_max_epochs if part == len(training_parts)+1 else args.max_epochs
+        gen_data =   gen_data[:, torch.randperm(gen_data.shape[1])]
         
-        internal_val_counter=[]# counter to stop the training when gen loss is sufficiently minimized
-
-        while epochs <= max_epochs_counter:
+        for the_data, g_data, is_train, is_in in [(train_data, gen_data, True, False), (valid_data, None, False, False), (internal_val_data, None, False, True)]:
             
-            train_data = train_data[:, torch.randperm(train_data.shape[1])]
-            
-            if gen_data is not None: 
-                gen_data =   gen_data[:, torch.randperm(gen_data.shape[1])]
-            
-            for the_data, g_data, is_train, is_in in [(train_data, gen_data, True, False), (valid_data, None, False, False), (internal_val_data, None, False, True)]:
-                
-                model.train(is_train)
+            model.train(is_train)
 
-                if g_data is not None and the_data is not None and is_train:
-                    total_train_loss = 0
-                    total_train_acc = 0
-                    total_gen_loss = 0
-                    total_gen_acc = 0
-                    # torch.split faster than dataloader with tensor
-                    train_batches = torch.split(the_data, args.batch_size, dim=1)
-                    gen_batches = torch.split(g_data, args.batch_size, dim=1)
-                    # Print the count of batches
-                    #print(f"Number of train batches: {len(train_batches)}")
-                    #print(f"Number of gen batches: {len(gen_batches)}")
+            if g_data is not None and the_data is not None and is_train:
+                total_train_loss = 0
+                total_train_acc = 0
+                total_gen_loss = 0
+                total_gen_acc = 0
+                # torch.split faster than dataloader with tensor
+                train_batches = torch.split(the_data, args.batch_size, dim=1)
+                gen_batches = torch.split(g_data, args.batch_size, dim=1)
+                # Print the count of batches
+                #print(f"Number of train batches: {len(train_batches)}")
+                #print(f"Number of gen batches: {len(gen_batches)}")
 
-                    for train_input,gen_input in zip(train_batches,gen_batches):
-                        train_input = train_input.to(device)
-                        gen_input = gen_input.to(device)
+                for train_input,gen_input in zip(train_batches,gen_batches):
+                    train_input = train_input.to(device)
+                    gen_input = gen_input.to(device)
+                    
+                    with torch.set_grad_enabled(is_train):
+                        train_logits = model(train_input[:-1])
+                        # calculate loss only on the answer part of the equation (last element
+                        t_loss_per_sample = F.cross_entropy(train_logits[-1], train_input[-1], reduction='none')
+                        # Compute average loss
+                        t_loss = t_loss_per_sample.mean()
+
+                        total_train_loss += t_loss.item() * train_input.shape[-1]
                         
-                        with torch.set_grad_enabled(is_train):
-                            train_logits = model(train_input[:-1])
-                            # calculate loss only on the answer part of the equation (last element
-                            t_loss_per_sample = F.cross_entropy(train_logits[-1], train_input[-1], reduction='none')
-                            # Compute average loss
-                            t_loss = t_loss_per_sample.mean()
+                        gen_logits = model(gen_input[:-1])
+                        # calculate loss only on the answer part of the equation (last element
+                        g_loss_per_sample = F.cross_entropy(gen_logits[-1], gen_input[-1],reduction='none')
+                        g_loss = g_loss_per_sample.mean()
+                        total_gen_loss += g_loss.item() * gen_input.shape[-1]
 
-                            total_train_loss += t_loss.item() * train_input.shape[-1]
-                            
-                            gen_logits = model(gen_input[:-1])
-                            # calculate loss only on the answer part of the equation (last element
-                            g_loss_per_sample = F.cross_entropy(gen_logits[-1], gen_input[-1],reduction='none')
-                            g_loss = g_loss_per_sample.mean()
-                            total_gen_loss += g_loss.item() * gen_input.shape[-1]
-
+                    model.zero_grad()
+                    g_loss.backward() 
+                    
+                    if args.method_type == "progressive_signed" and epochs>args.max_epochs: 
+                        # Step 2: Create a dictionary to store the sign of Task A's gradients for each parameter
+                        grad_signs_taskA = {}
+                        with torch.no_grad():  # Disable gradient tracking
+                            for param in model.parameters():
+                                if param.grad is not None:
+                                    grad_signs_taskA[param] = torch.sign(param.grad.clone())  # Store sign of gradients for Task A
                         model.zero_grad()
-                        g_loss.backward() 
+                        t_loss.backward()
                         
-                        if args.method_type == "progressive_signed": 
-                            # Step 2: Create a dictionary to store the sign of Task A's gradients for each parameter
-                            grad_signs_taskA = {}
-                            with torch.no_grad():  # Disable gradient tracking
-                                for param in model.parameters():
-                                    if param.grad is not None:
-                                        grad_signs_taskA[param] = torch.sign(param.grad.clone())  # Store sign of gradients for Task A
-                            model.zero_grad()
-                            t_loss.backward()
-                            
-                            with torch.no_grad():  # Use no_grad to prevent tracking in autograd
-                                for param in model.parameters():
-                                    if param.grad is not None:
-                                        # Assume g_A and g_B are the gradients for task A and B, stored separately for each parameter
-                                        sign_A = grad_signs_taskA[param]  # Retrieve precomputed gradient for task A
-                                        g_B = param.grad       # Retrieve gradient for task B (computed with loss.backward)
+                        with torch.no_grad():  # Use no_grad to prevent tracking in autograd
+                            for param in model.parameters():
+                                if param.grad is not None:
+                                    # Assume g_A and g_B are the gradients for task A and B, stored separately for each parameter
+                                    sign_A = grad_signs_taskA[param]  # Retrieve precomputed gradient for task A
+                                    g_B = param.grad       # Retrieve gradient for task B (computed with loss.backward)
 
-                                        # Calculate the mask based on sign matching
-                                        sign_B = torch.sign(param.grad)
-                                        mask = (sign_A == sign_B).float()  # 1 where signs match, 0 where they differ
-                                        # Random mask to control zeroing out disagreements p% of the time
-                                        #p=50
-                                        #noise_mask = torch.rand_like(g_B) >= (p / 100)  # True with probability (100 - p)%
-                                        
-                                        # Final mask: retain agreement or allow disagreement with (100 - p)% probability
-                                        #final_mask = mask + (1 - mask) * noise_mask.float()
-                                        # Apply the mask to gradient B
-                                        param.grad = g_B * mask  # Overwrite .grad with masked gradient
-                                # Apply custom gradient transformation and manually update
-                        elif args.method_type == "progressive_group": 
-                            print("weight norm before the group gradient:", calculate_weight_norm(model))
-                            with torch.no_grad():
-                                for param in model.parameters():
-                                    if param.grad is not None:
-                                        # Exclude bias or single-element parameters
-                                        if len(param.shape) > 1:
-                                            sum_grad = param.grad.sum()  
-                                            param.grad.fill_(sum_grad)  # Replace with averaged gradient
-                                            # Manual parameter update
-                                            #print(".", end="")
-                                            param.data -= param.grad * optimizer.param_groups[0]['lr']
-                            print("weight norm after the group gradient:", calculate_weight_norm(model))
-                            model.zero_grad()
-                            t_loss.backward()
+                                    # Calculate the mask based on sign matching
+                                    sign_B = torch.sign(param.grad)
+                                    mask = (sign_A == sign_B).float()  # 1 where signs match, 0 where they differ
+                                    # Random mask to control zeroing out disagreements p% of the time
+                                    #p=50
+                                    #noise_mask = torch.rand_like(g_B) >= (p / 100)  # True with probability (100 - p)%
+                                    
+                                    # Final mask: retain agreement or allow disagreement with (100 - p)% probability
+                                    #final_mask = mask + (1 - mask) * noise_mask.float()
+                                    # Apply the mask to gradient B
+                                    param.grad = g_B * mask  # Overwrite .grad with masked gradient
+                            # Apply custom gradient transformation and manually update
+                    else:
+                        model.zero_grad()
+                        t_loss.backward()
+
+                    optimizer.step()
+                    scheduler.step()
+                    i += 1
+                    total_steps+=1
+
+                    acc = (train_logits[-1].argmax(-1) == train_input[-1]).float().mean()
+                    total_train_acc += acc.item() * train_input.shape[-1]
+
+                    acc = (gen_logits[-1].argmax(-1) == gen_input[-1]).float().mean()
+                    total_gen_acc += acc.item() * gen_input.shape[-1]
+
+                train_acc.append(total_train_acc / train_data.shape[-1])
+                train_loss.append(total_train_loss / train_data.shape[-1])
+                its.append(i)
+                gen_acc.append(total_gen_acc / gen_data.shape[-1])
+                gen_loss.append(total_gen_loss / gen_data.shape[-1])
+                gen_loss_counter=total_gen_loss / gen_data.shape[-1]
+
+            else:
+                total_loss = 0
+                total_acc = 0
+                
+                # torch.split faster than dataloader with tensor
+                dl = torch.split(the_data, args.batch_size, dim=1)
+                for input in dl:
+                    input = input.to(device)
+
+                    with torch.set_grad_enabled(is_train):
+                        logits = model(input[:-1])
+                        # calculate loss only on the answer part of the equation (last element
+                        loss = F.cross_entropy(logits[-1], input[-1])
+                        total_loss += loss.item() * input.shape[-1]
+
+                    if is_train:
+                        model.zero_grad()
+                        loss.backward()
 
                         optimizer.step()
                         scheduler.step()
                         i += 1
                         total_steps+=1
 
-                        acc = (train_logits[-1].argmax(-1) == train_input[-1]).float().mean()
-                        total_train_acc += acc.item() * train_input.shape[-1]
+                    acc = (logits[-1].argmax(-1) == input[-1]).float().mean()
+                    total_acc += acc.item() * input.shape[-1]
 
-                        acc = (gen_logits[-1].argmax(-1) == gen_input[-1]).float().mean()
-                        total_gen_acc += acc.item() * gen_input.shape[-1]
-
-                    train_acc.append(total_train_acc / train_data.shape[-1])
-                    train_loss.append(total_train_loss / train_data.shape[-1])
+                if is_train:
+                    train_acc.append(total_acc / train_data.shape[-1])
+                    train_loss.append(total_loss / train_data.shape[-1])
+                    gen_acc.append(0)
+                    gen_loss.append(0)
                     its.append(i)
-                    gen_acc.append(total_gen_acc / gen_data.shape[-1])
-                    gen_loss.append(total_gen_loss / gen_data.shape[-1])
-                    gen_loss_counter=total_gen_loss / gen_data.shape[-1]
-
+                        
                 else:
-                    total_loss = 0
-                    total_acc = 0
-                    
-                    # torch.split faster than dataloader with tensor
-                    dl = torch.split(the_data, args.batch_size, dim=1)
-                    for input in dl:
-                        input = input.to(device)
+                    if is_in:
+                        in_val_acc.append(total_acc / internal_val_data.shape[-1])
+                        in_val_loss.append(total_loss / internal_val_data.shape[-1])
 
-                        with torch.set_grad_enabled(is_train):
-                            logits = model(input[:-1])
-                            # calculate loss only on the answer part of the equation (last element
-                            loss = F.cross_entropy(logits[-1], input[-1])
-                            total_loss += loss.item() * input.shape[-1]
-
-                        if is_train:
-                            model.zero_grad()
-                            loss.backward()
-
-                            optimizer.step()
-                            scheduler.step()
-                            i += 1
-                            total_steps+=1
-
-                        acc = (logits[-1].argmax(-1) == input[-1]).float().mean()
-                        total_acc += acc.item() * input.shape[-1]
-
-                    if is_train:
-                        train_acc.append(total_acc / train_data.shape[-1])
-                        train_loss.append(total_loss / train_data.shape[-1])
-                        gen_acc.append(0)
-                        gen_loss.append(0)
-                        its.append(i)
-                            
                     else:
-                        if is_in:
-                            in_val_acc.append(total_acc / internal_val_data.shape[-1])
-                            in_val_loss.append(total_loss / internal_val_data.shape[-1])
+                        val_acc.append(total_acc / valid_data.shape[-1])
+                        val_loss.append(total_loss / valid_data.shape[-1])
 
-                        else:
-                            val_acc.append(total_acc / valid_data.shape[-1])
-                            val_loss.append(total_loss / valid_data.shape[-1])
+        do_save = e <= 500 or (e > 500 and (e + 1) % 10 == 0)
+        if do_save:
+            steps = torch.arange(len(train_acc)).numpy() # steps calculation is tricky so will leave it for future. 
+            plt.plot(steps, train_acc, label="train")
+            plt.plot(steps, val_acc, label="val")
+            plt.plot(steps, gen_acc, label="gen")
+            plt.plot(steps, in_val_acc, label="in_val")
+            plt.legend()
+            plt.title("Modular Multiplication")
+            plt.xlabel("Epochs")
+            plt.ylabel("Accuracy")
+            plt.xscale("log", base=10)
+            plt.grid()
+            file_name = f"results/acc_method_{args.method_type}_loss_type_{args.loss_type}_lambda_{args.lambda_weight}_maxepochs_{args.max_epochs}_lastmaxepochs_{args.last_max_epochs}_minerror_{args.min_error}_parts_{args.parts}.png"
+            plt.savefig(file_name, dpi=150)
+            plt.close()
 
-            do_save = e <= 500 or (e > 500 and (e + 1) % 10 == 0)
-            if do_save:
-                steps = torch.arange(len(train_acc)).numpy() # steps calculation is tricky so will leave it for future. 
-                plt.plot(steps, train_acc, label="train")
-                plt.plot(steps, val_acc, label="val")
-                plt.plot(steps, gen_acc, label="gen")
-                plt.plot(steps, in_val_acc, label="in_val")
-                plt.legend()
-                plt.title("Modular Multiplication")
-                plt.xlabel("Epochs")
-                plt.ylabel("Accuracy")
-                plt.xscale("log", base=10)
-                plt.grid()
-                file_name = f"results/acc_method_{args.method_type}_loss_type_{args.loss_type}_lambda_{args.lambda_weight}_maxepochs_{args.max_epochs}_lastmaxepochs_{args.last_max_epochs}_minerror_{args.min_error}_parts_{args.parts}.png"
-                plt.savefig(file_name, dpi=150)
-                plt.close()
+            plt.plot(steps, train_loss, label="train")
+            plt.plot(steps, val_loss, label="val")
+            plt.plot(steps, gen_loss, label="gen")
+            plt.plot(steps, in_val_loss, label="in_val")
 
-                plt.plot(steps, train_loss, label="train")
-                plt.plot(steps, val_loss, label="val")
-                plt.plot(steps, gen_loss, label="gen")
-                plt.plot(steps, in_val_loss, label="in_val")
+            plt.legend()
+            plt.title("Modular Multiplication (training on 50% of data)")
+            plt.xlabel("Optimization Steps")
+            plt.ylabel("Loss")
+            #plt.xscale("log", base=10)
+            plt.grid()
+            file_name = f"results/loss_method_{args.method_type}_loss_type_{args.loss_type}_lambda_{args.lambda_weight}_maxepochs_{args.max_epochs}_lastmaxepochs_{args.last_max_epochs}_minerror_{args.min_error}_parts_{args.parts}.png"
+            plt.savefig(file_name, dpi=150)
+            plt.close()
 
-                plt.legend()
-                plt.title("Modular Multiplication (training on 50% of data)")
-                plt.xlabel("Optimization Steps")
-                plt.ylabel("Loss")
-                #plt.xscale("log", base=10)
-                plt.grid()
-                file_name = f"results/loss_method_{args.method_type}_loss_type_{args.loss_type}_lambda_{args.lambda_weight}_maxepochs_{args.max_epochs}_lastmaxepochs_{args.last_max_epochs}_minerror_{args.min_error}_parts_{args.parts}.png"
-                plt.savefig(file_name, dpi=150)
-                plt.close()
+            results = {
+                'its': its,
+                'train_acc': train_acc,
+                'train_loss': train_loss,
+                'val_acc': val_acc,
+                'val_loss': val_loss,
+            }
 
-                results = {
-                    'its': its,
-                    'train_acc': train_acc,
-                    'train_loss': train_loss,
-                    'val_acc': val_acc,
-                    'val_loss': val_loss,
-                }
+            if args.save_weights:
+                net_its.append(e)
+                nets.append(copy.deepcopy(model.state_dict()))
+                results['net_its'] = net_its
+                results['net'] = nets
 
-                if args.save_weights:
-                    net_its.append(e)
-                    nets.append(copy.deepcopy(model.state_dict()))
-                    results['net_its'] = net_its
-                    results['net'] = nets
-
-                torch.save(results, f"results/res_{args.label}.pt")
-            pbar.update(1)
-            e+=1
-            epochs+=1
-            
-            if len(in_val_loss) >2 and args.early_stopping:
-                if in_val_loss[-1] > in_val_loss[-2] and part>1:
-                    break
-
+            torch.save(results, f"results/res_{args.label}.pt")
+        pbar.update(1)
+        e+=1
+        epochs+=1
     
-        if part<len(training_parts)+1:
-            cumulative_indices = torch.cat((cumulative_indices, training_parts[f"part_{part}"]))
-
-        if part==len(training_parts) and args.early_stopping and repetition <25:# is_repeat is used for early stopping
-            part=1
-            repetition+=1
-            cumulative_indices = torch.tensor([], dtype=torch.long)
-        part+=1
-        
     print("Total number of optimizer steps:", total_steps)
     pbar.close()
     
