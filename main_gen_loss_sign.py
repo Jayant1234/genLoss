@@ -225,7 +225,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                         with torch.no_grad():  # Use no_grad to prevent tracking in autograd
                             for name, param in model.named_parameters():
                                 if param.grad is not None:
-                                    if 'bias' in name or 'embedding' in name:
+                                    if 'bias' in name or 'embedding' in name or 'head' in name:
                                         continue
                                     # Retrieve the gradient for task B
                                     g_B = param.grad
