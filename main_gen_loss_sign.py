@@ -293,13 +293,8 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                     its.append(i)
                         
                 else:
-                    if is_in:
-                        in_val_acc.append(total_acc / internal_val_data.shape[-1])
-                        in_val_loss.append(total_loss / internal_val_data.shape[-1])
-
-                    else:
-                        val_acc.append(total_acc / valid_data.shape[-1])
-                        val_loss.append(total_loss / valid_data.shape[-1])
+                    val_acc.append(total_acc / valid_data.shape[-1])
+                    val_loss.append(total_loss / valid_data.shape[-1])
 
         do_save = e <= 500 or (e > 500 and (e + 1) % 10 == 0)
         if do_save:
@@ -307,7 +302,6 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
             plt.plot(steps, train_acc, label="train")
             plt.plot(steps, val_acc, label="val")
             plt.plot(steps, gen_acc, label="gen")
-            plt.plot(steps, in_val_acc, label="in_val")
             plt.legend()
             plt.title("Modular Multiplication")
             plt.xlabel("Epochs")
@@ -321,7 +315,6 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
             plt.plot(steps, train_loss, label="train")
             plt.plot(steps, val_loss, label="val")
             plt.plot(steps, gen_loss, label="gen")
-            plt.plot(steps, in_val_loss, label="in_val")
 
             plt.legend()
             plt.title("Modular Multiplication (training on 50% of data)")
