@@ -142,7 +142,6 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
 
     print(f"Shape of train data is: {train_data.shape}")
     print(f"Shape of gen data is: {gen_data.shape}")
-    gen_data=None
     
     epochs=0 #epoch counter for concentrated training
 
