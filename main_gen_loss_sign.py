@@ -320,7 +320,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
             plt.title("Modular Multiplication (training on 50% of data)")
             plt.xlabel("Optimization Steps")
             plt.ylabel("Loss")
-            #plt.xscale("log", base=10)
+            plt.xscale("log", base=10)
             plt.grid()
             file_name = f"results/loss_method_{args.method_type}_loss_type_{args.loss_type}_lambda_{args.lambda_weight}_maxepochs_{args.max_epochs}_lastmaxepochs_{args.last_max_epochs}_minerror_{args.min_error}_parts_{args.parts}.png"
             plt.savefig(file_name, dpi=150)
@@ -534,7 +534,7 @@ if __name__ == "__main__":
     parser.add_argument("--method_type", default="progressive_grad")
     parser.add_argument("--lambda_weight", type=float, default=0.9)
     parser.add_argument("--max_epochs",type=int, default=500)
-    parser.add_argument("--last_max_epochs",type=int, default=1500)
+    parser.add_argument("--last_max_epochs",type=int, default=10000)
     parser.add_argument("--min_error",type=float, default=1e-3)
     parser.add_argument("--parts",type=int, default=8)
     parser.add_argument("--early_stopping", action="store_true", help="Enable early stopping")
