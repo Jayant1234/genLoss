@@ -151,7 +151,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
         
         gen_data =   gen_data[:, torch.randperm(gen_data.shape[1])]
         
-        for the_data, g_data, is_train, is_in in [(train_data, gen_data, True, False), (valid_data, None, False, False), (internal_val_data, None, False, True)]:
+        for the_data, g_data, is_train, is_in in [(train_data, gen_data, True, False), (valid_data, None, False, False)]:
             
             model.train(is_train)
 
