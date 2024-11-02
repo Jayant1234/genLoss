@@ -221,7 +221,7 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                     else:
                         model.zero_grad()
                         t_loss.backward()
-                        p = 20  # Set the probability of flipping the gradient sign
+                        p = 5  # Set the probability of flipping the gradient sign
                         with torch.no_grad():  # Use no_grad to prevent tracking in autograd
                             for param in model.parameters():
                                 if param.grad is not None:
