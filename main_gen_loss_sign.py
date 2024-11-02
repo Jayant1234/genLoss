@@ -221,6 +221,24 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                     else:
                         model.zero_grad()
                         t_loss.backward()
+                        p = 20  # Set the probability of flipping the gradient sign
+                        with torch.no_grad():  # Use no_grad to prevent tracking in autograd
+                            for param in model.parameters():
+                                if param.grad is not None:
+                                    # Retrieve the gradient for task B
+                                    g_B = param.grad
+
+                                    # Generate a random mask to decide if we flip the gradient's sign
+                                    # With probability p%, flip the sign to maximize loss
+                                    flip_mask = (torch.rand_like(g_B) < (p / 100)).float()  # 1 where we flip, 0 where we don’t
+
+                                    # Create the final gradient by flipping the sign where flip_mask == 1
+                                    final_gradient = g_B * (1 - 2 * flip_mask)  # Multiplies by -1 where flip_mask == 1
+
+                                    # Overwrite .grad with the modified gradient
+                                    param.grad = final_gradient
+
+                        
 
                     optimizer.step()
                     scheduler.step()
@@ -520,7 +538,7 @@ if __name__ == "__main__":
     parser.add_argument("--optimizer", default="Adam")
 
     #Generalization Loss
-    parser.add_argument("--method_type", default="progressive_signed")
+    parser.add_argument("--method_type", default="progressive_grad")
     parser.add_argument("--lambda_weight", type=float, default=0.9)
     parser.add_argument("--max_epochs",type=int, default=500)
     parser.add_argument("--last_max_epochs",type=int, default=1500)
