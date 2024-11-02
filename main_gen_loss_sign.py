@@ -222,23 +222,23 @@ def train_progressive(model, data, valid_data, optimizer, scheduler, device, arg
                         model.zero_grad()
                         t_loss.backward()
                         p = 5  # Set the probability of flipping the gradient sign
-                        with torch.no_grad():  # Use no_grad to prevent tracking in autograd
-                            for name, param in model.named_parameters():
-                                if param.grad is not None:
-                                    if 'bias' in name or 'embedding' in name or 'head' in name:
-                                        continue
-                                    # Retrieve the gradient for task B
-                                    g_B = param.grad
+                        # with torch.no_grad():  # Use no_grad to prevent tracking in autograd
+                            # for name, param in model.named_parameters():
+                                # if param.grad is not None:
+                                    # if 'bias' in name or 'embedding' in name or 'head' in name:
+                                        # continue
+                                    # # Retrieve the gradient for task B
+                                    # g_B = param.grad
 
-                                    # Generate a random mask to decide if we flip the gradient's sign
-                                    # With probability p%, flip the sign to maximize loss
-                                    flip_mask = (torch.rand_like(g_B) < (p / 100)).float()  # 1 where we flip, 0 where we don’t
+                                    # # Generate a random mask to decide if we flip the gradient's sign
+                                    # # With probability p%, flip the sign to maximize loss
+                                    # flip_mask = (torch.rand_like(g_B) < (p / 100)).float()  # 1 where we flip, 0 where we don’t
 
-                                    # Create the final gradient by flipping the sign where flip_mask == 1
-                                    final_gradient = g_B * (1 - 2 * flip_mask)  # Multiplies by -1 where flip_mask == 1
+                                    # # Create the final gradient by flipping the sign where flip_mask == 1
+                                    # final_gradient = g_B * (1 - 2 * flip_mask)  # Multiplies by -1 where flip_mask == 1
 
-                                    # Overwrite .grad with the modified gradient
-                                    param.grad = final_gradient
+                                    # # Overwrite .grad with the modified gradient
+                                    # param.grad = final_gradient
 
                         
 
