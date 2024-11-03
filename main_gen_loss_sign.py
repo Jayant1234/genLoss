@@ -591,6 +591,8 @@ if __name__ == "__main__":
         filter_suffix = window_size_str + lamb_str
     elif args.filter == 'ema':
         filter_suffix = alpha_str + lamb_str
+    elif args.filter == 'anti':
+        filter_suffix = "anti"
     else:
         raise ValueError(f"Unrecognized filter type {args.filter}")
 
