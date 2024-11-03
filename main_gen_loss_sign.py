@@ -396,7 +396,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                     if args.filter == "none":
                         pass
                     elif args.filter == "anti":
-                        p = 5  # Set the probability of flipping the gradient sign
+                        p = 20  # Set the probability of flipping the gradient sign
                         with torch.no_grad():  # Use no_grad to prevent tracking in autograd
                             for name, param in model.named_parameters():
                                 if param.grad is not None:
