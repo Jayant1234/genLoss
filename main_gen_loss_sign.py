@@ -396,14 +396,14 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                     if args.filter == "none":
                         pass
                     elif args.filter == "anti":
-                        p = 20  # Set the probability of flipping the gradient sign
+                        p = 40  # Set the probability of flipping the gradient sign
                         with torch.no_grad():  # Use no_grad to prevent tracking in autograd
                             for name, param in model.named_parameters():
                                 if param.grad is not None:
                                     if 'bias' in name: #or 'embedding' in name or 'head' in name:
                                         continue
                                     # Retrieve the gradient for task B
-                                    print(p)
+                                    #print(p)
                                     g_B = param.grad
 
                                     # Generate a random mask to decide if we flip the gradient's sign
