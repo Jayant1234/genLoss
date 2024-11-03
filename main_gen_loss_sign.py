@@ -395,6 +395,26 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
 
                     if args.filter == "none":
                         pass
+                    elif args.filter == "anti":
+                        p = 5  # Set the probability of flipping the gradient sign
+                        with torch.no_grad():  # Use no_grad to prevent tracking in autograd
+                            for name, param in model.named_parameters():
+                                if param.grad is not None:
+                                    if 'bias' in name or 'embedding' in name or 'head' in name:
+                                        continue
+                                    # Retrieve the gradient for task B
+                                    g_B = param.grad
+
+                                    # Generate a random mask to decide if we flip the gradient's sign
+                                    # With probability p%, flip the sign to maximize loss
+                                    flip_mask = (torch.rand_like(g_B) < (p / 100)).float()  # 1 where we flip, 0 where we don’t
+
+                                    # Create the final gradient by flipping the sign where flip_mask == 1
+                                    final_gradient = g_B * (1 - 2 * flip_mask)  # Multiplies by -1 where flip_mask == 1
+
+                                    # Overwrite .grad with the modified gradient
+                                    param.grad = final_gradient
+
                     elif args.filter == "ma":
                         grads = gradfilter_ma(model, grads=grads, window_size=args.window_size, lamb=args.lamb, trigger=trigger)
                     elif args.filter == "ema":
@@ -515,10 +535,7 @@ def main(args):
         optimizer, lambda update: 1 if update > 10 else update / 10
     )
     
-    if args.method_type == "progressive_signed" or "progressive_group":
-        train_progressive(model, train_data, valid_data, optimizer, scheduler, device, args)
-    else: 
-        train_baseline(model, train_data, valid_data, optimizer, scheduler, device, args)
+    train_baseline(model, train_data, valid_data, optimizer, scheduler, device, args)
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -553,7 +570,7 @@ if __name__ == "__main__":
         ])
 
     # Grokfast
-    parser.add_argument("--filter", type=str, choices=["none", "ma", "ema", "fir"], default="none")
+    parser.add_argument("--filter", type=str, choices=["none", "anti", "ma", "ema", "fir"], default="none")
     parser.add_argument("--alpha", type=float, default=0.99)
     parser.add_argument("--window_size", type=int, default=100)
     parser.add_argument("--lamb", type=float, default=5.0)
