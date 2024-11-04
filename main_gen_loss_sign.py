@@ -404,7 +404,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                                     #sum_grad = param.grad.sum() 
                                     avg_grad_tensor = torch.full_like(param.grad, avg_grad)  # Replace with averaged gradient
                                     # Manual parameter update
-                                    param.data += avg_grad_tensor* optimizer.param_groups[0]['lr'] #anti-memorization gradient applied before the proper gradient. 
+                                    param.data += avg_grad_tensor#anti-memorization gradient applied before the proper gradient. 
                                             
                         # p = 10  # Set the probability of flipping all gradients
                         # with torch.no_grad():  # Use no_grad to prevent tracking in autograd
