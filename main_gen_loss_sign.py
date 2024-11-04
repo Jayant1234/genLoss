@@ -415,7 +415,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
 
                                     # # Overwrite .grad with the modified gradient
                                     # param.grad = final_gradient
-                        p = 40  # Set the probability of flipping all gradients
+                        p = 10  # Set the probability of flipping all gradients
                         with torch.no_grad():  # Use no_grad to prevent tracking in autograd
                             # Generate a single random probability to decide if we flip all gradients
                             flip_all = torch.rand(1).item() < (p / 100)
