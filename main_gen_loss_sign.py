@@ -401,11 +401,10 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                                 # Exclude bias or single-element parameters
                                 if len(param.shape) > 1:
                                     avg_grad = param.grad.mean()
-                                    param.grad.fill_(avg_grad)  # Replace with averaged gradient
-                                    sum_grad = param.grad.sum()  
-                                    param.grad.fill_(avg_grad)  # Replace with averaged gradient
+                                    #sum_grad = param.grad.sum() 
+                                    avg_grad_tensor = torch.full_like(param.grad, avg_grad)  # Replace with averaged gradient
                                     # Manual parameter update
-                                    param.data += param.grad* optimizer.param_groups[0]['lr']
+                                    param.data += avg_grad_tensor* optimizer.param_groups[0]['lr'] #anti-memorization gradient applied before the proper gradient. 
                                             
                         # p = 10  # Set the probability of flipping all gradients
                         # with torch.no_grad():  # Use no_grad to prevent tracking in autograd
@@ -419,7 +418,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                                     # # If flip_all is True, flip the sign of the gradient for all parameters
                                     # if flip_all:
                                         # param.grad = -g_B  # Flip all signs
-
+                        
 
                     elif args.filter == "ma":
                         grads = gradfilter_ma(model, grads=grads, window_size=args.window_size, lamb=args.lamb, trigger=trigger)
