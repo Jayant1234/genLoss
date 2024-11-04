@@ -401,9 +401,9 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                                 if param.grad is not None:
                                 # Exclude bias or single-element parameters
                                     if len(param.shape) > 1:
-                                        avg_grad = param.grad.mean()
-                                        #sum_grad = param.grad.sum() 
-                                        avg_grad_tensor = torch.full_like(param.grad, avg_grad)  # Replace with averaged gradient
+                                        #avg_grad = param.grad.mean()
+                                        sum_grad = param.grad.sum() 
+                                        avg_grad_tensor = torch.full_like(param.grad, sum_grad)  # Replace with averaged gradient
                                         # Manual parameter update
                                         param.data += avg_grad_tensor#anti-memorization gradient applied before the proper gradient. 
                                             
