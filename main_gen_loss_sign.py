@@ -416,7 +416,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                                             # Calculate the adjustment to param.data
                                             adjustment = direction * grad_norm
                                             # Update param.data directly
-                                            param.data += 0.1*adjustment  # Move param.data in the opposite direction by grad_norm
+                                            param.data += adjustment  # Move param.data in the opposite direction by grad_norm
                                             
                         #average_grad_norm = total_grad_norm / param_count if param_count > 0 else 0
                         #print(f"Average Gradient Norm: {average_grad_norm}")
