@@ -396,16 +396,30 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                     if args.filter == "none":
                         pass
                     elif args.filter == "anti":
+                        total_grad_norm = 0.0
+                        param_count = 0
                         with torch.no_grad():
                             for name, param in model.named_parameters():
                                 if param.grad is not None:
                                 # Exclude bias or single-element parameters
                                     if len(param.shape) > 1:
-                                        #avg_grad = param.grad.mean()
-                                        sum_grad = param.grad.sum() 
-                                        avg_grad_tensor = torch.full_like(param.grad, sum_grad)  # Replace with averaged gradient
-                                        # Manual parameter update
-                                        param.data += avg_grad_tensor#anti-memorization gradient applied before the proper gradient. 
+                                        grad_norm = param.grad.norm(2).item()
+                                        
+                                        # Accumulate grad norm and count for averaging
+                                        total_grad_norm += grad_norm
+                                        param_count += 1
+                                        # Create a tensor that scales the gradient's direction by the gradient norm's opposite sign
+                                        # We normalize the gradient to keep the direction and scale by grad_norm
+                                        if grad_norm != 0:
+                                            # Normalize the gradient and reverse its direction
+                                            direction = -param.grad / grad_norm  # Normalized direction of gradient, flipped
+                                            # Calculate the adjustment to param.data
+                                            adjustment = direction * grad_norm
+                                            # Update param.data directly
+                                            param.data += adjustment  # Move param.data in the opposite direction by grad_norm
+                                            
+                        average_grad_norm = total_grad_norm / param_count if param_count > 0 else 0
+                        print(f"Average Gradient Norm: {average_grad_norm}")
                                             
                         # p = 10  # Set the probability of flipping all gradients
                         # with torch.no_grad():  # Use no_grad to prevent tracking in autograd
