@@ -396,15 +396,16 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                     if args.filter == "none":
                         pass
                     elif args.filter == "anti":
-                        for name, param in model.named_parameters():
-                            if param.grad is not None:
+                        with torch.no_grad():
+                            for name, param in model.named_parameters():
+                                if param.grad is not None:
                                 # Exclude bias or single-element parameters
-                                if len(param.shape) > 1:
-                                    avg_grad = param.grad.mean()
-                                    #sum_grad = param.grad.sum() 
-                                    avg_grad_tensor = torch.full_like(param.grad, avg_grad)  # Replace with averaged gradient
-                                    # Manual parameter update
-                                    param.data += avg_grad_tensor#anti-memorization gradient applied before the proper gradient. 
+                                    if len(param.shape) > 1:
+                                        avg_grad = param.grad.mean()
+                                        #sum_grad = param.grad.sum() 
+                                        avg_grad_tensor = torch.full_like(param.grad, avg_grad)  # Replace with averaged gradient
+                                        # Manual parameter update
+                                        param.data += avg_grad_tensor#anti-memorization gradient applied before the proper gradient. 
                                             
                         # p = 10  # Set the probability of flipping all gradients
                         # with torch.no_grad():  # Use no_grad to prevent tracking in autograd
