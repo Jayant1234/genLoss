@@ -390,9 +390,9 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                     total_loss += L_B1.item() * input.shape[-1]
                     
                     
-                    logits = model(b2_input[:-1])
+                    logits_b2 = model(b2_input[:-1])
                     # calculate loss only on the answer part of the equation (last element
-                    L_B2 = F.cross_entropy(logits[-1], b2_input[-1])
+                    L_B2 = F.cross_entropy(logits_b2[-1], b2_input[-1])
 
                 if is_train:
                     model.zero_grad()
