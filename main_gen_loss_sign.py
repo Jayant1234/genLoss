@@ -376,19 +376,62 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
             
             # torch.split faster than dataloader with tensor
             dl = torch.split(data, args.batch_size, dim=1)
-            for input in dl:
-                input = input.to(device)
+            num_batches = len(dl)
+
+            # Loop through each batch with the next one as reference
+            for i in range(num_batches):
+                input = dl[i].to(device)
+                b2_input = dl[(i + 1) % num_batches].to(device)
+                # Zero gradients
+                optimizer.zero_grad()
+
+                # Forward pass on batch 1
+                outputs_B1 = model(inputs_B1)
+                L_B1 = loss_fn(outputs_B1, targets_B1)
+
+                # Compute gradient on batch 1 with create_graph=True
+                g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
+
+                # Forward pass on batch 2
+                outputs_B2 = model(inputs_B2)
+                L_B2 = loss_fn(outputs_B2, targets_B2)
+
+                
+
+                # Update parameters
+                optimizer.step()
 
                 with torch.set_grad_enabled(is_train):
                     logits = model(input[:-1])
                     # calculate loss only on the answer part of the equation (last element
-                    loss = F.cross_entropy(logits[-1], input[-1])
-                    total_loss += loss.item() * input.shape[-1]
+                    L_B1 = F.cross_entropy(logits[-1], input[-1])
+                    total_loss += L_B1.item() * input.shape[-1]
+                    
+                    
+                    logits = model(b2_input[:-1])
+                    # calculate loss only on the answer part of the equation (last element
+                    L_B2 = F.cross_entropy(logits[-1], b2_input[-1])
 
                 if is_train:
                     model.zero_grad()
-                    loss.backward()
+                    g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
+                    g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
+                    
+                    # Compute gradient on batch 2
+                    g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
 
+                    # Compute dot product s = g_B2^T g_B1
+                    s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
+
+                    # Compute gradient of s with respect to model parameters
+                    grad_s = torch.autograd.grad(s, model.parameters())
+
+                    # Compute total gradient
+                    total_grad = [g1 - 0.1 * args.lr * gs for g1, gs in zip(g_B1, grad_s)]
+
+                    # Assign gradients to parameters
+                    for p, g in zip(model.parameters(), total_grad):
+                        p.grad = g
                     #######
 
                     trigger = i < 500 if args.two_stage else False
