@@ -396,24 +396,35 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
 
                 if is_train:
                     model.zero_grad()
-                    g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
-                    g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
+
+                    #g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
+                    #g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
                     
-                    # Compute gradient on batch 2
-                    g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
+                    g_B1 = torch.autograd.grad(L_B1, model.parameters(), retain_graph=True)
+                    g_B2 = torch.autograd.grad(L_B2, model.parameters(), retain_graph=True)
 
-                    # Compute dot product s = g_B2^T g_B1
-                    s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
+                    # Convert gradients to vectors
+                    g_B1_vector = torch.cat([g.view(-1) for g in g_B1])
+                    g_B2_vector = torch.cat([g.view(-1) for g in g_B2])
 
-                    # Compute gradient of s with respect to model parameters
-                    grad_s = torch.autograd.grad(s, model.parameters())
+                    # Compute cosine similarity
+                    cos_sim = torch.nn.functional.cosine_similarity(g_B1_vector, g_B2_vector, dim=0)
 
-                    # Compute total gradient
-                    total_grad = [g1 - 0.1 * args.lr * gs for g1, gs in zip(g_B1, grad_s)]
+                    # Define total loss
+                    L_total = L_B1 - 0.1* cos_sim
+                    L_total.backward()
+                    # # Compute dot product s = g_B2^T g_B1
+                    # s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
+
+                    # # Compute gradient of s with respect to model parameters
+                    # grad_s = torch.autograd.grad(s, model.parameters())
+
+                    # # Compute total gradient
+                    # total_grad = [g1 - 0.1 * args.lr * gs for g1, gs in zip(g_B1, grad_s)]
 
                     # Assign gradients to parameters
-                    for p, g in zip(model.parameters(), total_grad):
-                        p.grad = g
+                    # for p, g in zip(model.parameters(), total_grad):
+                        # p.grad = g
                     #######
 
                     trigger = i < 500 if args.two_stage else False
