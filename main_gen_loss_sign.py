@@ -411,7 +411,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                     cos_sim = torch.nn.functional.cosine_similarity(g_B1_vector, g_B2_vector, dim=0)
 
                     # Define total loss
-                    L_total = L_B1 - 0.1* cos_sim
+                    L_total = L_B1 - cos_sim
                     L_total.backward()
                     # # Compute dot product s = g_B2^T g_B1
                     # s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
