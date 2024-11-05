@@ -382,24 +382,6 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
             for i in range(num_batches):
                 input = dl[i].to(device)
                 b2_input = dl[(i + 1) % num_batches].to(device)
-                # Zero gradients
-                optimizer.zero_grad()
-
-                # Forward pass on batch 1
-                outputs_B1 = model(inputs_B1)
-                L_B1 = loss_fn(outputs_B1, targets_B1)
-
-                # Compute gradient on batch 1 with create_graph=True
-                g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
-
-                # Forward pass on batch 2
-                outputs_B2 = model(inputs_B2)
-                L_B2 = loss_fn(outputs_B2, targets_B2)
-
-                
-
-                # Update parameters
-                optimizer.step()
 
                 with torch.set_grad_enabled(is_train):
                     logits = model(input[:-1])
