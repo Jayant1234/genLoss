@@ -434,7 +434,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                             #print("gradient for baseline is:", g_B1)
                             print("similarity of both gradients is::::",cosine_sim)
                         
-                        if i >100: 
+                        if i >10: 
                             total_grad = [g1+g2 + 0*gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
                         #Compute total gradient
                         else: 
