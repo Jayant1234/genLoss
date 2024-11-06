@@ -423,7 +423,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                     # Compute total gradient
                     total_grad = [g1 - 0.1 * args.lr * gs for g1, gs in zip(g_B1, grad_s)]
 
-                    Assign gradients to parameters
+                    #Assign gradients to parameters
                     for p, g in zip(model.parameters(), total_grad):
                         p.grad = g
                     #######
