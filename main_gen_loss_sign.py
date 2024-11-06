@@ -397,11 +397,11 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                 if is_train:
                     model.zero_grad()
 
-                    #g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
-                    #g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
+                    g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
+                    g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
                     
-                    g_B1 = torch.autograd.grad(L_B1, model.parameters(), retain_graph=True)
-                    g_B2 = torch.autograd.grad(L_B2, model.parameters(), retain_graph=True)
+                    #g_B1 = torch.autograd.grad(L_B1, model.parameters(), retain_graph=True)
+                    #g_B2 = torch.autograd.grad(L_B2, model.parameters(), retain_graph=True)
 
                     # Convert gradients to vectors
                     #g_B1_vector = torch.cat([g.view(-1) for g in g_B1])
