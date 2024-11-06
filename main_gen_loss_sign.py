@@ -421,10 +421,12 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                         
                         # Compute gradient of s with respect to model parameters
                         grad_s = torch.autograd.grad(s, model.parameters())
-
+                        if i%100: 
+                            print("gradient for coherence is:", grad_s))
+                            print("gradient for baseline is:", g_B1))
+                            print("similarity of both gradients is::::",s)
                         # Compute total gradient
                         total_grad = [g1 - 0.01*gs for g1, gs in zip(g_B1, grad_s)]
-                        print(total_grad)
                         #Assign gradients to parameters
                         for p, g in zip(model.parameters(), total_grad):
                             p.grad = g
