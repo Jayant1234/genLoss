@@ -434,7 +434,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                             #print("gradient for baseline is:", g_B1)
                             print("similarity of both gradients is::::",normalized_s)
                         # Compute total gradient
-                        total_grad = [g1 - 5*gs for g1, gs in zip(g_B1, grad_s)]
+                        total_grad = [g1 - 0.5*gs for g1, gs in zip(g_B1, grad_s)]
                         #Assign gradients to parameters
                         for p, g in zip(model.parameters(), total_grad):
                             p.grad = g
