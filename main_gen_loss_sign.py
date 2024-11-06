@@ -356,7 +356,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
 
     steps_per_epoch = math.ceil(train_data.shape[1] / args.batch_size)
     
-    its, train_acc, val_acc, train_loss, val_loss = [], [], [], [], []
+    its, train_acc, val_acc, train_loss, val_loss, sim = [], [], [], [], [], []
     grads = None
     i = 0
 
@@ -373,6 +373,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
             model.train(is_train)
             total_loss = 0
             total_acc = 0
+            avg_sim=0
             
             # torch.split faster than dataloader with tensor
             dl = torch.split(data, args.batch_size, dim=1)
@@ -425,26 +426,19 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                         # Normalize the dot product
                         cosine_sim = s / (norm_g_B1 * norm_g_B2 + 1e-8)  # Add epsilon for numerical stability
 
-
                         
                         # Compute gradient of s with respect to model parameters
-                        #grad_s = torch.autograd.grad((1-cosine_sim), model.parameters())
+                        grad_s = torch.autograd.grad((1-cosine_sim), model.parameters())
                         if i % 10000 == 0: 
                             #print("gradient for coherence is:", grad_s)
                             #print("gradient for baseline is:", g_B1)
                             print("similarity of both gradients is::::",cosine_sim)
                         
-                        # Compute the Huber loss between gradients
-                        align_loss = 0
-                        delta = 1.0  # Huber loss delta parameter
-                        for g1, g2 in zip(g_B1, g_B2):
-                            diff = g1 - g2
-                            align_loss += torch.nn.functional.huber_loss(diff, torch.zeros_like(diff), delta=delta)
-                        
-                        grad_s = torch.autograd.grad(align_loss, model.parameters())
-                        
+                        if i >100: 
+                            total_grad = [g1+g2 + 0*gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
                         #Compute total gradient
-                        total_grad = [g1+g2 + 0*gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
+                        else: 
+                            total_grad = [g1+g2 + gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
                         
                         #Assign gradients to parameters
                         for p, g in zip(model.parameters(), total_grad):
@@ -507,13 +501,14 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                         optimizer.step()
                         scheduler.step()
                         i += 1
-
+                avg_sim+=cosine_sim.item()
                 acc = (logits[-1].argmax(-1) == input[-1]).float().mean()
                 total_acc += acc.item() * input.shape[-1]
 
             if is_train:
                 train_acc.append(total_acc / train_data.shape[-1])
                 train_loss.append(total_loss / train_data.shape[-1])
+                sim.append(100*avg_sim/train_data.shape[-1]))
                 its.append(i)
             else:
                 val_acc.append(total_acc / valid_data.shape[-1])
@@ -527,6 +522,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
             steps = torch.arange(len(train_acc)).numpy() * steps_per_epoch
             plt.plot(steps, train_acc, label="train")
             plt.plot(steps, val_acc, label="val")
+            plt.plot(steps, sim, label="cosine")
             plt.legend()
             plt.title("Modular Multiplication (training on 50% of data)")
             plt.xlabel("Optimization Steps")
