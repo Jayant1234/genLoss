@@ -423,7 +423,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                         grad_s = torch.autograd.grad(s, model.parameters())
 
                         # Compute total gradient
-                        total_grad = [g1 - args.lr * gs for g1, gs in zip(g_B1, grad_s)]
+                        total_grad = [g1 - gs for g1, gs in zip(g_B1, grad_s)]
 
                         #Assign gradients to parameters
                         for p, g in zip(model.parameters(), total_grad):
