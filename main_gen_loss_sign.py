@@ -418,15 +418,23 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                         # Compute dot product s = g_B2^T g_B1
                         s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
 
+                        # Compute the norms of g_B1 and g_B2
+                        norm_g_B1 = torch.sqrt(sum((g1 ** 2).sum() for g1 in g_B1))
+                        norm_g_B2 = torch.sqrt(sum((g2 ** 2).sum() for g2 in g_B2))
+
+                        # Normalize the dot product
+                        normalized_s = s / (norm_g_B1 * norm_g_B2 + 1e-8)  # Add epsilon for numerical stability
+
+
                         
                         # Compute gradient of s with respect to model parameters
-                        grad_s = torch.autograd.grad(s, model.parameters())
-                        if i%100: 
+                        grad_s = torch.autograd.grad(normalized_s, model.parameters())
+                        if i%1000: 
                             print("gradient for coherence is:", grad_s)
                             print("gradient for baseline is:", g_B1)
-                            print("similarity of both gradients is::::",s)
+                            print("similarity of both gradients is::::",normalized_s)
                         # Compute total gradient
-                        total_grad = [g1 - 0.01*gs for g1, gs in zip(g_B1, grad_s)]
+                        total_grad = [g1 - gs for g1, gs in zip(g_B1, grad_s)]
                         #Assign gradients to parameters
                         for p, g in zip(model.parameters(), total_grad):
                             p.grad = g
