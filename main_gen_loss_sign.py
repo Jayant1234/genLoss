@@ -428,13 +428,24 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
 
                         
                         # Compute gradient of s with respect to model parameters
-                        grad_s = torch.autograd.grad((1-cosine_sim), model.parameters())
+                        #grad_s = torch.autograd.grad((1-cosine_sim), model.parameters())
                         if i % 10000 == 0: 
                             #print("gradient for coherence is:", grad_s)
                             #print("gradient for baseline is:", g_B1)
                             print("similarity of both gradients is::::",cosine_sim)
-                        # Compute total gradient
+                        
+                        # Compute the Huber loss between gradients
+                        align_loss = 0
+                        delta = 1.0  # Huber loss delta parameter
+                        for g1, g2 in zip(g_B1, g_B2):
+                            diff = g1 - g2
+                            align_loss += torch.nn.functional.huber_loss(diff, torch.zeros_like(diff), delta=delta)
+                        
+                        grad_s = torch.autograd.grad(align_loss, model.parameters())
+                        
+                        #Compute total gradient
                         total_grad = [g1+g2 + gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
+                        
                         #Assign gradients to parameters
                         for p, g in zip(model.parameters(), total_grad):
                             p.grad = g
