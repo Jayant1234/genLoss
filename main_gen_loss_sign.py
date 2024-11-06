@@ -384,106 +384,108 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                 b2_input = dl[(i + 1) % num_batches].to(device)
 
                 with torch.set_grad_enabled(is_train):
-                    logits = model(input[:-1])
-                    # calculate loss only on the answer part of the equation (last element
-                    L_B1 = F.cross_entropy(logits[-1], input[-1])
-                    total_loss += L_B1.item() * input.shape[-1]
-                    
-                    
-                    logits_b2 = model(b2_input[:-1])
-                    # calculate loss only on the answer part of the equation (last element
-                    L_B2 = F.cross_entropy(logits_b2[-1], b2_input[-1])
+                    with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
+                        logits = model(input[:-1])
+                        # calculate loss only on the answer part of the equation (last element
+                        L_B1 = F.cross_entropy(logits[-1], input[-1])
+                        total_loss += L_B1.item() * input.shape[-1]
+                        
+                        
+                        logits_b2 = model(b2_input[:-1])
+                        # calculate loss only on the answer part of the equation (last element
+                        L_B2 = F.cross_entropy(logits_b2[-1], b2_input[-1])
 
                 if is_train:
-                    model.zero_grad()
-
-                    g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
-                    g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
-                    
-                    #g_B1 = torch.autograd.grad(L_B1, model.parameters(), retain_graph=True)
-                    #g_B2 = torch.autograd.grad(L_B2, model.parameters(), retain_graph=True)
-
-                    # Convert gradients to vectors
-                    #g_B1_vector = torch.cat([g.view(-1) for g in g_B1])
-                    #g_B2_vector = torch.cat([g.view(-1) for g in g_B2])
-
-                    # Compute cosine similarity
-                    # cos_sim = torch.nn.functional.cosine_similarity(g_B1_vector, g_B2_vector, dim=0)
-
-                    # # Define total loss
-                    # L_total = L_B1 - cos_sim
-                    # L_total.backward()
-                    # Compute dot product s = g_B2^T g_B1
-                    s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
-
                     with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
+                        model.zero_grad()
+
+                        g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
+                        g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
+                        
+                        #g_B1 = torch.autograd.grad(L_B1, model.parameters(), retain_graph=True)
+                        #g_B2 = torch.autograd.grad(L_B2, model.parameters(), retain_graph=True)
+
+                        # Convert gradients to vectors
+                        #g_B1_vector = torch.cat([g.view(-1) for g in g_B1])
+                        #g_B2_vector = torch.cat([g.view(-1) for g in g_B2])
+
+                        # Compute cosine similarity
+                        # cos_sim = torch.nn.functional.cosine_similarity(g_B1_vector, g_B2_vector, dim=0)
+
+                        # # Define total loss
+                        # L_total = L_B1 - cos_sim
+                        # L_total.backward()
+                        # Compute dot product s = g_B2^T g_B1
+                        s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
+
+                        
                         # Compute gradient of s with respect to model parameters
                         grad_s = torch.autograd.grad(s, model.parameters())
 
-                    # Compute total gradient
-                    total_grad = [g1 - 0.1 * args.lr * gs for g1, gs in zip(g_B1, grad_s)]
+                        # Compute total gradient
+                        total_grad = [g1 - 0.1 * args.lr * gs for g1, gs in zip(g_B1, grad_s)]
 
-                    #Assign gradients to parameters
-                    for p, g in zip(model.parameters(), total_grad):
-                        p.grad = g
-                    #######
+                        #Assign gradients to parameters
+                        for p, g in zip(model.parameters(), total_grad):
+                            p.grad = g
+                        #######
 
-                    trigger = i < 500 if args.two_stage else False
+                        trigger = i < 500 if args.two_stage else False
 
-                    if args.filter == "none":
-                        pass
-                    elif args.filter == "anti":
-                        total_grad_norm = 0.0
-                        param_count = 0
-                        with torch.no_grad():
-                            for name, param in model.named_parameters():
-                                if param.grad is not None:
-                                # Exclude bias or single-element parameters
-                                    if len(param.shape) > 1:
-                                        grad_norm = param.grad.norm(2).item()
+                        if args.filter == "none":
+                            pass
+                        elif args.filter == "anti":
+                            total_grad_norm = 0.0
+                            param_count = 0
+                            with torch.no_grad():
+                                for name, param in model.named_parameters():
+                                    if param.grad is not None:
+                                    # Exclude bias or single-element parameters
+                                        if len(param.shape) > 1:
+                                            grad_norm = param.grad.norm(2).item()
+                                            
+                                            # Accumulate grad norm and count for averaging
+                                            total_grad_norm += grad_norm
+                                            param_count += 1
+                                            # Create a tensor that scales the gradient's direction by the gradient norm's opposite sign
+                                            # We normalize the gradient to keep the direction and scale by grad_norm
+                                            if grad_norm != 0:
+                                                # Normalize the gradient and reverse its direction
+                                                direction = -param.grad / grad_norm  # Normalized direction of gradient, flipped
+                                                # Calculate the adjustment to param.data
+                                                adjustment = direction * grad_norm
+                                                # Update param.data directly
+                                                param.data += adjustment  # Move param.data in the opposite direction by grad_norm
+                                                
+                            #average_grad_norm = total_grad_norm / param_count if param_count > 0 else 0
+                            #print(f"Average Gradient Norm: {average_grad_norm}")
+                                                
+                            # p = 10  # Set the probability of flipping all gradients
+                            # with torch.no_grad():  # Use no_grad to prevent tracking in autograd
+                                # # Generate a single random probability to decide if we flip all gradients
+                                # flip_all = torch.rand(1).item() < (p / 100)
+
+                                # for name, param in model.named_parameters():
+                                    # if param.grad is not None:
+                                        # g_B = param.grad
                                         
-                                        # Accumulate grad norm and count for averaging
-                                        total_grad_norm += grad_norm
-                                        param_count += 1
-                                        # Create a tensor that scales the gradient's direction by the gradient norm's opposite sign
-                                        # We normalize the gradient to keep the direction and scale by grad_norm
-                                        if grad_norm != 0:
-                                            # Normalize the gradient and reverse its direction
-                                            direction = -param.grad / grad_norm  # Normalized direction of gradient, flipped
-                                            # Calculate the adjustment to param.data
-                                            adjustment = direction * grad_norm
-                                            # Update param.data directly
-                                            param.data += adjustment  # Move param.data in the opposite direction by grad_norm
-                                            
-                        #average_grad_norm = total_grad_norm / param_count if param_count > 0 else 0
-                        #print(f"Average Gradient Norm: {average_grad_norm}")
-                                            
-                        # p = 10  # Set the probability of flipping all gradients
-                        # with torch.no_grad():  # Use no_grad to prevent tracking in autograd
-                            # # Generate a single random probability to decide if we flip all gradients
-                            # flip_all = torch.rand(1).item() < (p / 100)
+                                        # # If flip_all is True, flip the sign of the gradient for all parameters
+                                        # if flip_all:
+                                            # param.grad = -g_B  # Flip all signs
+                            
 
-                            # for name, param in model.named_parameters():
-                                # if param.grad is not None:
-                                    # g_B = param.grad
-                                    
-                                    # # If flip_all is True, flip the sign of the gradient for all parameters
-                                    # if flip_all:
-                                        # param.grad = -g_B  # Flip all signs
-                        
+                        elif args.filter == "ma":
+                            grads = gradfilter_ma(model, grads=grads, window_size=args.window_size, lamb=args.lamb, trigger=trigger)
+                        elif args.filter == "ema":
+                            grads = gradfilter_ema(model, grads=grads, alpha=args.alpha, lamb=args.lamb)
+                        else:
+                            raise ValueError(f"Invalid gradient filter type `{args.filter}`")
 
-                    elif args.filter == "ma":
-                        grads = gradfilter_ma(model, grads=grads, window_size=args.window_size, lamb=args.lamb, trigger=trigger)
-                    elif args.filter == "ema":
-                        grads = gradfilter_ema(model, grads=grads, alpha=args.alpha, lamb=args.lamb)
-                    else:
-                        raise ValueError(f"Invalid gradient filter type `{args.filter}`")
+                        #######
 
-                    #######
-
-                    optimizer.step()
-                    scheduler.step()
-                    i += 1
+                        optimizer.step()
+                        scheduler.step()
+                        i += 1
 
                 acc = (logits[-1].argmax(-1) == input[-1]).float().mean()
                 total_acc += acc.item() * input.shape[-1]
