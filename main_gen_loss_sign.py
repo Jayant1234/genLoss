@@ -508,7 +508,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
             if is_train:
                 train_acc.append(total_acc / train_data.shape[-1])
                 train_loss.append(total_loss / train_data.shape[-1])
-                sim.append(100*avg_sim/train_data.shape[-1]))
+                sim.append(100*avg_sim/train_data.shape[-1])
                 its.append(i)
             else:
                 val_acc.append(total_acc / valid_data.shape[-1])
