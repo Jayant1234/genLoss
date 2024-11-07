@@ -13,6 +13,67 @@ import torch.nn.functional as F
 from grokfast import *
 
 
+class SAM(torch.optim.Optimizer):
+    def __init__(self, params, base_optimizer, rho=0.05, adaptive=False, **kwargs):
+        assert rho >= 0.0, f"Invalid rho, should be non-negative: {rho}"
+
+        defaults = dict(rho=rho, adaptive=adaptive, **kwargs)
+        super(SAM, self).__init__(params, defaults)
+
+        self.base_optimizer = base_optimizer(self.param_groups, **kwargs)
+        self.param_groups = self.base_optimizer.param_groups
+        self.defaults.update(self.base_optimizer.defaults)
+
+    @torch.no_grad()
+    def first_step(self, zero_grad=False):
+        grad_norm = self._grad_norm()
+        for group in self.param_groups:
+            scale = group["rho"] / (grad_norm + 1e-12)
+
+            for p in group["params"]:
+                if p.grad is None: continue
+                self.state[p]["old_p"] = p.data.clone()
+                e_w = (torch.pow(p, 2) if group["adaptive"] else 1.0) * p.grad * scale.to(p)
+                p.add_(e_w)  # climb to the local maximum "w + e(w)"
+
+        if zero_grad: self.zero_grad()
+
+    @torch.no_grad()
+    def second_step(self, zero_grad=False):
+        for group in self.param_groups:
+            for p in group["params"]:
+                if p.grad is None: continue
+                p.data = self.state[p]["old_p"]  # get back to "w" from "w + e(w)"
+
+        self.base_optimizer.step()  # do the actual "sharpness-aware" update
+
+        if zero_grad: self.zero_grad()
+
+    @torch.no_grad()
+    def step(self, closure=None):
+        assert closure is not None, "Sharpness Aware Minimization requires closure, but it was not provided"
+        closure = torch.enable_grad()(closure)  # the closure should do a full forward-backward pass
+
+        self.first_step(zero_grad=True)
+        closure()
+        self.second_step()
+
+    def _grad_norm(self):
+        shared_device = self.param_groups[0]["params"][0].device  # put everything on the same device, in case of model parallelism
+        norm = torch.norm(
+                    torch.stack([
+                        ((torch.abs(p) if group["adaptive"] else 1.0) * p.grad).norm(p=2).to(shared_device)
+                        for group in self.param_groups for p in group["params"]
+                        if p.grad is not None
+                    ]),
+                    p=2
+               )
+        return norm
+
+    def load_state_dict(self, state_dict):
+        super().load_state_dict(state_dict)
+        self.base_optimizer.param_groups = self.param_groups
+
 class Block(nn.Module):
     """Causal transformer block
     """
@@ -418,16 +479,16 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                         # L_total.backward()
                         # Compute dot product s = g_B2^T g_B1
                         
-                        #s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
+                        s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
 
-                        cosine_sim = sum((g1 * g2).sum()/(torch.sqrt(sum((g1 ** 2)))*torch.sqrt(sum((g2 ** 2)))+ 1e-8) for g1, g2 in zip(g_B1, g_B2)) #trying pair-wise cosine similarity
+                        #cosine_sim = sum((g1 * g2).sum()/(torch.sqrt(sum((g1 ** 2)))*torch.sqrt(sum((g2 ** 2)))+ 1e-8) for g1, g2 in zip(g_B1, g_B2)) #trying pair-wise cosine similarity
 
                         # Compute the norms of g_B1 and g_B2
-                        #norm_g_B1 = torch.sqrt(sum((g1 ** 2).sum() for g1 in g_B1))
-                        #norm_g_B2 = torch.sqrt(sum((g2 ** 2).sum() for g2 in g_B2))
+                        norm_g_B1 = torch.sqrt(sum((g1 ** 2).sum() for g1 in g_B1))
+                        norm_g_B2 = torch.sqrt(sum((g2 ** 2).sum() for g2 in g_B2))
 
-                        # Normalize the dot product
-                        #cosine_sim = s / (norm_g_B1 * norm_g_B2 + 1e-8)  # Add epsilon for numerical stability
+                        #Normalize the dot product
+                        cosine_sim = s / (norm_g_B1 * norm_g_B2 + 1e-8)  # Add epsilon for numerical stability
 
                         
                         # Compute gradient of s with respect to model parameters
@@ -612,6 +673,7 @@ def main(args):
         weight_decay=args.weight_decay,
         betas=(args.beta1, args.beta2),
     )
+    #optimizer = SAM(model.parameters(), base_optimizer, lr=0.1, momentum=0.9)
 
     #  linear learning rate warmup over the first 10 updates
     scheduler = torch.optim.lr_scheduler.LambdaLR(
