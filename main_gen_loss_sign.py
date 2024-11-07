@@ -268,7 +268,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
 
                                             if last_loss > avg_last_five and last_loss>last_to_last:
                                                 param.data-=update #anti-learning norm grad step
-                                            else: 
+                                            #else: 
                                                 #param.data+=args.lr*update #learning norm grad step
 
                 # Compute accuracy
