@@ -445,7 +445,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                 
                 input = dl[num_batch].to(device)
                 b2_input = dl[(num_batch + 1) % num_batches].to(device)
-                if num_batch == 0:
+                if num_batch < num_batches//2):
                     # Use only the first two examples in the first batch
                     input = dl[0][:, :2].to(device)  # First two examples as batch 1
                     b2_input = dl[0][:, 1:3].to(device)  # Second and third examples as batch 2 (for similarity)
