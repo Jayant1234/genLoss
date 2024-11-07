@@ -283,7 +283,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                 val_loss.append(avg_loss)
 
         # Plot and save results periodically
-        do_save = epochs <= 500 or (epochs > 500 and (epochs + 1) % 10 == 0)
+        do_save = epochs <= 500 (epochs + 1) % 10 == 0 or (epochs > 500 and (epochs + 1) % 100 == 0)
         if do_save:
             steps = torch.arange(len(train_acc)).numpy()
             
