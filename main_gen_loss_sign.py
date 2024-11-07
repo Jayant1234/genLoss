@@ -591,7 +591,9 @@ def main(args):
         optimizer, lambda update: 1 if update > 10 else update / 10
     )
     
-    train_baseline(model, train_data, valid_data, optimizer, scheduler, device, args)
+    #train_baseline(model, train_data, valid_data, optimizer, scheduler, device, args)
+    train_progressive(model, train_data, valid_data, optimizer, scheduler, device, args)
+
 
 if __name__ == "__main__":
     parser = ArgumentParser()
