@@ -420,7 +420,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                         
                         #s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
 
-                        cosine_sim = sum((g1 * g2).sum()/(torch.sqrt(sum((g1 ** 2).sum()))*torch.sqrt(sum((g2 ** 2).sum()))) for g1, g2 in zip(g_B1, g_B2)) #trying pair-wise cosine similarity
+                        cosine_sim = sum((g1 * g2).sum()/(torch.sqrt(sum((g1 ** 2).sum()))*torch.sqrt(sum((g2 ** 2).sum()))+ 1e-8) for g1, g2 in zip(g_B1, g_B2)) #trying pair-wise cosine similarity
 
                         # Compute the norms of g_B1 and g_B2
                         #norm_g_B1 = torch.sqrt(sum((g1 ** 2).sum() for g1 in g_B1))
