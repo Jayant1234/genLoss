@@ -185,7 +185,8 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
     # Remaining 90% for actual training
     train_indices = torch.randperm(train_data.shape[1])[gen_size:]
     train_data = train_data[:, train_indices]
-
+    steps_per_epoch = math.ceil(train_data.shape[1] / args.batch_size)
+    
     # Containers for tracking training, validation, and generalization metrics
     its, train_acc, val_acc, gen_acc, train_loss, val_loss, gen_loss = [], [], [], [], [], [], []
     
@@ -252,17 +253,23 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                     if len(gen_loss) >= 6:
                         last_loss = gen_loss[-1]
                         avg_last_five = sum(gen_loss[-6:-1]) / 5
-                        with torch.no_grad():
-                            for param in model.parameters():
-                                if param.grad is not None:
-                                    # Find the average of the gradients for non-individual weights
-                                    if param.grad.dim() > 1:  # Ensure it's not a single weight
-                                        sum_grad = param.grad.sum()
-                                        param.grad = torch.full_like(param.grad, sum_grad)
-                                        if last_loss > avg_last_five:
-                                            param.data+=args.lr*param.grad #anti-learning average grad step
-                                        else: 
-                                            param.data-=args.lr*param.grad #learning average grad step
+                        if average_last_five> 0.1: 
+                            with torch.no_grad():
+                                for param in model.parameters():
+                                    if param.grad is not None:
+                                        # Find the average of the gradients for non-individual weights
+                                        if param.grad.dim() > 1:  # Ensure it's not a single weight
+                                            grad_norm = param.grad.norm()
+
+                                            # Multiply by the sign of the gradient
+                                            signed_grad_norm = grad_norm * torch.sign(param.data)
+
+                                            # Fill the gradient with this signed norm value
+                                            update = torch.full_like(param.grad, signed_grad_norm)
+                                            if last_loss > avg_last_five:
+                                                param.data-=update #anti-learning norm grad step
+                                            else: 
+                                                param.data+=args.lr*update #learning norm grad step
 
                 # Compute accuracy
                 acc = (logits[-1].argmax(-1) == input_batch[-1]).float().mean()
@@ -285,7 +292,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
         # Plot and save results periodically
         do_save = (epochs <= 500 and (epochs + 1) % 10 == 0) or (epochs > 500 and (epochs + 1) % 100 == 0)
         if do_save:
-            steps = torch.arange(len(train_acc)).numpy()
+            steps = torch.arange(len(train_acc)).numpy()*steps_per_epoch
             
             # Plot accuracy
             plt.plot(steps, train_acc, label="train")
