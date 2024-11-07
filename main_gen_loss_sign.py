@@ -267,7 +267,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                                             update = update*torch.sign(param.data)
 
                                             if last_loss > avg_last_five and last_loss>last_to_last:
-                                                param.data-=0.1*update #anti-learning norm grad step
+                                                param.data-=args.lr*update #anti-learning norm grad step
                                             #else: 
                                                 #param.data+=args.lr*update #learning norm grad step
 
