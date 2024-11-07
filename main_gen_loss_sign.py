@@ -255,14 +255,16 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                         avg_last_five = sum(gen_loss[-6:-1]) / 5
                         if avg_last_five> 0.1: 
                             with torch.no_grad():
+                                global_grad_norm = torch.sqrt(sum(p.grad.norm(2)**2 for p in model.parameters() if p.grad is not None))
                                 for param in model.parameters():
                                     if param.grad is not None:
                                         # Find the average of the gradients for non-individual weights
                                         if param.grad.dim() > 1:  # Ensure it's not a single weight
-                                            grad_norm = param.grad.norm()
+                                            #grad_norm = param.grad.norm()
                                             # Fill the gradient with this signed norm value
-                                            update = torch.full_like(param.grad, grad_norm)
+                                            update = torch.full_like(param.grad, global_grad_norm)
                                             update = update*torch.sign(param.data)
+
                                             if last_loss > avg_last_five:
                                                 param.data-=args.lr*update #anti-learning norm grad step
                                             else: 
