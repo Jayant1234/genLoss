@@ -441,10 +441,15 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
             num_batches = len(dl)
 
             # Loop through each batch with the next one as reference
-            for i in range(num_batches):
-                input = dl[i].to(device)
-                b2_input = dl[(i + 1) % num_batches].to(device)
-
+            for num_batch in range(num_batches):
+                
+                input = dl[num_batch].to(device)
+                b2_input = dl[(num_batch + 1) % num_batches].to(device)
+                if num_batch == 0:
+                    # Use only the first two examples in the first batch
+                    input = dl[0][:, :2].to(device)  # First two examples as batch 1
+                    b2_input = dl[0][:, 1:3].to(device)  # Second and third examples as batch 2 (for similarity)
+                    
                 with torch.set_grad_enabled(is_train):
                     with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
                         logits = model(input[:-1])
@@ -493,10 +498,11 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                         
                         # Compute gradient of s with respect to model parameters
                         grad_s = torch.autograd.grad((1-cosine_sim), model.parameters())
-                        if i % 10000 == 0: 
+                        if i % 1000 == 0 or num_batch == 0: 
                             #print("gradient for coherence is:", grad_s)
                             #print("gradient for baseline is:", g_B1)
                             print("similarity of both gradients is::::",cosine_sim)
+                            print(num_batch)
                         
                         #curious case of barely doing it and still getting same results. 
                         # if i >10: 
