@@ -253,7 +253,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                     if len(gen_loss) >= 6:
                         last_loss = gen_loss[-1]
                         avg_last_five = sum(gen_loss[-6:-1]) / 5
-                        if average_last_five> 0.1: 
+                        if avg_last_five> 0.1: 
                             with torch.no_grad():
                                 for param in model.parameters():
                                     if param.grad is not None:
