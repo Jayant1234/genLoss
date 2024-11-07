@@ -245,26 +245,24 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                     total_steps += 1
 
                 elif is_train and dataset_name == "gen":
+                    # Calculate averaged gradients and update each parameter
+                    model.zero_grad()
+                    loss.backward()  # Backprop for `gen_set`
                     # Generalization set logic
                     if len(gen_loss) >= 6:
                         last_loss = gen_loss[-1]
                         avg_last_five = sum(gen_loss[-6:-1]) / 5
-
-                    # Calculate averaged gradients and update each parameter
-                    model.zero_grad()
-                    loss.backward()  # Backprop for `gen_set`
-
-                    with torch.no_grad():
-                        for param in model.parameters():
-                            if param.grad is not None:
-                                # Find the average of the gradients for non-individual weights
-                                if param.grad.dim() > 1:  # Ensure it's not a single weight
-                                    sum_grad = param.grad.sum()
-                                    param.grad = torch.full_like(param.grad, sum_grad)
-                                    if last_loss > avg_last_five:
-                                        param.data+=args.lr*param.grad #anti-learning average grad step
-                                    else: 
-                                        param.data-=args.lr*param.grad #learning average grad step
+                        with torch.no_grad():
+                            for param in model.parameters():
+                                if param.grad is not None:
+                                    # Find the average of the gradients for non-individual weights
+                                    if param.grad.dim() > 1:  # Ensure it's not a single weight
+                                        sum_grad = param.grad.sum()
+                                        param.grad = torch.full_like(param.grad, sum_grad)
+                                        if last_loss > avg_last_five:
+                                            param.data+=args.lr*param.grad #anti-learning average grad step
+                                        else: 
+                                            param.data-=args.lr*param.grad #learning average grad step
 
                 # Compute accuracy
                 acc = (logits[-1].argmax(-1) == input_batch[-1]).float().mean()
