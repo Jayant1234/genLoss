@@ -260,12 +260,9 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                                         # Find the average of the gradients for non-individual weights
                                         if param.grad.dim() > 1:  # Ensure it's not a single weight
                                             grad_norm = param.grad.norm()
-
-                                            # Multiply by the sign of the gradient
-                                            signed_grad_norm = grad_norm * torch.sign(param.data)
-
                                             # Fill the gradient with this signed norm value
-                                            update = torch.full_like(param.grad, signed_grad_norm)
+                                            update = torch.full_like(param.grad, grad_norm)
+                                            update = update*torch.sign(param.data)
                                             if last_loss > avg_last_five:
                                                 param.data-=update #anti-learning norm grad step
                                             else: 
