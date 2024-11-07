@@ -285,7 +285,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
         # Plot and save results periodically
         do_save = epochs <= 500 or (epochs > 500 and (epochs + 1) % 10 == 0)
         if do_save:
-            steps = np.arange(len(train_acc))
+            steps = torch.arange(len(train_acc)).numpy()
             
             # Plot accuracy
             plt.plot(steps, train_acc, label="train")
