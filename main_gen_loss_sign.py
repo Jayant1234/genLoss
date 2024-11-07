@@ -253,6 +253,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                     if len(gen_loss) >= 6:
                         last_loss = gen_loss[-1]
                         avg_last_five = sum(gen_loss[-6:-1]) / 5
+                        last_to_last=gen_loss[-2]
                         if avg_last_five> 0.1: 
                             with torch.no_grad():
                                 global_grad_norm = torch.sqrt(sum(p.grad.norm(2)**2 for p in model.parameters() if p.grad is not None))
@@ -265,7 +266,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                                             update = torch.full_like(param.grad, global_grad_norm)
                                             update = update*torch.sign(param.data)
 
-                                            if last_loss > avg_last_five:
+                                            if last_loss > avg_last_five and last_loss>last_to_last:
                                                 param.data-=update #anti-learning norm grad step
                                             else: 
                                                 #param.data+=args.lr*update #learning norm grad step
