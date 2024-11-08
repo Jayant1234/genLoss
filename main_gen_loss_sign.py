@@ -193,7 +193,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
     epochs = 0  # Epoch counter
     i = 0  # Step counter
     pbar = tqdm()
-    
+    counter=0
     while total_steps <= args.budget:
         # Shuffle training data for each epoch
         train_data = train_data[:, torch.randperm(train_data.shape[1])]
@@ -232,6 +232,10 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                                     flip_all=False
                                 else: 
                                     flip_all=True
+                        if flip_all:
+                            counter+=1
+                            if counter>20: 
+                                flip_all=False
                         #p = 40  # Set the probability of flipping all gradients
                         with torch.no_grad():  # Use no_grad to prevent tracking in autograd
                             # Generate a single random probability to decide if we flip all gradients
