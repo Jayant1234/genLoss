@@ -179,7 +179,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
     total_steps = 0  # Track the total number of steps taken
 
     # Split 10% of train_data as gen_set
-    gen_size = int(0.1 * train_data.shape[1])
+    gen_size = int(0.2 * train_data.shape[1])
     gen_indices = torch.randperm(train_data.shape[1])[:gen_size]
     gen_set = train_data[:, gen_indices]
     # Remaining 90% for actual training
@@ -199,7 +199,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
         train_data = train_data[:, torch.randperm(train_data.shape[1])]
         gen_set = gen_set[:, torch.randperm(gen_set.shape[1])]
         
-        for data, is_train, dataset_name in [(train_data, True, "train"), (gen_set, True, "gen"), (valid_data, False, "val")]:
+        for data, is_train, dataset_name in [(train_data, True, "train"), (gen_set, False, "gen"), (valid_data, False, "val")]:
             model.train(is_train)
             total_loss = 0
             total_acc = 0
