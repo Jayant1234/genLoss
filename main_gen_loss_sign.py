@@ -180,10 +180,10 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
 
     # Split 10% of train_data as gen_set
     gen_size = int(0.2 * train_data.shape[1])
-    gen_indices = torch.randperm(train_data.shape[1])[:gen_size]
+    gen_indices = torch.randperm(train_data.shape[1][:gen_size])
     gen_set = train_data[:, gen_indices]
     # Remaining 90% for actual training
-    train_indices = torch.randperm(train_data.shape[1])[gen_size:]
+    train_indices = torch.randperm(train_data.shape[1][gen_size:])
     train_data = train_data[:, train_indices]
     steps_per_epoch = math.ceil(train_data.shape[1] / args.batch_size)
     
