@@ -184,6 +184,9 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
     gen_idx, train_idx = torch.randperm(total_ex).split([gen_size, total_ex - gen_size])
 
     train_data, gen_set = train_data[:, train_idx], train_data[:, gen_idx]
+
+    steps_per_epoch = math.ceil(train_data.shape[1] / args.batch_size)
+
     # Containers for tracking training, validation, and generalization metrics
     its, train_acc, val_acc, gen_acc, train_loss, val_loss, gen_loss = [], [], [], [], [], [], []
     
