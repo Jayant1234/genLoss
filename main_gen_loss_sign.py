@@ -221,9 +221,8 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                     loss.backward()
 
                     # Gradient manipulation for "progressive_signed" method
-                    if args.method_type == "anti-learning": 
-                        model.zero_grad()
-                        loss.backward()
+                    if args.method_type == "anti-learning":
+                        
                         #average_grad_norm = total_grad_norm / param_count if param_count > 0 else 0
                         print(f"Average Gradient Norm: {average_grad_norm}")
                         generalization_gap = [val - train for val, train in zip(gen_loss, train_loss)]
