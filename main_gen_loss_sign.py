@@ -178,15 +178,12 @@ def split_data_into_n_parts(data,n_parts):
 def train_progressive(model, train_data, valid_data, optimizer, scheduler, device, args):
     total_steps = 0  # Track the total number of steps taken
 
+    total_ex=train_data.shape[1]
     # Split 10% of train_data as gen_set
-    gen_size = int(0.2 * train_data.shape[1])
-    gen_indices = torch.randperm(train_data.shape[1][:gen_size])
-    gen_set = train_data[:, gen_indices]
-    # Remaining 90% for actual training
-    train_indices = torch.randperm(train_data.shape[1][gen_size:])
-    train_data = train_data[:, train_indices]
-    steps_per_epoch = math.ceil(train_data.shape[1] / args.batch_size)
-    
+    gen_size = int(0.1 * total_ex)
+    gen_idx, train_idx = torch.randperm(total_ex).split([gen_size, total_ex - gen_size])
+
+    train_data, gen_set = train_data[:, train_idx], train_data[:, gen_idx]
     # Containers for tracking training, validation, and generalization metrics
     its, train_acc, val_acc, gen_acc, train_loss, val_loss, gen_loss = [], [], [], [], [], [], []
     
