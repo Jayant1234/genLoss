@@ -220,7 +220,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                     model.zero_grad()
                     loss.backward()
 
-                    # Gradient manipulation for "progressive_signed" method
+                    # Gradient manipulation for "anti-learning method" 
                     if args.method_type == "anti-learning":
                         
                         #average_grad_norm = total_grad_norm / param_count if param_count > 0 else 0
@@ -247,6 +247,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                                     # If flip_all is True, flip the sign of the gradient for all parameters
                                     if flip_all:
                                         param.grad = -g_B  # Flip all signs
+                    elif args.method_type == "SAM":
 
                     optimizer.step()
                     scheduler.step()
@@ -641,6 +642,7 @@ if __name__ == "__main__":
         "earth_mover", 
         "kl"
         ])
+        #check
 
     # Grokfast
     parser.add_argument("--filter", type=str, choices=["none", "anti", "ma", "ema", "fir"], default="none")
