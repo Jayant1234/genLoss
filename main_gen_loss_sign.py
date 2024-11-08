@@ -226,7 +226,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                         loss.backward()
                         #average_grad_norm = total_grad_norm / param_count if param_count > 0 else 0
                         print(f"Average Gradient Norm: {average_grad_norm}")
-                        generalization_gap = [val - train for val, train in zip(val_losses, train_losses)]
+                        generalization_gap = [val - train for val, train in zip(gen_loss, train_loss)]
                         if len(generalization_gap)>6 and : 
                             if generalization_gap[-1]>0 and generalization_gap[-1]> sum(generalization_gap[-7:-2])/5:
                                 if flip_all: 
@@ -234,7 +234,6 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                                 else: 
                                     flip_all=True
                         #p = 40  # Set the probability of flipping all gradients
-                        if len(train_loss)>
                         with torch.no_grad():  # Use no_grad to prevent tracking in autograd
                             # Generate a single random probability to decide if we flip all gradients
                             for name, param in model.named_parameters():
