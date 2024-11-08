@@ -224,7 +224,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                     if args.method_type == "anti-learning":
                         
                         #average_grad_norm = total_grad_norm / param_count if param_count > 0 else 0
-                        print(f"Average Gradient Norm: {average_grad_norm}")
+                        #print(f"Average Gradient Norm: {average_grad_norm}")
                         generalization_gap = [val - train for val, train in zip(gen_loss, train_loss)]
                         if len(generalization_gap)>6: 
                             if generalization_gap[-1]>0 and generalization_gap[-1]> sum(generalization_gap[-7:-2])/5:
