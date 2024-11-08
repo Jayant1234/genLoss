@@ -236,6 +236,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                             counter+=1
                             if counter>20: 
                                 flip_all=False
+                                counter=0
                         #p = 40  # Set the probability of flipping all gradients
                         with torch.no_grad():  # Use no_grad to prevent tracking in autograd
                             # Generate a single random probability to decide if we flip all gradients
