@@ -177,7 +177,7 @@ def split_data_into_n_parts(data,n_parts):
 
 def train_progressive(model, train_data, valid_data, optimizer, scheduler, device, args):
     total_steps = 0  # Track the total number of steps taken
-
+    flip_all = False
     total_ex=train_data.shape[1]
     # Split 10% of train_data as gen_set
     gen_size = int(0.1 * total_ex)
@@ -223,15 +223,20 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                     # Gradient manipulation for "progressive_signed" method
                     if args.method_type == "anti-learning": 
                         model.zero_grad()
-                        t_loss.backward()
+                        loss.backward()
                         #average_grad_norm = total_grad_norm / param_count if param_count > 0 else 0
                         print(f"Average Gradient Norm: {average_grad_norm}")
-                                            
-                        p = 40  # Set the probability of flipping all gradients
+                        generalization_gap = [val - train for val, train in zip(val_losses, train_losses)]
+                        if len(generalization_gap)>6 and : 
+                            if generalization_gap[-1]>0 and generalization_gap[-1]> sum(generalization_gap[-7:-2])/5:
+                                if flip_all: 
+                                    flip_all=False
+                                else: 
+                                    flip_all=True
+                        #p = 40  # Set the probability of flipping all gradients
+                        if len(train_loss)>
                         with torch.no_grad():  # Use no_grad to prevent tracking in autograd
                             # Generate a single random probability to decide if we flip all gradients
-                            flip_all = torch.rand(1).item() < (p / 100)
-
                             for name, param in model.named_parameters():
                                 if param.grad is not None:
                                     g_B = param.grad
@@ -246,30 +251,32 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                     total_steps += 1
 
                 elif is_train and dataset_name == "gen":
+                    
                     # Calculate averaged gradients and update each parameter
                     model.zero_grad()
                     loss.backward()  # Backprop for `gen_set`
-                    # Generalization set logic
-                    if len(gen_loss) >= 6:
-                        last_loss = gen_loss[-1]
-                        avg_last_five = sum(gen_loss[-6:-1]) / 5
-                        last_to_last=gen_loss[-2]
-                        if avg_last_five> 0.1: 
-                            with torch.no_grad():
-                                global_grad_norm = torch.sqrt(sum(p.grad.norm(2)**2 for p in model.parameters() if p.grad is not None))
-                                for param in model.parameters():
-                                    if param.grad is not None:
-                                        # Find the average of the gradients for non-individual weights
-                                        if param.grad.dim() > 1:  # Ensure it's not a single weight
-                                            #grad_norm = param.grad.norm()
-                                            # Fill the gradient with this signed norm value
-                                            update = torch.full_like(param.grad, global_grad_norm)
-                                            update = update*torch.sign(param.data)
+                    
+                    # # Generalization set logic for weight norm learning
+                    # if len(gen_loss) >= 6:
+                        # last_loss = gen_loss[-1]
+                        # avg_last_five = sum(gen_loss[-6:-1]) / 5
+                        # last_to_last=gen_loss[-2]
+                        # if avg_last_five> 0.1: 
+                            # with torch.no_grad():
+                                # global_grad_norm = torch.sqrt(sum(p.grad.norm(2)**2 for p in model.parameters() if p.grad is not None))
+                                # for param in model.parameters():
+                                    # if param.grad is not None:
+                                        # # Find the average of the gradients for non-individual weights
+                                        # if param.grad.dim() > 1:  # Ensure it's not a single weight
+                                            # #grad_norm = param.grad.norm()
+                                            # # Fill the gradient with this signed norm value
+                                            # update = torch.full_like(param.grad, global_grad_norm)
+                                            # update = update*torch.sign(param.data)
 
-                                            if not (last_loss < avg_last_five) and last_loss>last_to_last:
-                                                param.data-=args.lr*update #anti-learning norm grad step
-                                            #else: 
-                                                #param.data+=args.lr*update #learning norm grad step
+                                            # if not (last_loss < avg_last_five) and last_loss>last_to_last:
+                                                # param.data-=args.lr*update #anti-learning norm grad step
+                                            # #else: 
+                                                # #param.data+=args.lr*update #learning norm grad step
 
                 # Compute accuracy
                 acc = (logits[-1].argmax(-1) == input_batch[-1]).float().mean()
