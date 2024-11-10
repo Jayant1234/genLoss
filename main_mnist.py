@@ -81,6 +81,7 @@ loss_function_dict = {
 
 
 def main(args):
+    print("MAIN method called")
     log_freq = math.ceil(args.optimization_steps / 150)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -99,7 +100,7 @@ def main(args):
         transform=torchvision.transforms.ToTensor(), download=True)
     train = torch.utils.data.Subset(train, range(args.train_points))
     train_loader = torch.utils.data.DataLoader(train, batch_size=args.batch_size, shuffle=True)
-
+    print(args.activation)
     assert args.activation in activation_dict, f"Unsupported activation function: {args.activation}"
     activation_fn = activation_dict[args.activation]
 
@@ -266,5 +267,5 @@ if __name__ == '__main__':
 
     args.label = args.label + filter_str + filter_suffix + optim_suffix
     print(f'Experiment results saved under name: {args.label}')
-
+    print(args)
     main(args)
