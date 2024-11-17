@@ -224,7 +224,7 @@ if __name__ == '__main__':
     parser.add_argument("--train_points", type=int, default=1000)
     parser.add_argument("--optimization_steps", type=int, default=100000)
     parser.add_argument("--batch_size", type=int, default=200)
-    parser.add_argument("--loss_function", type=str, default="CrossEntropy")
+    parser.add_argument("--loss_function", type=str, default="MSE")
     parser.add_argument("--optimizer", type=str, default="AdamW")
     parser.add_argument("--weight_decay", type=float, default=0.01)
     parser.add_argument("--lr", type=float, default=1e-3)
