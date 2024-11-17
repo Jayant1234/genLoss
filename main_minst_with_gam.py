@@ -16,88 +16,150 @@ import torchvision
 
 from grokfast import *
 
-# Define the train_baseline function
-def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, args):
-    steps_per_epoch = math.ceil(len(train_data) / args.batch_size)
-    
-    its, train_acc, val_acc, train_loss, val_loss, sim = [], [], [], [], [], []
-    grads = None
-    i = 0
 
-    for e in tqdm(range(int(args.optimization_steps) // steps_per_epoch)):
+# Dictionary for activation functions
+activation_dict = {
+    'ReLU': nn.ReLU,
+    'Tanh': nn.Tanh,
+    'Sigmoid': nn.Sigmoid,
+    'GELU': nn.GELU
+}
 
-        # Randomly shuffle train data
-        train_data = train_data[torch.randperm(train_data.size(0))]
+# Optimizer dictionary
+optimizer_dict = {
+    'AdamW': torch.optim.AdamW,
+    'Adam': torch.optim.Adam,
+    'SGD': torch.optim.SGD
+}
 
-        for data, is_train in [(train_data, True), (valid_data, False)]:
+# Loss function dictionary
+loss_function_dict = {
+    'MSE': nn.MSELoss,
+    'CrossEntropy': nn.CrossEntropyLoss
+}
 
-            model.train(is_train)
-            total_loss = 0
-            total_acc = 0
-            avg_sim = 0
 
-            # Split data into batches
-            dl = torch.split(data, args.batch_size)
-            num_batches = len(dl)
+def cycle(iterable):
+    while True:
+        for x in iterable:
+            yield x
 
-            for num_batch in range(num_batches):
-                input_data = dl[num_batch].to(device)
 
-                with torch.set_grad_enabled(is_train):
-                    logits = model(input_data)
-                    loss = nn.CrossEntropyLoss()(logits, input_data)  # Change this according to the dataset structure
-                    total_loss += loss.item() * input_data.size(0)
+def compute_accuracy(network, dataset, device, N=2000, batch_size=50):
+    """Computes accuracy of `network` on `dataset`."""
+    with torch.no_grad():
+        N = min(len(dataset), N)
+        batch_size = min(batch_size, N)
+        dataset_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        correct = 0
+        total = 0
+        for x, labels in islice(dataset_loader, N // batch_size):
+            logits = network(x.to(device))
+            predicted_labels = torch.argmax(logits, dim=1)
+            correct += torch.sum(predicted_labels == labels.to(device))
+            total += x.size(0)
+        return (correct / total).item()
 
-                if is_train:
-                    optimizer.zero_grad()
-                    loss.backward()
-                    optimizer.step()
 
-                acc = (logits.argmax(dim=1) == input_data).float().mean()  # Modify this part for actual labels
-                total_acc += acc.item() * input_data.size(0)
+def compute_loss(network, dataset, loss_function, device, N=2000, batch_size=50):
+    """Computes mean loss of `network` on `dataset`."""
+    with torch.no_grad():
+        N = min(len(dataset), N)
+        batch_size = min(batch_size, N)
+        dataset_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        loss_fn = loss_function_dict[loss_function](reduction='sum')
+        one_hots = torch.eye(10, 10).to(device)
+        total = 0
+        points = 0
+        for x, labels in islice(dataset_loader, N // batch_size):
+            y = network(x.to(device))
+            if loss_function == 'CrossEntropy':
+                total += loss_fn(y, labels.to(device)).item()
+            elif loss_function == 'MSE':
+                total += loss_fn(y, one_hots[labels]).item()
+            points += len(labels)
+        return total / points
 
-            if is_train:
-                train_acc.append(total_acc / len(train_data))
-                train_loss.append(total_loss / len(train_data))
-                its.append(i)
-            else:
-                val_acc.append(total_acc / len(valid_data))
-                val_loss.append(total_loss / len(valid_data))
 
-        # Save progress at specific intervals
-        if (e + 1) % 100 == 0 or e == (int(args.optimization_steps) // steps_per_epoch - 1):
-            plt.plot(its, train_acc, label="Train")
-            plt.plot(its, val_acc, label="Validation")
-            plt.legend()
-            plt.title("MNIST Training Progress")
-            plt.xlabel("Optimization Steps")
-            plt.ylabel("Accuracy")
-            plt.xscale("log", base=10)
-            plt.grid()
-            plt.savefig(f"results/mnist_acc_{args.label}.png", dpi=150)
-            plt.close()
+def train_baseline(model, train_data, test_data, optimizer, loss_fn, device, args):
+    model.train()
+    steps = 0
+    one_hots = torch.eye(10, 10).to(device)
 
-            plt.plot(its, train_loss, label="Train")
-            plt.plot(its, val_loss, label="Validation")
-            plt.legend()
-            plt.title("MNIST Training Progress")
-            plt.xlabel("Optimization Steps")
-            plt.ylabel("Loss")
-            plt.xscale("log", base=10)
-            plt.yscale("log", base=10)
-            plt.grid()
-            plt.savefig(f"results/mnist_loss_{args.label}.png", dpi=150)
-            plt.close()
+    # Loading datasets for training
+    train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True)
+    test_loader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size, shuffle=False)
 
-            torch.save({
-                'its': its,
-                'train_acc': train_acc,
-                'train_loss': train_loss,
-                'val_acc': val_acc,
-                'val_loss': val_loss,
-            }, f"results/mnist_{args.label}.pt")
+    train_losses, test_losses, train_accuracies, test_accuracies = [], [], [], []
+    log_steps = []
 
-# Modified main function to use train_baseline
+    with tqdm(total=args.optimization_steps, dynamic_ncols=True) as pbar:
+        for x, labels in islice(cycle(train_loader), args.optimization_steps):
+            model.zero_grad()
+            y = model(x.to(device))
+
+            if args.loss_function == 'CrossEntropy':
+                loss = loss_fn(y, labels.to(device))
+            elif args.loss_function == 'MSE':
+                loss = loss_fn(y, one_hots[labels])
+
+            loss.backward()
+            optimizer.step()
+
+            if steps % 100 == 0:
+                # Log metrics every 100 steps
+                train_losses.append(compute_loss(model, train_data, args.loss_function, device, N=len(train_data)))
+                train_accuracies.append(compute_accuracy(model, train_data, device, N=len(train_data)))
+                test_losses.append(compute_loss(model, test_data, args.loss_function, device, N=len(test_data)))
+                test_accuracies.append(compute_accuracy(model, test_data, device, N=len(test_data)))
+                log_steps.append(steps)
+
+                pbar.set_description(
+                    "L: {0:1.1e}|{1:1.1e}. A: {2:2.1f}%|{3:2.1f}%".format(
+                        train_losses[-1],
+                        test_losses[-1],
+                        train_accuracies[-1] * 100,
+                        test_accuracies[-1] * 100,
+                    )
+                )
+
+            steps += 1
+            pbar.update(1)
+
+            # Saving results and plotting
+            if steps % 1000 == 0:
+                plt.plot(log_steps, train_accuracies, label="train")
+                plt.plot(log_steps, test_accuracies, label="val")
+                plt.legend()
+                plt.title(f"MNIST Image Classification")
+                plt.xlabel("Optimization Steps")
+                plt.ylabel("Accuracy")
+                plt.xscale("log", base=10)
+                plt.grid()
+                plt.savefig(f"results/mnist_acc_{args.label}.png", dpi=150)
+                plt.close()
+
+                plt.plot(log_steps, train_losses, label="train")
+                plt.plot(log_steps, test_losses, label="val")
+                plt.legend()
+                plt.title(f"MNIST Image Classification")
+                plt.xlabel("Optimization Steps")
+                plt.ylabel(f"{args.loss_function} Loss")
+                plt.xscale("log", base=10)
+                plt.yscale("log", base=10)
+                plt.grid()
+                plt.savefig(f"results/mnist_loss_{args.label}.png", dpi=150)
+                plt.close()
+
+                torch.save({
+                    'its': log_steps,
+                    'train_acc': train_accuracies,
+                    'train_loss': train_losses,
+                    'val_acc': test_accuracies,
+                    'val_loss': test_losses,
+                }, f"results/mnist_{args.label}.pt")
+
+
 def main(args):
     print("MAIN method called")
     log_freq = math.ceil(args.optimization_steps / 150)
@@ -119,10 +181,11 @@ def main(args):
     train = torch.utils.data.Subset(train, range(args.train_points))
     train_loader = torch.utils.data.DataLoader(train, batch_size=args.batch_size, shuffle=True)
 
-    # Define model
+    # Ensure activation function is valid
     assert args.activation in activation_dict, f"Unsupported activation function: {args.activation}"
     activation_fn = activation_dict[args.activation]
 
+    # Define model
     layers = [nn.Flatten()]
     for i in range(args.depth):
         if i == 0:
@@ -151,7 +214,8 @@ def main(args):
     loss_fn = loss_function_dict[args.loss_function]()
 
     # Training using train_baseline
-    train_baseline(model, train_loader.dataset.data, test.data, optimizer, None, device, args)
+    train_baseline(model, train, test, optimizer, loss_fn, device, args)
+
 
 if __name__ == '__main__':
     parser = ArgumentParser()
