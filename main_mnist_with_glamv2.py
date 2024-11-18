@@ -320,6 +320,14 @@ if __name__ == '__main__':
     parser.add_argument("--width", type=int, default=200)
     parser.add_argument("--activation", type=str, default="ReLU")
 
+   # Ablation studies
+    parser.add_argument("--two_stage", action='store_true')
+    parser.add_argument("--save_weights", action='store_true')
+
+    # Batch size and budget for the   GLAM method
+    parser.add_argument("--budget", type=int, default=3e5)
+    # parser.add_argument("--batch_size", type=int, default=512)
+
     # Grokfast
     parser.add_argument("--filter", type=str, choices=["none", "ma", "ema", "fir"], default="none")
     parser.add_argument("--alpha", type=float, default=0.99)
