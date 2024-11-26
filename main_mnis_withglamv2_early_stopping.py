@@ -24,7 +24,7 @@ import torchvision
 from grokfast import *
 
 
-def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, device, args,steps=100):
+def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, device, args,early_stopping_steps=100):
     """
     Modified GLAM implementation where cosine similarity is only used for first 100 steps
     """
@@ -104,7 +104,9 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                         cosine_sim = s / (norm_g_B1 * norm_g_B2 + 1e-8)
                         
                         # Only use gradient of cosine similarity in first 100 steps
-                        if i < steps:
+			
+                        if i < early_stopping_steps:
+
                             grad_s = torch.autograd.grad((1-cosine_sim), model.parameters())
                             total_grad = [g1+g2 + gs for g1, g2, gs in zip(g_B1, g_B2, grad_s)]
                         else:
