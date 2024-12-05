@@ -24,7 +24,7 @@ import torchvision
 from grokfast import *
 
 
-def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, device, args,early_stopping_steps=100):
+def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, device, args,early_stopping_steps=-1):
     """
     Modified GLAM implementation where cosine similarity is only used for first 100 steps
     """
