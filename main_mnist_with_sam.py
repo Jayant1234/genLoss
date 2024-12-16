@@ -126,6 +126,7 @@ def main(args):
     # create optimizer
     assert args.optimizer in optimizer_dict, f"Unsupported optimizer choice: {args.optimizer}"
     base_optimizer = optimizer_dict[args.optimizer]
+    # adding SAM optimizer
     optimizer = SAM(mlp.parameters(), base_optimizer, rho=0.05 ,lr=args.lr, weight_decay=args.weight_decay)
     # define loss function
     assert args.loss_function in loss_function_dict
@@ -182,11 +183,11 @@ def main(args):
             # #######
 
 
-
+            # SAM first step
             # Perform the first step (sharpness-aware step)
             optimizer.first_step(zero_grad=True)
 
-            # Recompute the loss for the second step
+            # Recompute the loss for the second step of SAM
             y = mlp(x.to(device))
             if args.loss_function == 'CrossEntropy':
                 loss = loss_fn(y, labels.to(device))
