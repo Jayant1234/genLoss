@@ -24,9 +24,9 @@ import torchvision
 from grokfast import *
 
 
-def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, device, args,early_stopping_steps=-1):
+def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, device, args):
     """
-    Modified GLAM implementation where cosine similarity is only used for first 100 steps
+    Modified GLAM implementation where cosine similarity is only used for first "args.early_stopping_steps" steps
     """
     train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=False)
     valid_loader = torch.utils.data.DataLoader(valid_data, batch_size=args.batch_size, shuffle=False)
@@ -104,12 +104,13 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                         cosine_sim = s / (norm_g_B1 * norm_g_B2 + 1e-8)
                         
                         # Only use gradient of cosine similarity in first 100 steps
-			
-                        if i < early_stopping_steps:
-
+                        # i is the current step and the minimum value of i is zero and when early stopping steps is -1, it is always false
+                        if i < args.early_stopping_steps:
+                            # Here we are using cosine similairty for the first early stopping steps
                             grad_s = torch.autograd.grad((1-cosine_sim), model.parameters())
                             total_grad = [g1+g2 + gs for g1, g2, gs in zip(g_B1, g_B2, grad_s)]
                         else:
+                            # here we are using the sum of gradients of both batches that is g_B1 and g_B2 which means its a simple SGD
                             total_grad = [g1+g2 for g1, g2 in zip(g_B1, g_B2)]
                         
                         if i % 1000 == 0 or num_batch == 0:
@@ -335,6 +336,10 @@ if __name__ == '__main__':
     parser.add_argument("--alpha", type=float, default=0.99)
     parser.add_argument("--window_size", type=int, default=100)
     parser.add_argument("--lamb", type=float, default=5.0)
+   
+    # Early stopping steps
+    # Here, by default the early stopping steps are set to -1, which means that the cosine similarity is not used
+    parser.add_argument("--early_stopping_steps", type=int, default=-1)
     args = parser.parse_args()
 
     filter_str = ('_' if args.label != '' else '') + args.filter
