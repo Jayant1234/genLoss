@@ -237,7 +237,7 @@ if __name__ == '__main__':
     parser.add_argument("--depth", type=int, default=3)
     parser.add_argument("--width", type=int, default=200)
     parser.add_argument("--activation", type=str, default="ReLU")
-
+    
     # Grokfast
     parser.add_argument("--filter", type=str, choices=["none", "ma", "ema", "fir"], default="none")
     parser.add_argument("--alpha", type=float, default=0.99)
@@ -258,10 +258,12 @@ if __name__ == '__main__':
         filter_suffix = alpha_str + lamb_str
     else:
         raise ValueError(f"Unrecognized filter type {args.filter}")
-
+    print(args)
+    
     optim_suffix = ''
     if args.weight_decay != 0:
         optim_suffix = optim_suffix + f'_wd{args.weight_decay:.1e}'.replace('.', '')
+        return
     if args.lr != 1e-3:
         optim_suffix = optim_suffix + f'_lrx{int(args.lr / 1e-3)}'
 

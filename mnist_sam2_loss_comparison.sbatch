@@ -20,3 +20,4 @@ source /home/bg91882/environments/gen/bin/activate
 
 # Run the Python script with specified parameters
 python main_mnist_with_sam_plot_losses.py --weight_decay 0 
+
