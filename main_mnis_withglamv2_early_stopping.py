@@ -81,19 +81,25 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
 
                 with torch.set_grad_enabled(is_train):
                     with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
+                        model.zero_grad()
                         logits = model(images)
                         L_B1 = F.cross_entropy(logits, labels)
+
+                        L_B1.backward(retain_graph=True)
                         total_loss += L_B1.item() * input.shape[0]
-                        
+                        g_B1 = [p.grad.clone() for p in model.parameters()]
+                        model.zero_grad()
                         logits_b2 = model(b2_images)
                         L_B2 = F.cross_entropy(logits_b2, b2_labels)
+                        L_B2.backward(retain_graph=True)
+                        g_B2 = [p.grad.clone() for p in model.parameters()]
 
                 if is_train:
                     with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
                         model.zero_grad()
 
-                        g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
-                        g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
+                        # g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
+                        # g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
                         
                         # Compute dot product s = g_B2^T g_B1
                         s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
@@ -112,8 +118,9 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                             grad_s = torch.autograd.grad((1-cosine_sim), model.parameters())
                             total_grad = [g1+g2 + gs for g1, g2, gs in zip(g_B1, g_B2, grad_s)]
                         else:
+                            model.zero_grad()
                             # here we are using the sum of gradients of both batches that is g_B1 and g_B2 which means its a simple SGD
-                            total_grad = g_B1
+                            total_grad =(L_B1 + L_B2).backward()
                         
                         if i % 1000 == 0 or num_batch == 0:
                             print("similarity of both gradients is::::", cosine_sim)
