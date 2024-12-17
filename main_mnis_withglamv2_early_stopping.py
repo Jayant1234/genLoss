@@ -46,6 +46,7 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                                 labels.unsqueeze(1).float()), dim=1)
             train_batches.append(combined)
         train_data_tensor = torch.cat(train_batches, dim=0)
+        print("train_data_tensor shape is::::", train_data_tensor.shape)
         
         valid_batches = []
         for images, labels in valid_loader:
@@ -53,7 +54,7 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                                 labels.unsqueeze(1).float()), dim=1)
             valid_batches.append(combined)
         valid_data_tensor = torch.cat(valid_batches, dim=0)
-
+        print("train_data_tensor shape is::::", train_data_tensor.shape)
         # Randomly shuffle train data
         train_data_tensor = train_data_tensor[torch.randperm(train_data_tensor.shape[0])]
 
@@ -67,6 +68,7 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
             dl = torch.split(data, args.batch_size, dim=0)
             num_batches = len(dl)
 
+            print("num_batches is::::", num_batches)
             for num_batch in range(num_batches):
                 input = dl[num_batch].to(device)
                 b2_input = dl[(num_batch + 1) % num_batches].to(device)
