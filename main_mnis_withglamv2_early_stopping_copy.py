@@ -66,12 +66,13 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
     log_freq = math.ceil(args.optimization_steps / 150)
 
     train_losses, test_losses, train_accuracies, test_accuracies = [], [], [], []
-    log_steps, sim = [], []
+    log_steps = []
+    sim = []
     grads = None
     steps = 0
 
-    one_hots = torch.eye(10, 10).to(device)
     loss_fn = loss_function_dict[args.loss_function]()
+    one_hots = torch.eye(10, 10).to(device)
 
     with tqdm(total=args.optimization_steps, dynamic_ncols=True) as pbar:
         for (x1, labels1), (x2, labels2) in zip(cycle(train_loader), cycle(train_loader)):
@@ -84,6 +85,41 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                 test_losses.append(compute_loss(model, valid_data, args.loss_function, device, N=len(valid_data)))
                 test_accuracies.append(compute_accuracy(model, valid_data, device, N=len(valid_data)))
                 log_steps.append(steps)
+
+                # Always append a similarity value during logging
+                if steps < args.early_stopping_steps or args.early_stopping_steps == -1:
+                    try:
+                        # Compute cosine similarity
+                        y1 = model(x1.to(device))
+                        y2 = model(x2.to(device))
+                        
+                        # Compute loss for both batches
+                        if args.loss_function == 'CrossEntropy':
+                            L_B1 = loss_fn(y1, labels1.to(device))
+                            L_B2 = loss_fn(y2, labels2.to(device))
+                        elif args.loss_function == 'MSE':
+                            L_B1 = loss_fn(y1, one_hots[labels1].to(device))
+                            L_B2 = loss_fn(y2, one_hots[labels2].to(device))
+
+                        # Compute gradients
+                        g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
+                        g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
+                        
+                        # Compute dot product
+                        s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
+
+                        # Compute norms
+                        norm_g_B1 = torch.sqrt(sum((g1 ** 2).sum() for g1 in g_B1))
+                        norm_g_B2 = torch.sqrt(sum((g2 ** 2).sum() for g2 in g_B2))
+
+                        # Normalize dot product
+                        cosine_sim = s / (norm_g_B1 * norm_g_B2 + 1e-8)
+                        sim.append(cosine_sim.item())
+                    except Exception as e:
+                        print(f"Error computing cosine similarity: {e}")
+                        sim.append(0)
+                else:
+                    sim.append(0)
 
                 pbar.set_description(
                     "L: {0:1.1e}|{1:1.1e}. A: {2:2.1f}%|{3:2.1f}%".format(
@@ -126,15 +162,13 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
             cosine_sim = s / (norm_g_B1 * norm_g_B2 + 1e-8)
             
             # Only use gradient of cosine similarity in first 100 steps
-            if steps < args.early_stopping_steps or args.early_stopping_steps == -1:
+            if steps < args.early_stopping_steps or args.early_stopping_steps != -1:
                 # Here we are using cosine similarity for the first early stopping steps
                 grad_s = torch.autograd.grad((1-cosine_sim), model.parameters())
                 total_grad = [g1+g2 + gs for g1, g2, gs in zip(g_B1, g_B2, grad_s)]
-                sim.append(cosine_sim.item())
             else:
                 # here we are using the sum of gradients of both batches that is g_B1 and g_B2 which means its a simple SGD
                 total_grad = [g1+g2 for g1, g2 in zip(g_B1, g_B2)]
-                sim.append(0)  # Append 0 to maintain list length
             
             # Set model parameters' gradients
             for p, g in zip(model.parameters(), total_grad):
@@ -172,7 +206,6 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                 plt.title("MNIST Classification Accuracy")
                 plt.xlabel("Optimization Steps")
                 plt.ylabel("Accuracy")
-                plt.xscale("log", base=10)
                 plt.grid()
 
                 plt.subplot(1, 3, 2)
@@ -182,8 +215,6 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                 plt.title("MNIST Classification Loss")
                 plt.xlabel("Optimization Steps")
                 plt.ylabel(f"{args.loss_function} Loss")
-                plt.xscale("log", base=10)
-                plt.yscale("log", base=10)
                 plt.grid()
 
                 plt.subplot(1, 3, 3)
@@ -192,7 +223,6 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                 plt.title("Gradient Similarity")
                 plt.xlabel("Optimization Steps")
                 plt.ylabel("Similarity")
-                plt.xscale("log", base=10)
                 plt.grid()
 
                 plt.tight_layout()
@@ -208,6 +238,7 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                     'val_loss': test_losses,
                     'sim': sim
                 }, f"results/mnist_res_{args.label}.pt")
+
 # Update the main function to use this implementation
 def main(args):
     print("MAIN method with baseline GLAM implementation called")
