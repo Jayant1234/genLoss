@@ -123,14 +123,14 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                         else:
                             model.zero_grad()
                             # here we are using the sum of gradients of both batches that is g_B1 and g_B2 which means its a simple SGD
-                            total_grad =g_B1
+                            (L_B1 + L_B2).backward()
                         
                         if i % 1000 == 0 or num_batch == 0:
                             print("similarity of both gradients is::::", cosine_sim)
                             print(num_batch)
                         
-                        for p, g in zip(model.parameters(), total_grad):
-                            p.grad = g
+                        # for p, g in zip(model.parameters(), total_grad):
+                        #     p.grad = g
 
                         trigger = i < 500 if args.two_stage else False
 
