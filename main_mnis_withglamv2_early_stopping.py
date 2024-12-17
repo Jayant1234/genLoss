@@ -46,7 +46,6 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                                 labels.unsqueeze(1).float()), dim=1)
             train_batches.append(combined)
         train_data_tensor = torch.cat(train_batches, dim=0)
-        print("train_data_tensor shape is::::", train_data_tensor.shape)
         
         valid_batches = []
         for images, labels in valid_loader:
@@ -54,7 +53,7 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                                 labels.unsqueeze(1).float()), dim=1)
             valid_batches.append(combined)
         valid_data_tensor = torch.cat(valid_batches, dim=0)
-        print("train_data_tensor shape is::::", train_data_tensor.shape)
+
         # Randomly shuffle train data
         train_data_tensor = train_data_tensor[torch.randperm(train_data_tensor.shape[0])]
 
@@ -68,7 +67,6 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
             dl = torch.split(data, args.batch_size, dim=0)
             num_batches = len(dl)
 
-            print("num_batches is::::", num_batches)
             for num_batch in range(num_batches):
                 input = dl[num_batch].to(device)
                 b2_input = dl[(num_batch + 1) % num_batches].to(device)
@@ -79,30 +77,21 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                 b2_images = b2_input[:, :-1].view(b2_input.size(0), 1, 28, 28)
                 b2_labels = b2_input[:, -1].long()
 
-                # with torch.set_grad_enabled(is_train):
-                #     with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
-                #         model.zero_grad()
+                with torch.set_grad_enabled(is_train):
+                    with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
+                        logits = model(images)
+                        L_B1 = F.cross_entropy(logits, labels)
+                        total_loss += L_B1.item() * input.shape[0]
                         
-                        
+                        logits_b2 = model(b2_images)
+                        L_B2 = F.cross_entropy(logits_b2, b2_labels)
 
                 if is_train:
                     with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
-                        
-                        logits = model(images)
                         model.zero_grad()
-                        L_B1 = F.cross_entropy(logits, labels)
 
-                        L_B1.backward(retain_graph=True)
-                        total_loss += L_B1.item() * input.shape[0]
-                        g_B1 = [p.grad.clone() for p in model.parameters()]
-                        model.zero_grad()
-                        logits_b2 = model(b2_images)
-                        L_B2 = F.cross_entropy(logits_b2, b2_labels)
-                        L_B2.backward(retain_graph=True)
-                        g_B2 = [p.grad.clone() for p in model.parameters()]
-
-                        # g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
-                        # g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
+                        g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
+                        g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
                         
                         # Compute dot product s = g_B2^T g_B1
                         s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
@@ -121,16 +110,15 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                             grad_s = torch.autograd.grad((1-cosine_sim), model.parameters())
                             total_grad = [g1+g2 + gs for g1, g2, gs in zip(g_B1, g_B2, grad_s)]
                         else:
-                            model.zero_grad()
                             # here we are using the sum of gradients of both batches that is g_B1 and g_B2 which means its a simple SGD
-                            (L_B1 + L_B2).backward()
+                            total_grad = [g1+g2 for g1, g2 in zip(g_B1, g_B2)]
                         
                         if i % 1000 == 0 or num_batch == 0:
                             print("similarity of both gradients is::::", cosine_sim)
                             print(num_batch)
                         
-                        # for p, g in zip(model.parameters(), total_grad):
-                        #     p.grad = g
+                        for p, g in zip(model.parameters(), total_grad):
+                            p.grad = g
 
                         trigger = i < 500 if args.two_stage else False
 
