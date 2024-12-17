@@ -79,10 +79,17 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                 b2_images = b2_input[:, :-1].view(b2_input.size(0), 1, 28, 28)
                 b2_labels = b2_input[:, -1].long()
 
-                with torch.set_grad_enabled(is_train):
+                # with torch.set_grad_enabled(is_train):
+                #     with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
+                #         model.zero_grad()
+                        
+                        
+
+                if is_train:
                     with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
-                        model.zero_grad()
+                        
                         logits = model(images)
+                        model.zero_grad()
                         L_B1 = F.cross_entropy(logits, labels)
 
                         L_B1.backward(retain_graph=True)
@@ -93,10 +100,6 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                         L_B2 = F.cross_entropy(logits_b2, b2_labels)
                         L_B2.backward(retain_graph=True)
                         g_B2 = [p.grad.clone() for p in model.parameters()]
-
-                if is_train:
-                    with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
-                        model.zero_grad()
 
                         # g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
                         # g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
