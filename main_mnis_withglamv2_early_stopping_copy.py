@@ -60,184 +60,160 @@ def compute_loss(network, dataset, loss_function, device, N=2000, batch_size=50)
         return total / points
 
 def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, device, args):
-    train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(valid_data, batch_size=args.batch_size, shuffle=True)
+    """
+    Modified GLAM implementation where cosine similarity is only used for first "args.early_stopping_steps" steps
+    """
+    train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=False)
+    valid_loader = torch.utils.data.DataLoader(valid_data, batch_size=args.batch_size, shuffle=False)
     
-    log_freq = math.ceil(args.optimization_steps / 150)
-
-    train_losses, test_losses, train_accuracies, test_accuracies = [], [], [], []
-    log_steps = []
-    sim = []
+    steps_per_epoch = math.ceil(len(train_data) / args.batch_size)
+    
+    its, train_acc, val_acc, train_loss, val_loss, sim = [], [], [], [], [], []
     grads = None
-    steps = 0
+    i = 0
 
-    loss_fn = loss_function_dict[args.loss_function]()
-    one_hots = torch.eye(10, 10).to(device)
+    for e in tqdm(range(int(args.optimization_steps) // steps_per_epoch)):
+        # Convert loaders to tensors for similar processing as original
+        train_batches = []
+        for images, labels in train_loader:
+            # Combine images and labels into single tensor
+            combined = torch.cat((images.view(images.size(0), -1), 
+                                labels.unsqueeze(1).float()), dim=1)
+            train_batches.append(combined)
+        train_data_tensor = torch.cat(train_batches, dim=0)
+        
+        valid_batches = []
+        for images, labels in valid_loader:
+            combined = torch.cat((images.view(images.size(0), -1), 
+                                labels.unsqueeze(1).float()), dim=1)
+            valid_batches.append(combined)
+        valid_data_tensor = torch.cat(valid_batches, dim=0)
 
-    with tqdm(total=args.optimization_steps, dynamic_ncols=True) as pbar:
-        for (x1, labels1), (x2, labels2) in zip(cycle(train_loader), cycle(train_loader)):
-            do_log = (steps < 30) or (steps < 150 and steps % 10 == 0) or steps % log_freq == 0
+        # Randomly shuffle train data
+        train_data_tensor = train_data_tensor[torch.randperm(train_data_tensor.shape[0])]
+
+        for data, is_train in [(train_data_tensor, True), (valid_data_tensor, False)]:
+            model.train(is_train)
+            total_loss = 0
+            total_acc = 0
+            avg_sim = 0
             
-            if do_log:
-                # Compute losses and accuracies
-                train_losses.append(compute_loss(model, train_data, args.loss_function, device, N=len(train_data)))
-                train_accuracies.append(compute_accuracy(model, train_data, device, N=len(train_data)))
-                test_losses.append(compute_loss(model, valid_data, args.loss_function, device, N=len(valid_data)))
-                test_accuracies.append(compute_accuracy(model, valid_data, device, N=len(valid_data)))
-                log_steps.append(steps)
+            # Split into batches like original implementation
+            dl = torch.split(data, args.batch_size, dim=0)
+            num_batches = len(dl)
 
-                # Always append a similarity value during logging
-                if steps < args.early_stopping_steps or args.early_stopping_steps == -1:
-                    try:
-                        # Compute cosine similarity
-                        y1 = model(x1.to(device))
-                        y2 = model(x2.to(device))
-                        
-                        # Compute loss for both batches
-                        if args.loss_function == 'CrossEntropy':
-                            L_B1 = loss_fn(y1, labels1.to(device))
-                            L_B2 = loss_fn(y2, labels2.to(device))
-                        elif args.loss_function == 'MSE':
-                            L_B1 = loss_fn(y1, one_hots[labels1].to(device))
-                            L_B2 = loss_fn(y2, one_hots[labels2].to(device))
-
-                        # Compute gradients
-                        g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
-                        g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
-                        
-                        # Compute dot product
-                        s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
-
-                        # Compute norms
-                        norm_g_B1 = torch.sqrt(sum((g1 ** 2).sum() for g1 in g_B1))
-                        norm_g_B2 = torch.sqrt(sum((g2 ** 2).sum() for g2 in g_B2))
-
-                        # Normalize dot product
-                        cosine_sim = s / (norm_g_B1 * norm_g_B2 + 1e-8)
-                        sim.append(cosine_sim.item())
-                    except Exception as e:
-                        print(f"Error computing cosine similarity: {e}")
-                        sim.append(0)
-                else:
-                    sim.append(0)
-
-                pbar.set_description(
-                    "L: {0:1.1e}|{1:1.1e}. A: {2:2.1f}%|{3:2.1f}%".format(
-                        train_losses[-1],
-                        test_losses[-1],
-                        train_accuracies[-1] * 100, 
-                        test_accuracies[-1] * 100,
-                    )
-                )
-
-            # Process first batch
-            y1 = model(x1.to(device))
-            if args.loss_function == 'CrossEntropy':
-                L_B1 = loss_fn(y1, labels1.to(device))
-            elif args.loss_function == 'MSE':
-                L_B1 = loss_fn(y1, one_hots[labels1].to(device))
-
-            # Process second batch
-            y2 = model(x2.to(device))
-            if args.loss_function == 'CrossEntropy':
-                L_B2 = loss_fn(y2, labels2.to(device))
-            elif args.loss_function == 'MSE':
-                L_B2 = loss_fn(y2, one_hots[labels2].to(device))
-
-            optimizer.zero_grad()
-
-            # Compute gradient for first loss
-            g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
-            # Compute gradient for second loss
-            g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
-            
-            # Compute dot product s = g_B2^T g_B1
-            s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
-
-            # Compute the norms of g_B1 and g_B2
-            norm_g_B1 = torch.sqrt(sum((g1 ** 2).sum() for g1 in g_B1))
-            norm_g_B2 = torch.sqrt(sum((g2 ** 2).sum() for g2 in g_B2))
-
-            # Normalize the dot product
-            cosine_sim = s / (norm_g_B1 * norm_g_B2 + 1e-8)
-            
-            # Only use gradient of cosine similarity in first 100 steps
-            if steps < args.early_stopping_steps or args.early_stopping_steps != -1:
-                # Here we are using cosine similarity for the first early stopping steps
-                grad_s = torch.autograd.grad((1-cosine_sim), model.parameters())
-                total_grad = [g1+g2 + gs for g1, g2, gs in zip(g_B1, g_B2, grad_s)]
-            else:
-                # here we are using the sum of gradients of both batches that is g_B1 and g_B2 which means its a simple SGD
-                total_grad = [g1+g2 for g1, g2 in zip(g_B1, g_B2)]
-            
-            # Set model parameters' gradients
-            for p, g in zip(model.parameters(), total_grad):
-                p.grad = g
-
-            trigger = False
-            if args.filter == "none":
-                pass
-            elif args.filter == "ma":
-                grads = gradfilter_ma(model, grads=grads, window_size=args.window_size, lamb=args.lamb, trigger=trigger)
-            elif args.filter == "ema":
-                grads = gradfilter_ema(model, grads=grads, alpha=args.alpha, lamb=args.lamb)
-            else:
-                raise ValueError(f"Invalid gradient filter type `{args.filter}`")
-
-            optimizer.step()
-            scheduler.step()
-
-            steps += 1
-            pbar.update(1)
-
-            if steps >= args.optimization_steps:
-                break
-
-            # Logging and plotting logic
-            if do_log:
-                title = "MNIST Image Classification"
-
-                plt.figure(figsize=(12, 4))
+            for num_batch in range(num_batches):
+                input = dl[num_batch].to(device)
+                b2_input = dl[(num_batch + 1) % num_batches].to(device)
                 
-                plt.subplot(1, 3, 1)
-                plt.plot(log_steps, train_accuracies, label="train")
-                plt.plot(log_steps, test_accuracies, label="val")
-                plt.legend()
-                plt.title("MNIST Classification Accuracy")
-                plt.xlabel("Optimization Steps")
-                plt.ylabel("Accuracy")
-                plt.grid()
+                # Split combined tensor back into images and labels
+                images = input[:, :-1].view(input.size(0), 1, 28, 28)
+                labels = input[:, -1].long()
+                b2_images = b2_input[:, :-1].view(b2_input.size(0), 1, 28, 28)
+                b2_labels = b2_input[:, -1].long()
 
-                plt.subplot(1, 3, 2)
-                plt.plot(log_steps, train_losses, label="train")
-                plt.plot(log_steps, test_losses, label="val")
-                plt.legend()
-                plt.title("MNIST Classification Loss")
-                plt.xlabel("Optimization Steps")
-                plt.ylabel(f"{args.loss_function} Loss")
-                plt.grid()
+                with torch.set_grad_enabled(is_train):
+                    with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
+                        logits = model(images)
+                        L_B1 = F.cross_entropy(logits, labels)
+                        total_loss += L_B1.item() * input.shape[0]
+                        
+                        logits_b2 = model(b2_images)
+                        L_B2 = F.cross_entropy(logits_b2, b2_labels)
 
-                plt.subplot(1, 3, 3)
-                plt.plot(log_steps, sim, label="cosine")
-                plt.legend()
-                plt.title("Gradient Similarity")
-                plt.xlabel("Optimization Steps")
-                plt.ylabel("Similarity")
-                plt.grid()
+                if is_train:
+                    with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
+                        model.zero_grad()
 
-                plt.tight_layout()
-                plt.savefig(f"results/mnist_acc_{args.label}.png", dpi=150)
-                plt.close()
+                        # Compute gradients of both losses using standard backpropagation
+                        L_B1.backward(retain_graph=True)
+                        L_B2.backward(retain_graph=True)
 
-                # Save results
-                torch.save({
-                    'its': log_steps,
-                    'train_acc': train_accuracies,
-                    'train_loss': train_losses,
-                    'val_acc': test_accuracies,
-                    'val_loss': test_losses,
-                    'sim': sim
-                }, f"results/mnist_res_{args.label}.pt")
+                        # Combine gradients of both batches
+                        total_grad = [g1 + g2 for g1, g2 in zip(model.parameters(), model.parameters())]
+
+                        if i % 1000 == 0 or num_batch == 0:
+                            print("Loss gradients of both batches computed")
+
+                        for p, g in zip(model.parameters(), total_grad):
+                            p.grad = g
+
+                        trigger = i < 500 if args.two_stage else False
+
+                        if args.filter == "none":
+                            pass
+                        elif args.filter == "ma":
+                            grads = gradfilter_ma(model, grads=grads, window_size=args.window_size, lamb=args.lamb, trigger=trigger)
+                        elif args.filter == "ema":
+                            grads = gradfilter_ema(model, grads=grads, alpha=args.alpha, lamb=args.lamb)
+                        else:
+                            raise ValueError(f"Invalid gradient filter type `{args.filter}`")
+
+                        optimizer.step()
+                        scheduler.step()
+                        i += 1
+
+                acc = (logits.argmax(-1) == labels).float().mean()
+                total_acc += acc.item() * input.shape[0]
+
+            if is_train:
+                train_acc.append(total_acc / len(train_data))
+                train_loss.append(total_loss / len(train_data))
+                sim.append(100 * avg_sim / num_batches)
+                its.append(i)
+            else:
+                val_acc.append(total_acc / len(valid_data))
+                val_loss.append(total_loss / len(valid_data))
+
+        # Plotting and saving logic
+        do_save = (e + 1) % 100 == 0
+        if do_save:
+            steps = torch.arange(len(train_acc)).numpy() * steps_per_epoch
+            plt.figure(figsize=(12, 4))
+            
+            plt.subplot(1, 3, 1)
+            plt.plot(steps, train_acc, label="train")
+            plt.plot(steps, val_acc, label="val")
+            plt.legend()
+            plt.title("MNIST Classification Accuracy")
+            plt.xlabel("Optimization Steps")
+            plt.ylabel("Accuracy")
+            plt.xscale("log", base=10)
+            plt.grid()
+
+            plt.subplot(1, 3, 2)
+            plt.plot(steps, train_loss, label="train")
+            plt.plot(steps, val_loss, label="val")
+            plt.legend()
+            plt.title("MNIST Classification Loss")
+            plt.xlabel("Optimization Steps")
+            plt.ylabel("Loss")
+            plt.xscale("log", base=10)
+            plt.grid()
+
+            plt.subplot(1, 3, 3)
+            plt.plot(steps, sim, label="cosine")
+            plt.legend()
+            plt.title("Gradient Similarity")
+            plt.xlabel("Optimization Steps")
+            plt.ylabel("Similarity")
+            plt.xscale("log", base=10)
+            plt.grid()
+
+            plt.tight_layout()
+            plt.savefig(f"results/mnist_acc_{args.label}.png", dpi=150)
+            plt.close()
+
+            results = {
+                'its': its,
+                'train_acc': train_acc,
+                'train_loss': train_loss,
+                'val_acc': val_acc,
+                'val_loss': val_loss,
+                'sim': sim
+            }
+
+            torch.save(results, f"results/mnist_res_{args.label}.pt")
 
 # Update the main function to use this implementation
 def main(args):
