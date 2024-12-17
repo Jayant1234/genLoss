@@ -219,7 +219,7 @@ def main(args):
                 plt.xscale("log", base=10)
                 plt.yscale("log", base=10)
                 plt.grid(True)
-                plt.savefig(f"results/sam_loss_comparison_{args.label}.png", dpi=150)
+                plt.savefig(f"results/mnist_sam_loss_comparison_{args.label}.png", dpi=150)
                 plt.close()
 
                 torch.save({
