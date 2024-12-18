@@ -263,7 +263,7 @@ if __name__ == '__main__':
     optim_suffix = ''
     if args.weight_decay != 0:
         optim_suffix = optim_suffix + f'_wd{args.weight_decay:.1e}'.replace('.', '')
-        return
+        
     if args.lr != 1e-3:
         optim_suffix = optim_suffix + f'_lrx{int(args.lr / 1e-3)}'
 

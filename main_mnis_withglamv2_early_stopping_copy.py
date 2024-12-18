@@ -61,11 +61,11 @@ def compute_loss(network, dataset, loss_function, device, N=2000, batch_size=50)
 
 def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, device, args):
     """
-    Modified GLAM implementation where cosine similarity is only used for first "args.early_stopping_steps" steps.
+    Modified GLAM implementation where cosine similarity is used to handle gradients from two batches.
     """
 
-    train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True)
-    valid_loader = torch.utils.data.DataLoader(valid_data, batch_size=args.batch_size, shuffle=False)
+    train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True)
+    valid_loader = DataLoader(valid_data, batch_size=args.batch_size, shuffle=False)
 
     steps_per_epoch = math.ceil(len(train_data) / args.batch_size)
 
@@ -86,10 +86,9 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
         for images, labels in train_loader:
             images, labels = images.to(device), labels.to(device)
 
-            # Compute logits and loss
+            # First batch
             logits = model(images)
             L_B1 = F.cross_entropy(logits, labels)
-            total_train_loss += L_B1.item() * images.size(0)
 
             # Perform gradient calculation for the second batch
             b2_images, b2_labels = next(iter(train_loader))
@@ -98,7 +97,7 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
             logits_b2 = model(b2_images)
             L_B2 = F.cross_entropy(logits_b2, b2_labels)
 
-            # Gradient calculations
+            # Gradient calculations for both batches
             optimizer.zero_grad()
 
             g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
@@ -213,7 +212,6 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
             }
 
             torch.save(results, f"results/mnist_res_{args.label}.pt")
-
 # Update the main function to use this implementation
 def main(args):
     print("MAIN method with baseline GLAM implementation called")
