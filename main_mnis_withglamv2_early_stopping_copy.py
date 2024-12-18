@@ -129,6 +129,7 @@ def main(args):
     log_steps = []
     grads = None
     steps = 0
+    cosine_similarities = []
 
     with tqdm(total=args.optimization_steps, dynamic_ncols=True) as pbar:
         for x, labels in islice(cycle(train_loader), args.optimization_steps):
@@ -190,10 +191,11 @@ def main(args):
             norm_g_B1 = torch.sqrt(sum((g1 ** 2).sum() for g1 in g_B1))
             norm_g_B2 = torch.sqrt(sum((g2 ** 2).sum() for g2 in g_B2))
             cosine_sim = s / (norm_g_B1 * norm_g_B2 + 1e-8)
+            cosine_similarities.append(cosine_sim.item())
 
             # Determine gradient composition based on early stopping steps
             mlp.zero_grad()
-            if args.early_stopping_steps == -1:
+            if args.early_stopping_steps <= 0:
                 # Standard SGD: just sum the gradients
                 total_grad = [g1 + g2 for g1, g2 in zip(g_B1, g_B2)]
             else:
@@ -255,6 +257,20 @@ def main(args):
                 plt.tight_layout()
                 plt.savefig(f"results/mnist_acc_{args.label}.png", dpi=150)
                 plt.close()
+                # Cosine Similarity plot
+                plt.figure(figsize=(10, 5))
+                plt.plot(log_steps, cosine_similarities, label="Cosine Similarity", color="purple")
+                plt.legend()
+                plt.title(title + " - Cosine Similarity")
+                plt.xlabel("Optimization Steps")
+                plt.ylabel("Cosine Similarity")
+                plt.xscale("log", base=10)
+                plt.grid()
+
+                plt.tight_layout()
+                plt.savefig(f"results/mnist_acc_{args.label}.png", dpi=150)
+                plt.close()
+
 
                 torch.save({
                     'its': log_steps,
