@@ -180,12 +180,12 @@ def main(args):
             # Recompute first batch gradients to ensure proper graph
             mlp.zero_grad()
             loss_B1.backward(create_graph=True)
-            g_B1 = [p.grad.detach().clone() for p in mlp.parameters()]
+            g_B1 = [p.grad.clone() for p in mlp.parameters()]
             
             # Compute B2 gradients
             mlp.zero_grad()
             loss_B2.backward(create_graph=True)
-            g_B2 = [p.grad.detach().clone() for p in mlp.parameters()]
+            g_B2 = [p.grad.clone() for p in mlp.parameters()]
 
             # Compute gradient similarity
             s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
