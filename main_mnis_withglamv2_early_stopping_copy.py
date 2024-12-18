@@ -212,8 +212,7 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
                 'sim': sim
             }
 
-            torch.save(results, f"results/mnist_res_{args.label}.pt")
-# Update the main function to use this implementation
+            torch.save(results, f"results/mnist_res_{args.label}.pt")# Update the main function to use this implementation
 def main(args):
     print("MAIN method with baseline GLAM implementation called")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
