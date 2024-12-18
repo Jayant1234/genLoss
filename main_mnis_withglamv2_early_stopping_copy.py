@@ -16,6 +16,7 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
+from torch.utils.data import DataLoader
 
 import torch
 import torch.nn as nn
