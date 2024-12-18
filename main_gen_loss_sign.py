@@ -248,6 +248,7 @@ def train_progressive(model, train_data, valid_data, optimizer, scheduler, devic
                                     if flip_all:
                                         param.grad = -g_B  # Flip all signs
                     elif args.method_type == "SAM":
+                        pass
 
                     optimizer.step()
                     scheduler.step()
