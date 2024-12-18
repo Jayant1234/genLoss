@@ -231,7 +231,7 @@ def main(args):
 
             # Periodic logging and plotting
             if do_log:
-                
+                title = "MNIST Image Classification"
                 # Accuracy and Loss plot (first graph)
                 plt.figure(figsize=(10, 5))
                 plt.subplot(121)
