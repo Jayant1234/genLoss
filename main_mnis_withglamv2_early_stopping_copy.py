@@ -133,7 +133,7 @@ def main(args):
 
     with tqdm(total=args.optimization_steps, dynamic_ncols=True) as pbar:
         for x, labels in islice(cycle(train_loader), args.optimization_steps):
-            do_log = (steps < 30) or (steps < 150 and steps % 10 == 0) or steps % log_freq == 0
+            do_log = steps%100 == 0
             if do_log:
                 train_losses.append(compute_loss(mlp, train, 'CrossEntropy', device, N=len(train)))
                 train_accuracies.append(compute_accuracy(mlp, train, device, N=len(train)))
@@ -201,13 +201,13 @@ def main(args):
                 total_grad = [g1 + g2 for g1, g2 in zip(g_B1, g_B2)]
             else:
                 # GLAM method: use cosine similarity gradient for the first n steps
-                if steps < args.early_stopping_steps:
+                # if steps < args.early_stopping_steps:
                     # Compute gradient of cosine similarity
                     grad_s = torch.autograd.grad((1-cosine_sim), mlp.parameters())
                     total_grad = [g1 + g2 + gs for g1, g2, gs in zip(g_B1, g_B2, grad_s)]
-                else:
-                    # Fallback to standard gradient summation
-                    total_grad = [g1 + g2 for g1, g2 in zip(g_B1, g_B2)]
+                # else:
+                #     # Fallback to standard gradient summation
+                #     total_grad = [g1 + g2 for g1, g2 in zip(g_B1, g_B2)]
 
             # Assign total gradient
             for p, g in zip(mlp.parameters(), total_grad):
@@ -233,8 +233,8 @@ def main(args):
             if do_log:
                 title = "MNIST Image Classification"
                 # Accuracy and Loss plot (first graph)
-                log_steps = log_steps[:len(cosine_similarities)]
-                cosine_similarities_clone = cosine_similarities[:len(log_steps)]
+                # log_steps = log_steps[:len(cosine_similarities)]
+                # cosine_similarities_clone = cosine_similarities[:len(log_steps)]
                 plt.figure(figsize=(10, 5))
                 plt.subplot(121)
                 plt.plot(log_steps, train_accuracies, label="train")
