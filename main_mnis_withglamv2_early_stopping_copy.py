@@ -233,6 +233,8 @@ def main(args):
             if do_log:
                 title = "MNIST Image Classification"
                 # Accuracy and Loss plot (first graph)
+                log_steps = log_steps[:len(cosine_similarities)]
+                cosine_similarities_clone = cosine_similarities[:len(log_steps)]
                 plt.figure(figsize=(10, 5))
                 plt.subplot(121)
                 plt.plot(log_steps, train_accuracies, label="train")
@@ -261,7 +263,7 @@ def main(args):
 
                 # Separate Cosine Similarity plot
                 plt.figure(figsize=(10, 5))
-                plt.plot(log_steps, cosine_similarities, label="Cosine Similarity", color="purple")
+                plt.plot(log_steps, cosine_similarities_clone, label="Cosine Similarity", color="purple")
                 plt.legend()
                 plt.title(title + " - Cosine Similarity")
                 plt.xlabel("Optimization Steps")
