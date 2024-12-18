@@ -444,7 +444,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                             print(num_batch)
                         
                         #curious case of barely doing it and still getting same results. 
-                        if i >-1: 
+                        if i >args.cosine_steps: 
                             total_grad = [g1+g2 for g1,g2 in zip(g_B1, g_B2)]
                         #Compute total gradient
                         else: 
@@ -627,6 +627,7 @@ if __name__ == "__main__":
 
     #Generalization Loss
     parser.add_argument("--method_type", default="progressive_grad")
+    parser.add_argument("--cosine_steps",type=int, default=10)
     parser.add_argument("--lambda_weight", type=float, default=0.9)
     parser.add_argument("--max_epochs",type=int, default=500)
     parser.add_argument("--last_max_epochs",type=int, default=10000)
