@@ -140,7 +140,7 @@ def main(args):
                 test_losses.append(compute_loss(mlp, test, 'CrossEntropy', device, N=len(test)))
                 test_accuracies.append(compute_accuracy(mlp, test, device, N=len(test)))
                 log_steps.append(steps)
-                cosine_similarities.append(cosine_sim.item())
+                
 
                 pbar.set_description(
                     "L: {0:1.1e}|{1:1.1e}. A: {2:2.1f}%|{3:2.1f}%".format(
@@ -192,7 +192,7 @@ def main(args):
             norm_g_B1 = torch.sqrt(sum((g1 ** 2).sum() for g1 in g_B1))
             norm_g_B2 = torch.sqrt(sum((g2 ** 2).sum() for g2 in g_B2))
             cosine_sim = s / (norm_g_B1 * norm_g_B2 + 1e-8)
-            
+            cosine_similarities.append(cosine_sim.item())
 
             # Determine gradient composition based on early stopping steps
             mlp.zero_grad()
@@ -231,8 +231,8 @@ def main(args):
 
             # Periodic logging and plotting
             if do_log:
-                title = "MNIST Image Classification"
-
+                
+                # Accuracy and Loss plot (first graph)
                 plt.figure(figsize=(10, 5))
                 plt.subplot(121)
                 plt.plot(log_steps, train_accuracies, label="train")
@@ -256,9 +256,10 @@ def main(args):
                 plt.grid()
 
                 plt.tight_layout()
-                plt.savefig(f"results/mnist_acc_{args.label}.png", dpi=150)
+                plt.savefig(f"results/mnist_acc_loss_{args.label}.png", dpi=150)
                 plt.close()
-                # Cosine Similarity plot
+
+                # Separate Cosine Similarity plot
                 plt.figure(figsize=(10, 5))
                 plt.plot(log_steps, cosine_similarities, label="Cosine Similarity", color="purple")
                 plt.legend()
@@ -269,16 +270,17 @@ def main(args):
                 plt.grid()
 
                 plt.tight_layout()
-                plt.savefig(f"results/mnist_acc_{args.label}.png", dpi=150)
+                plt.savefig(f"results/mnist_cosine_similarity_{args.label}.png", dpi=150)
                 plt.close()
 
-
+                # Save data
                 torch.save({
                     'its': log_steps,
                     'train_acc': train_accuracies,
                     'train_loss': train_losses,
                     'val_acc': test_accuracies,
                     'val_loss': test_losses,
+                    'cosine_similarities': cosine_similarities
                 }, f"results/mnist_{args.label}.pt")
 
 
