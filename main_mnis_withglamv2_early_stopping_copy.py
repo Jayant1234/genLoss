@@ -61,116 +61,113 @@ def compute_loss(network, dataset, loss_function, device, N=2000, batch_size=50)
 
 def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, device, args):
     """
-    Modified GLAM implementation where cosine similarity is only used for first "args.early_stopping_steps" steps
+    Modified GLAM implementation where cosine similarity is only used for first "args.early_stopping_steps" steps.
     """
-    train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=False)
+
+    train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True)
     valid_loader = torch.utils.data.DataLoader(valid_data, batch_size=args.batch_size, shuffle=False)
-    
+
     steps_per_epoch = math.ceil(len(train_data) / args.batch_size)
-    
+
+    # Logging variables
     its, train_acc, val_acc, train_loss, val_loss, sim = [], [], [], [], [], []
+
     grads = None
     i = 0
 
+    # Training loop
     for e in tqdm(range(int(args.optimization_steps) // steps_per_epoch)):
-        # Convert loaders to tensors for similar processing as original
-        train_batches = []
+
+        # Train phase
+        model.train()
+        total_train_loss = 0
+        total_train_acc = 0
+        avg_sim = 0
         for images, labels in train_loader:
-            # Combine images and labels into single tensor
-            combined = torch.cat((images.view(images.size(0), -1), 
-                                labels.unsqueeze(1).float()), dim=1)
-            train_batches.append(combined)
-        train_data_tensor = torch.cat(train_batches, dim=0)
-        
-        valid_batches = []
-        for images, labels in valid_loader:
-            combined = torch.cat((images.view(images.size(0), -1), 
-                                labels.unsqueeze(1).float()), dim=1)
-            valid_batches.append(combined)
-        valid_data_tensor = torch.cat(valid_batches, dim=0)
+            images, labels = images.to(device), labels.to(device)
 
-        # Randomly shuffle train data
-        train_data_tensor = train_data_tensor[torch.randperm(train_data_tensor.shape[0])]
+            # Compute logits and loss
+            logits = model(images)
+            L_B1 = F.cross_entropy(logits, labels)
+            total_train_loss += L_B1.item() * images.size(0)
 
-        for data, is_train in [(train_data_tensor, True), (valid_data_tensor, False)]:
-            model.train(is_train)
-            total_loss = 0
-            total_acc = 0
-            avg_sim = 0
-            
-            # Split into batches like original implementation
-            dl = torch.split(data, args.batch_size, dim=0)
-            num_batches = len(dl)
+            # Perform gradient calculation for the second batch
+            b2_images, b2_labels = next(iter(train_loader))
+            b2_images, b2_labels = b2_images.to(device), b2_labels.to(device)
 
-            for num_batch in range(num_batches):
-                input = dl[num_batch].to(device)
-                b2_input = dl[(num_batch + 1) % num_batches].to(device)
-                
-                # Split combined tensor back into images and labels
-                images = input[:, :-1].view(input.size(0), 1, 28, 28)
-                labels = input[:, -1].long()
-                b2_images = b2_input[:, :-1].view(b2_input.size(0), 1, 28, 28)
-                b2_labels = b2_input[:, -1].long()
+            logits_b2 = model(b2_images)
+            L_B2 = F.cross_entropy(logits_b2, b2_labels)
 
-                with torch.set_grad_enabled(is_train):
-                    with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
-                        logits = model(images)
-                        L_B1 = F.cross_entropy(logits, labels)
-                        total_loss += L_B1.item() * input.shape[0]
-                        
-                        logits_b2 = model(b2_images)
-                        L_B2 = F.cross_entropy(logits_b2, b2_labels)
+            # Gradient calculations
+            optimizer.zero_grad()
 
-                if is_train:
-                    with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
-                        model.zero_grad()
+            g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
+            g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
 
-                        # Compute gradients of both losses using standard backpropagation
-                        L_B1.backward(retain_graph=True)
-                        L_B2.backward(retain_graph=True)
+            # Compute cosine similarity between gradients
+            s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
+            norm_g_B1 = torch.sqrt(sum((g1 ** 2).sum() for g1 in g_B1))
+            norm_g_B2 = torch.sqrt(sum((g2 ** 2).sum() for g2 in g_B2))
+            cosine_sim = s / (norm_g_B1 * norm_g_B2 + 1e-8)
 
-                        # Combine gradients of both batches
-                        total_grad = [g1 + g2 for g1, g2 in zip(model.parameters(), model.parameters())]
+            if i < args.early_stopping_steps:
+                grad_s = torch.autograd.grad((1 - cosine_sim), model.parameters())
+                total_grad = [g1 + g2 + gs for g1, g2, gs in zip(g_B1, g_B2, grad_s)]
+            else:
+                total_grad = [g1 + g2 for g1, g2 in zip(g_B1, g_B2)]
 
-                        if i % 1000 == 0 or num_batch == 0:
-                            print("Loss gradients of both batches computed")
+            # Apply gradients
+            for p, g in zip(model.parameters(), total_grad):
+                p.grad = g
 
-                        for p, g in zip(model.parameters(), total_grad):
-                            p.grad = g
+            # Apply gradient filter if specified
+            if args.filter == "none":
+                pass
+            elif args.filter == "ma":
+                grads = gradfilter_ma(model, grads=grads, window_size=args.window_size, lamb=args.lamb)
+            elif args.filter == "ema":
+                grads = gradfilter_ema(model, grads=grads, alpha=args.alpha, lamb=args.lamb)
+            else:
+                raise ValueError(f"Invalid gradient filter type `{args.filter}`")
 
-                        trigger = i < 500 if args.two_stage else False
+            optimizer.step()
+            scheduler.step()
 
-                        if args.filter == "none":
-                            pass
-                        elif args.filter == "ma":
-                            grads = gradfilter_ma(model, grads=grads, window_size=args.window_size, lamb=args.lamb, trigger=trigger)
-                        elif args.filter == "ema":
-                            grads = gradfilter_ema(model, grads=grads, alpha=args.alpha, lamb=args.lamb)
-                        else:
-                            raise ValueError(f"Invalid gradient filter type `{args.filter}`")
+            avg_sim += cosine_sim.item()
+            acc = (logits.argmax(-1) == labels).float().mean()
+            total_train_acc += acc.item() * images.size(0)
 
-                        optimizer.step()
-                        scheduler.step()
-                        i += 1
+            i += 1
+
+        train_acc.append(total_train_acc / len(train_data))
+        train_loss.append(total_train_loss / len(train_data))
+        sim.append(100 * avg_sim / len(train_loader))
+        its.append(i)
+
+        # Validation phase
+        model.eval()
+        total_val_loss = 0
+        total_val_acc = 0
+        with torch.no_grad():
+            for images, labels in valid_loader:
+                images, labels = images.to(device), labels.to(device)
+                logits = model(images)
+                L_val = F.cross_entropy(logits, labels)
+                total_val_loss += L_val.item() * images.size(0)
 
                 acc = (logits.argmax(-1) == labels).float().mean()
-                total_acc += acc.item() * input.shape[0]
+                total_val_acc += acc.item() * images.size(0)
 
-            if is_train:
-                train_acc.append(total_acc / len(train_data))
-                train_loss.append(total_loss / len(train_data))
-                sim.append(100 * avg_sim / num_batches)
-                its.append(i)
-            else:
-                val_acc.append(total_acc / len(valid_data))
-                val_loss.append(total_loss / len(valid_data))
+        val_acc.append(total_val_acc / len(valid_data))
+        val_loss.append(total_val_loss / len(valid_data))
 
-        # Plotting and saving logic
-        do_save = (e + 1) % 100 == 0
-        if do_save:
+        # Logging and plotting
+        if (e + 1) % 100 == 0:
             steps = torch.arange(len(train_acc)).numpy() * steps_per_epoch
+
             plt.figure(figsize=(12, 4))
-            
+
+            # Accuracy plot
             plt.subplot(1, 3, 1)
             plt.plot(steps, train_acc, label="train")
             plt.plot(steps, val_acc, label="val")
@@ -181,6 +178,7 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
             plt.xscale("log", base=10)
             plt.grid()
 
+            # Loss plot
             plt.subplot(1, 3, 2)
             plt.plot(steps, train_loss, label="train")
             plt.plot(steps, val_loss, label="val")
@@ -191,6 +189,7 @@ def train_mnist_baseline(model, train_data, valid_data, optimizer, scheduler, de
             plt.xscale("log", base=10)
             plt.grid()
 
+            # Cosine similarity plot
             plt.subplot(1, 3, 3)
             plt.plot(steps, sim, label="cosine")
             plt.legend()
