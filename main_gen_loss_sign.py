@@ -404,51 +404,69 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                 if is_train:
                     with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
                         model.zero_grad()
+                        if(args.similarity_type =="cosine"): 
+                            g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
+                            g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
+                            
+                            s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
 
-                        g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
-                        g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
-                        
-                        #g_B1 = torch.autograd.grad(L_B1, model.parameters(), retain_graph=True)
-                        #g_B2 = torch.autograd.grad(L_B2, model.parameters(), retain_graph=True)
+                            #cosine_sim = sum((g1 * g2).sum()/(torch.sqrt(sum((g1 ** 2)))*torch.sqrt(sum((g2 ** 2)))+ 1e-8) for g1, g2 in zip(g_B1, g_B2)) #trying pair-wise cosine similarity
 
-                        # Convert gradients to vectors
-                        #g_B1_vector = torch.cat([g.view(-1) for g in g_B1])
-                        #g_B2_vector = torch.cat([g.view(-1) for g in g_B2])
+                            # Compute the norms of g_B1 and g_B2
+                            norm_g_B1 = torch.sqrt(sum((g1 ** 2).sum() for g1 in g_B1))
+                            norm_g_B2 = torch.sqrt(sum((g2 ** 2).sum() for g2 in g_B2))
 
-                        # Compute cosine similarity
-                        # cos_sim = torch.nn.functional.cosine_similarity(g_B1_vector, g_B2_vector, dim=0)
+                            #Normalize the dot product
+                            cosine_sim = s / (norm_g_B1 * norm_g_B2 + 1e-8)  # Add epsilon for numerical stability
 
-                        # # Define total loss
-                        # L_total = L_B1 - cos_sim
-                        # L_total.backward()
-                        # Compute dot product s = g_B2^T g_B1
-                        
-                        s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
+                            
+                            # Compute gradient of s with respect to model parameters
+                            grad_s = torch.autograd.grad((1-cosine_sim), model.parameters())
+                            if i % 1000 == 0 or num_batch == 0: 
+                                #print("gradient for coherence is:", grad_s)
+                                #print("gradient for baseline is:", g_B1)
+                                print("similarity of both gradients is::::",cosine_sim)
+                                print(num_batch)
+                            
+                            #curious case of barely doing it and still getting same results. 
+                            if i >args.cosine_steps: 
+                                total_grad = [g1+g2 for g1,g2 in zip(g_B1, g_B2)]
+                            #Compute total gradient
+                            else: 
+                                total_grad = [g1+g2 + gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
+                                
+                        elif (args.similarity_type =="euc"): 
+                            # Compute gradient lists
+                            g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
+                            g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
 
-                        #cosine_sim = sum((g1 * g2).sum()/(torch.sqrt(sum((g1 ** 2)))*torch.sqrt(sum((g2 ** 2)))+ 1e-8) for g1, g2 in zip(g_B1, g_B2)) #trying pair-wise cosine similarity
+                            # Flatten and concatenate all gradients into a single 1D vector
+                            flat_g_B1 = torch.cat([g.view(-1) for g in g_B1], dim=0)
+                            flat_g_B2 = torch.cat([g.view(-1) for g in g_B2], dim=0)
 
-                        # Compute the norms of g_B1 and g_B2
-                        norm_g_B1 = torch.sqrt(sum((g1 ** 2).sum() for g1 in g_B1))
-                        norm_g_B2 = torch.sqrt(sum((g2 ** 2).sum() for g2 in g_B2))
+                            # Compute the Euclidean distance between the two gradient vectors
+                            diff = flat_g_B1 - flat_g_B2
+                            # Add a small epsilon for numerical stability
+                            euclidean_dist = torch.sqrt(torch.sum(diff ** 2) + 1e-8)
 
-                        #Normalize the dot product
-                        cosine_sim = s / (norm_g_B1 * norm_g_B2 + 1e-8)  # Add epsilon for numerical stability
+                            # Normalize the Euclidean distance
+                            # One option: divide by sum of their norms to get a scale-invariant measure
+                            norm_g_B1 = torch.sqrt(torch.sum(flat_g_B1 ** 2) + 1e-8)
+                            norm_g_B2 = torch.sqrt(torch.sum(flat_g_B2 ** 2) + 1e-8)
+                            normalized_euclidean_dist = euclidean_dist / (norm_g_B1 + norm_g_B2)
 
-                        
-                        # Compute gradient of s with respect to model parameters
-                        grad_s = torch.autograd.grad((1-cosine_sim), model.parameters())
-                        if i % 1000 == 0 or num_batch == 0: 
-                            #print("gradient for coherence is:", grad_s)
-                            #print("gradient for baseline is:", g_B1)
-                            print("similarity of both gradients is::::",cosine_sim)
-                            print(num_batch)
-                        
-                        #curious case of barely doing it and still getting same results. 
-                        if i >args.cosine_steps: 
-                            total_grad = [g1+g2 for g1,g2 in zip(g_B1, g_B2)]
-                        #Compute total gradient
-                        else: 
-                            total_grad = [g1+g2 + gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
+                            # Compute the gradient of the loss (1 - normalized_euclidean_dist) to encourage minimization of distance
+                            grad_s = torch.autograd.grad((1 - normalized_euclidean_dist), model.parameters(), create_graph=True)
+
+                            if i % 1000 == 0 or num_batch == 0: 
+                                print("Normalized Euclidean distance of both gradients:", normalized_euclidean_dist.item())
+                                print(num_batch)
+
+                            # Combine gradients as before
+                            if i > args.cosine_steps:
+                                total_grad = [g1 + g2 for g1, g2 in zip(g_B1, g_B2)]
+                            else:
+                                total_grad = [g1 + g2 + gs for g1, g2, gs in zip(g_B1, g_B2, grad_s)]
 
                         
                         #total_grad = [g1+g2 + gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
@@ -627,6 +645,7 @@ if __name__ == "__main__":
 
     #Generalization Loss
     parser.add_argument("--method_type", default="progressive_grad")
+    parser.add_argument("--similarity_type", type=str, choices=["euc", "cosine"] default="cosine")
     parser.add_argument("--cosine_steps",type=int, default=10)
     parser.add_argument("--lambda_weight", type=float, default=0.9)
     parser.add_argument("--max_epochs",type=int, default=500)
