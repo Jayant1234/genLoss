@@ -140,6 +140,7 @@ def main(args):
                 test_losses.append(compute_loss(mlp, test, 'CrossEntropy', device, N=len(test)))
                 test_accuracies.append(compute_accuracy(mlp, test, device, N=len(test)))
                 log_steps.append(steps)
+                cosine_similarities.append(cosine_sim.item())
 
                 pbar.set_description(
                     "L: {0:1.1e}|{1:1.1e}. A: {2:2.1f}%|{3:2.1f}%".format(
@@ -191,7 +192,7 @@ def main(args):
             norm_g_B1 = torch.sqrt(sum((g1 ** 2).sum() for g1 in g_B1))
             norm_g_B2 = torch.sqrt(sum((g2 ** 2).sum() for g2 in g_B2))
             cosine_sim = s / (norm_g_B1 * norm_g_B2 + 1e-8)
-            cosine_similarities.append(cosine_sim.item())
+            
 
             # Determine gradient composition based on early stopping steps
             mlp.zero_grad()
