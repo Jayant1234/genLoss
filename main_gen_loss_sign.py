@@ -443,14 +443,14 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                             print(num_batch)
                         
                         #curious case of barely doing it and still getting same results. 
-                        # if i >10: 
-                            # total_grad = [g1+g2 + 0*gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
-                        # #Compute total gradient
-                        # else: 
-                            # total_grad = [g1+g2 + gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
+                        if i >-1: 
+                            total_grad = [g1+g2 for g1,g2 in zip(g_B1, g_B2)]
+                        #Compute total gradient
+                        else: 
+                            total_grad = [g1+g2 + gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
 
                         
-                        total_grad = [g1+g2 + gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
+                        #total_grad = [g1+g2 + gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
                         
                         #Assign gradients to parameters
                         for p, g in zip(model.parameters(), total_grad):
@@ -607,8 +607,8 @@ def main(args):
         optimizer, lambda update: 1 if update > 10 else update / 10
     )
     
-    #train_baseline(model, train_data, valid_data, optimizer, scheduler, device, args)
-    train_progressive(model, train_data, valid_data, optimizer, scheduler, device, args)
+    train_baseline(model, train_data, valid_data, optimizer, scheduler, device, args)
+    #train_progressive(model, train_data, valid_data, optimizer, scheduler, device, args)
 
 
 if __name__ == "__main__":
