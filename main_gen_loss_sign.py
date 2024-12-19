@@ -456,7 +456,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                             similarity = euclidean_dist / (norm_g_B1 + norm_g_B2)
 
                             # Compute the gradient of the loss (1 - normalized_euclidean_dist) to encourage minimization of distance
-                            grad_s = torch.autograd.grad(5*(1 - similarity), model.parameters(), create_graph=True)
+                            grad_s = torch.autograd.grad((1 - similarity), model.parameters(), create_graph=True)
 
                             if i % 1000 == 0 or num_batch == 0: 
                                 print("Normalized Euclidean distance of both gradients:", similarity)
@@ -466,7 +466,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                             if i > args.cosine_steps:
                                 total_grad = [g1 + g2 for g1, g2 in zip(g_B1, g_B2)]
                             else:
-                                total_grad = [g1 + g2 + gs for g1, g2, gs in zip(g_B1, g_B2, grad_s)]
+                                total_grad = [0.2*(g1 + g2) + 0.8*gs for g1, g2, gs in zip(g_B1, g_B2, grad_s)]
 
                         
                         #total_grad = [g1+g2 + gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
