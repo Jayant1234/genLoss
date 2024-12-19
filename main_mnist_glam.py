@@ -172,10 +172,10 @@ def main(args):
                 L_B2 = loss_fn(y2, one_hots[labels2])
 
             with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
-                model.zero_grad()
+                mlp.zero_grad()
                 if(args.similarity_type =="cosine"): 
-                    g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
-                    g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
+                    g_B1 = torch.autograd.grad(L_B1, mlp.parameters(), create_graph=True)
+                    g_B2 = torch.autograd.grad(L_B2, mlp.parameters(), create_graph=True)
                     
                     s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
 
@@ -189,7 +189,7 @@ def main(args):
                     similarity = s / (norm_g_B1 * norm_g_B2 + 1e-8)  # Add epsilon for numerical stability
 
                     # Compute gradient of s with respect to model parameters
-                    grad_s = torch.autograd.grad((1-similarity), model.parameters())
+                    grad_s = torch.autograd.grad((1-similarity), mlp.parameters())
                     if steps % 1000 == 0 or num_batch == 0: 
                         #print("gradient for coherence is:", grad_s)
                         #print("gradient for baseline is:", g_B1)
@@ -205,8 +205,8 @@ def main(args):
                         
                 elif (args.similarity_type =="euc"): 
                     # Compute gradient lists
-                    g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
-                    g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
+                    g_B1 = torch.autograd.grad(L_B1, mlp.parameters(), create_graph=True)
+                    g_B2 = torch.autograd.grad(L_B2, mlp.parameters(), create_graph=True)
 
                     # Flatten and concatenate all gradients into a single 1D vector
                     flat_g_B1 = torch.cat([g.view(-1) for g in g_B1], dim=0)
@@ -224,7 +224,7 @@ def main(args):
                     similarity = euclidean_dist / (norm_g_B1 + norm_g_B2)
 
                     # Compute the gradient of the loss (1 - normalized_euclidean_dist) to encourage minimization of distance
-                    grad_s = torch.autograd.grad((1 - similarity), model.parameters(), create_graph=True)
+                    grad_s = torch.autograd.grad((1 - similarity), mlp.parameters(), create_graph=True)
 
                     if steps % 1000 == 0 or num_batch == 0: 
                         print("Normalized Euclidean distance of both gradients:", similarity)
@@ -240,7 +240,7 @@ def main(args):
                 #total_grad = [g1+g2 + gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
                 
                 #Assign gradients to parameters
-                for p, g in zip(model.parameters(), total_grad):
+                for p, g in zip(mlp.parameters(), total_grad):
                     p.grad = g
                 #######
 
