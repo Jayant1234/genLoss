@@ -466,7 +466,7 @@ def train_baseline(model, train_data, valid_data, optimizer, scheduler, device, 
                             if i > args.cosine_steps:
                                 total_grad = [g1 + g2 for g1, g2 in zip(g_B1, g_B2)]
                             else:
-                                total_grad = [0.2*(g1 + g2) + 0.8*gs for g1, g2, gs in zip(g_B1, g_B2, grad_s)]
+                                total_grad = [g1 + g2 + gs for g1, g2, gs in zip(g_B1, g_B2, grad_s)]
 
                         
                         #total_grad = [g1+g2 + gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]

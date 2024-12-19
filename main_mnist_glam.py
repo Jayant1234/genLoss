@@ -131,7 +131,7 @@ def main(args):
 
 
     train_losses, test_losses, train_accuracies, test_accuracies = [], [], [], []
-    norms, last_layer_norms, log_steps = [], [], []
+    norms, last_layer_norms, log_steps, sim = [], [], [], []
     grads = None
 
     steps = 0
@@ -154,15 +154,95 @@ def main(args):
                         test_accuracies[-1] * 100,
                     )
                 )
+           # Split the batch into two halves
+            mid_point = x.size(0) // 2
+            x1, x2 = x[:mid_point], x[mid_point:]
+            labels1, labels2 = labels[:mid_point], labels[mid_point:]
 
-            y = mlp(x.to(device))
+            # Compute predictions for both halves
+            y1 = mlp(x1.to(device))
+            y2 = mlp(x2.to(device))
+
+            # Compute losses for both halves
             if args.loss_function == 'CrossEntropy':
-                loss = loss_fn(y, labels.to(device))
+                L_B1 = loss_fn(y1, labels1.to(device))
+                L_B2 = loss_fn(y2, labels2.to(device))
             elif args.loss_function == 'MSE':
-                loss = loss_fn(y, one_hots[labels])
+                L_B1 = loss_fn(y1, one_hots[labels1])
+                L_B2 = loss_fn(y2, one_hots[labels2])
 
-            optimizer.zero_grad()
-            loss.backward()
+            with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
+                model.zero_grad()
+                if(args.similarity_type =="cosine"): 
+                    g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
+                    g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
+                    
+                    s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
+
+                    #cosine_sim = sum((g1 * g2).sum()/(torch.sqrt(sum((g1 ** 2)))*torch.sqrt(sum((g2 ** 2)))+ 1e-8) for g1, g2 in zip(g_B1, g_B2)) #trying pair-wise cosine similarity
+
+                    # Compute the norms of g_B1 and g_B2
+                    norm_g_B1 = torch.sqrt(sum((g1 ** 2).sum() for g1 in g_B1))
+                    norm_g_B2 = torch.sqrt(sum((g2 ** 2).sum() for g2 in g_B2))
+
+                    #Normalize the dot product
+                    similarity = s / (norm_g_B1 * norm_g_B2 + 1e-8)  # Add epsilon for numerical stability
+
+                    # Compute gradient of s with respect to model parameters
+                    grad_s = torch.autograd.grad((1-similarity), model.parameters())
+                    if steps % 1000 == 0 or num_batch == 0: 
+                        #print("gradient for coherence is:", grad_s)
+                        #print("gradient for baseline is:", g_B1)
+                        print("similarity of both gradients is::::",similarity)
+                        print(num_batch)
+                    
+                    #curious case of barely doing it and still getting same results. 
+                    if steps >args.cosine_steps: 
+                        total_grad = [g1+g2 for g1,g2 in zip(g_B1, g_B2)]
+                    #Compute total gradient
+                    else: 
+                        total_grad = [g1+g2 + gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
+                        
+                elif (args.similarity_type =="euc"): 
+                    # Compute gradient lists
+                    g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
+                    g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
+
+                    # Flatten and concatenate all gradients into a single 1D vector
+                    flat_g_B1 = torch.cat([g.view(-1) for g in g_B1], dim=0)
+                    flat_g_B2 = torch.cat([g.view(-1) for g in g_B2], dim=0)
+
+                    # Compute the Euclidean distance between the two gradient vectors
+                    diff = flat_g_B1 - flat_g_B2
+                    # Add a small epsilon for numerical stability
+                    euclidean_dist = torch.sqrt(torch.sum(diff ** 2) + 1e-8)
+
+                    # Normalize the Euclidean distance
+                    # One option: divide by sum of their norms to get a scale-invariant measure
+                    norm_g_B1 = torch.sqrt(torch.sum(flat_g_B1 ** 2) + 1e-8)
+                    norm_g_B2 = torch.sqrt(torch.sum(flat_g_B2 ** 2) + 1e-8)
+                    similarity = euclidean_dist / (norm_g_B1 + norm_g_B2)
+
+                    # Compute the gradient of the loss (1 - normalized_euclidean_dist) to encourage minimization of distance
+                    grad_s = torch.autograd.grad((1 - similarity), model.parameters(), create_graph=True)
+
+                    if steps % 1000 == 0 or num_batch == 0: 
+                        print("Normalized Euclidean distance of both gradients:", similarity)
+                        print(num_batch)
+
+                    # Combine gradients as before
+                    if steps > args.cosine_steps:
+                        total_grad = [g1 + g2 for g1, g2 in zip(g_B1, g_B2)]
+                    else:
+                        total_grad = [g1 + g2 + gs for g1, g2, gs in zip(g_B1, g_B2, grad_s)]
+
+                
+                #total_grad = [g1+g2 + gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
+                
+                #Assign gradients to parameters
+                for p, g in zip(model.parameters(), total_grad):
+                    p.grad = g
+                #######
 
             #######
 
@@ -225,7 +305,7 @@ if __name__ == '__main__':
     parser.add_argument("--seed", type=int, default=0)
 
     parser.add_argument("--train_points", type=int, default=1000)
-    parser.add_argument("--optimization_steps", type=int, default=100000)
+    parser.add_argument("--optimization_steps", type=int, default=10000)
     parser.add_argument("--batch_size", type=int, default=200)
     parser.add_argument("--loss_function", type=str, default="MSE")
     parser.add_argument("--optimizer", type=str, default="AdamW")
@@ -236,6 +316,8 @@ if __name__ == '__main__':
     parser.add_argument("--depth", type=int, default=3)
     parser.add_argument("--width", type=int, default=200)
     parser.add_argument("--activation", type=str, default="ReLU")
+    parser.add_argument("--similarity_type", type=str, choices=["euc", "cosine"], default="cosine")
+    parser.add_argument("--cosine_steps",type=int, default=100000)
 
     # Grokfast
     parser.add_argument("--filter", type=str, choices=["none", "ma", "ema", "fir"], default="none")
