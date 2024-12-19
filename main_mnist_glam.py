@@ -225,9 +225,8 @@ def main(args):
                     # Compute the gradient of the loss (1 - normalized_euclidean_dist) to encourage minimization of distance
                     grad_s = torch.autograd.grad((1 - similarity), mlp.parameters(), create_graph=True)
 
-                    if steps % 1000 == 0 or num_batch == 0: 
+                    if steps % 1000 == 0: 
                         print("Normalized Euclidean distance of both gradients:", similarity)
-                        print(num_batch)
 
                     # Combine gradients as before
                     if steps > args.cosine_steps:
