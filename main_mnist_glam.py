@@ -123,7 +123,7 @@ def main(args):
 
     # create optimizer
     assert args.optimizer in optimizer_dict, f"Unsupported optimizer choice: {args.optimizer}"
-    optimizer = optimizer_dict[args.optimizer](mlp.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    optimizer = optimizer_dict[args.optimizer](mlp.parameters(), lr=args.lr) #weight_decay=args.weight_decay)
 
     # define loss function
     assert args.loss_function in loss_function_dict
@@ -309,7 +309,7 @@ if __name__ == '__main__':
     parser.add_argument("--batch_size", type=int, default=200)
     parser.add_argument("--loss_function", type=str, default="MSE")
     parser.add_argument("--optimizer", type=str, default="AdamW")
-    parser.add_argument("--weight_decay", type=float, default=0.01)
+    parser.add_argument("--weight_decay", type=float, default=0)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--initialization_scale", type=float, default=8.0)
     parser.add_argument("--download_directory", type=str, default=".")
