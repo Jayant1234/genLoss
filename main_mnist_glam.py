@@ -194,7 +194,6 @@ def main(args):
                         #print("gradient for coherence is:", grad_s)
                         #print("gradient for baseline is:", g_B1)
                         print("similarity of both gradients is::::",similarity)
-                        print(num_batch)
                     
                     #curious case of barely doing it and still getting same results. 
                     if steps >args.cosine_steps: 
