@@ -1,18 +1,6 @@
-import argparse
-import torch
+from utility.loading_bar import LoadingBar
+import time
 import matplotlib.pyplot as plt
-
-from model.wide_res_net import WideResNet
-from model.smooth_cross_entropy import smooth_crossentropy
-from data.cifar import Cifar
-from utility.log import Log
-from utility.initialize import initialize
-from utility.step_lr import StepLR
-from utility.bypass_bn import enable_running_stats, disable_running_stats
-
-import sys; sys.path.append("..")
-from sam import SAM
-
 
 class Log:
     def __init__(self, filename,log_each: int, initial_epoch=-1):

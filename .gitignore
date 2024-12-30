@@ -1,3 +1,6 @@
+# Data directory of the glam vision dataset
+glam_vision_datasets/example/data/
+glam_vision_datasets/example/cifer/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
