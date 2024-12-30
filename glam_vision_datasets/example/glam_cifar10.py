@@ -113,10 +113,16 @@ if __name__ == "__main__":
             # disable_running_stats(model)
             # smooth_crossentropy(model(inputs), targets, smoothing=args.label_smoothing).mean().backward()
             # optimizer.second_step(zero_grad=True)
+            # Accumulate results
+            predictions = torch.cat([predictions_half1, predictions_half2], dim=0)
+            targets_combined = torch.cat([targets_half1, targets_half2], dim=0)
+
+            # Calculate loss and accuracy for both halves combined
+            loss_combined = L_B1 + L_B2
 
             with torch.no_grad():
-                correct = torch.argmax(predictions.data, 1) == targets
-                log(model, loss.cpu(), correct.cpu(), scheduler.lr())
+                correct = torch.argmax(predictions.data, 1) == targets_combined
+                log(model, loss_combined.cpu(), correct.cpu(), scheduler.lr())
                 scheduler(epoch)
 
         model.eval()
