@@ -67,8 +67,9 @@ if __name__ == "__main__":
             predictions_half1 = model(inputs_half1)
             predictions_half2 = model(inputs_half2)
             
-            L_B1 = smooth_crossentropy(predictions_half1, targets_half1, smoothing=args.label_smoothing)
-            L_B2 = smooth_crossentropy(predictions_half2, targets_half2, smoothing=args.label_smoothing)
+            L_B1 = smooth_crossentropy(predictions_half1, targets_half1, smoothing=args.label_smoothing).mean()
+            L_B2 = smooth_crossentropy(predictions_half2, targets_half2, smoothing=args.label_smoothing).mean()
+
 
 
             with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
