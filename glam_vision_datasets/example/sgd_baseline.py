@@ -1,3 +1,4 @@
+
 import argparse
 import torch
 
@@ -33,11 +34,17 @@ if __name__ == "__main__":
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     dataset = Cifar(args.batch_size, args.threads)
-    log = Log(filename="SAM",log_each=10)
+    log = Log(filename="Baseline",log_each=10)
     model = WideResNet(args.depth, args.width_factor, args.dropout, in_channels=3, labels=10).to(device)
 
-    base_optimizer = torch.optim.SGD
-    optimizer = SAM(model.parameters(), base_optimizer, rho=args.rho, adaptive=args.adaptive, lr=args.learning_rate, momentum=args.momentum, weight_decay=args.weight_decay)
+    # base_optimizer = torch.optim.SGD
+    # optimizer = SAM(model.parameters(), base_optimizer, rho=args.rho, adaptive=args.adaptive, lr=args.learning_rate, momentum=args.momentum, weight_decay=args.weight_decay)
+    optimizer = torch.optim.SGD(
+        model.parameters(),
+        lr=args.learning_rate,
+        momentum=args.momentum,
+        weight_decay=args.weight_decay,
+    )
     scheduler = StepLR(optimizer, args.learning_rate, args.epochs)
 
     for epoch in range(args.epochs):
@@ -47,17 +54,23 @@ if __name__ == "__main__":
         for batch in dataset.train:
             inputs, targets = (b.to(device) for b in batch)
 
-            # first forward-backward step
-            enable_running_stats(model)
+            # # first forward-backward step
+            # enable_running_stats(model)
+
+            # Here i Will use the simple sgd optimizer
             predictions = model(inputs)
             loss = smooth_crossentropy(predictions, targets, smoothing=args.label_smoothing)
+            optimizer.zero_grad()
             loss.mean().backward()
-            optimizer.first_step(zero_grad=True)
+            optimizer.step()
 
-            # second forward-backward step
-            disable_running_stats(model)
-            smooth_crossentropy(model(inputs), targets, smoothing=args.label_smoothing).mean().backward()
-            optimizer.second_step(zero_grad=True)
+
+            # # optimizer.first_step(zero_grad=True)
+
+            # # second forward-backward step
+            # disable_running_stats(model)
+            # smooth_crossentropy(model(inputs), targets, smoothing=args.label_smoothing).mean().backward()
+            # optimizer.second_step(zero_grad=True)
 
             with torch.no_grad():
                 correct = torch.argmax(predictions.data, 1) == targets
