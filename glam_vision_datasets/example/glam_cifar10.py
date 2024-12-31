@@ -29,14 +29,14 @@ if __name__ == "__main__":
     parser.add_argument("--weight_decay", default=0.0005, type=float, help="L2 weight decay.")
     parser.add_argument("--width_factor", default=8, type=int, help="How many times wider compared to normal ResNet.")
     parser.add_argument("--disable_glam", default=False, type=bool, help="Disable the gradient local alignment mechanism.")
-    
+    parser.add_argument("--label", default="Glam", type=str, help="Label for the experiment.")
     args = parser.parse_args()
 
     initialize(args, seed=42)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     dataset = Cifar(args.batch_size, args.threads)
-    log = Log(filename="Glam",log_each=10)
+    log = Log(filename=args.label,log_each=10)
     model = WideResNet(args.depth, args.width_factor, args.dropout, in_channels=3, labels=10).to(device)
 
     # base_optimizer = torch.optim.SGD
@@ -116,7 +116,7 @@ if __name__ == "__main__":
             # Accumulate results
             predictions = torch.cat([predictions_half1, predictions_half2], dim=0)
             targets_combined = torch.cat([targets_half1, targets_half2], dim=0)
-            # Calculate loss and accuracy for both halves combined
+        # Calculate loss and accuracy for both halves combined
             loss_combined = torch.cat([L_B1, L_B2], dim=0)
             # print("predictions_half1 Shape:", predictions_half1.shape)
             # print("L1 Shape:", L_B1.shape)
@@ -144,8 +144,8 @@ if __name__ == "__main__":
                 loss = smooth_crossentropy(predictions, targets)
                 correct = torch.argmax(predictions, 1) == targets
                 log(model, loss.cpu(), correct.cpu())
+
+    log.flush()
     # Save the plots after all epochs
     log.save_loss_plot(log.train_losses, log.val_losses, filename='training_validation_loss.png')
     log.save_accuracy_plot(log.train_accuracies, log.val_accuracies, filename='training_validation_accuracy.png')
-
-    log.flush()
