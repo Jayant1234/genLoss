@@ -88,5 +88,7 @@ if __name__ == "__main__":
                 loss = smooth_crossentropy(predictions, targets)
                 correct = torch.argmax(predictions, 1) == targets
                 log(model, loss.cpu(), correct.cpu())
-
+    # Save the plots after all epochs
+    log.save_loss_plot(log.train_losses, log.val_losses, filename='training_validation_loss.png')
+    log.save_accuracy_plot(log.train_accuracies, log.val_accuracies, filename='training_validation_accuracy.png')
     log.flush()
