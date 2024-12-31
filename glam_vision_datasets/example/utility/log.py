@@ -116,7 +116,7 @@ class Log:
 
 
     # Save the training and validation loss plot
-    def save_loss_plot(train_losses, val_losses, filename='loss_plot.png'):
+    def save_loss_plot(self,train_losses, val_losses, filename='loss_plot.png'):
         epochs = range(1, len(train_losses) + 1)
         plt.figure(figsize=(10, 5))
         plt.plot(epochs, train_losses, label='Training Loss', color='blue')
@@ -134,7 +134,7 @@ class Log:
 
 
     # Save the training and validation accuracy plot
-    def save_accuracy_plot(train_accuracies, val_accuracies, filename='accuracy_plot.png'):
+    def save_accuracy_plot(self,train_accuracies, val_accuracies, filename='accuracy_plot.png'):
         epochs = range(1, len(train_accuracies) + 1)
         plt.figure(figsize=(10, 5))
         plt.plot(epochs, train_accuracies, label='Training Accuracy', color='blue')
