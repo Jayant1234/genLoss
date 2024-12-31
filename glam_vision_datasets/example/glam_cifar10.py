@@ -69,13 +69,13 @@ if __name__ == "__main__":
             
             L_B1 = smooth_crossentropy(predictions_half1, targets_half1, smoothing=args.label_smoothing)
             L_B2 = smooth_crossentropy(predictions_half2, targets_half2, smoothing=args.label_smoothing)
-            
+
 
 
             with torch.backends.cuda.sdp_kernel(enable_flash=False, enable_math=True, enable_mem_efficient=False):
                 model.zero_grad()
-                g_B1 = torch.autograd.grad(L_B1, model.parameters(), create_graph=True)
-                g_B2 = torch.autograd.grad(L_B2, model.parameters(), create_graph=True)
+                g_B1 = torch.autograd.grad(L_B1.mean(), model.parameters(), create_graph=True)
+                g_B2 = torch.autograd.grad(L_B2.mean(), model.parameters(), create_graph=True)
                     
                 s = sum((g1 * g2).sum() for g1, g2 in zip(g_B1, g_B2))
 
