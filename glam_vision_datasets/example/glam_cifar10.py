@@ -116,17 +116,17 @@ if __name__ == "__main__":
             # Accumulate results
             predictions = torch.cat([predictions_half1, predictions_half2], dim=0)
             targets_combined = torch.cat([targets_half1, targets_half2], dim=0)
-
-            print("predictions_half1 Shape:", predictions_half1.shape)
-            print("L1 Shape:", L_B1.shape)
-            print("predictions_half2 Shape:", predictions_half2.shape)
-            print("L2 Shape:", L_B2.shape)
             # Calculate loss and accuracy for both halves combined
             loss_combined = torch.cat([L_B1, L_B2], dim=0)
+            # print("predictions_half1 Shape:", predictions_half1.shape)
+            # print("L1 Shape:", L_B1.shape)
+            # print("predictions_half2 Shape:", predictions_half2.shape)
+            # print("L2 Shape:", L_B2.shape)
+     
             
-            print("Predictions Shape:", predictions.shape)
-            print("Targets Shape:", targets_combined.shape)
-            print("Loss Combined Shape:", loss_combined.shape)
+            # print("Predictions Shape:", predictions.shape)
+            # print("Targets Shape:", targets_combined.shape)
+            # print("Loss Combined Shape:", loss_combined.shape)
             correct = torch.argmax(predictions.data, 1) == targets_combined
             
             with torch.no_grad():

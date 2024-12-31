@@ -60,9 +60,9 @@ if __name__ == "__main__":
             # Here i Will use the simple sgd optimizer
             predictions = model(inputs)
             loss = smooth_crossentropy(predictions, targets, smoothing=args.label_smoothing)
-            print("Predictions Shape: ", predictions.shape)
-            print("Targets Shape: ", targets.shape)
-            print("Loss Shape Before: ", loss.shape)
+            # print("Predictions Shape: ", predictions.shape)
+            # print("Targets Shape: ", targets.shape)
+            # print("Loss Shape Before: ", loss.shape)
             
             optimizer.zero_grad()
             loss.mean().backward()
@@ -79,9 +79,9 @@ if __name__ == "__main__":
 
             with torch.no_grad():
                 correct = torch.argmax(predictions.data, 1) == targets
-                print("Loss Shape After: ", loss.shape)
-                print("Correct Shape: ", correct.shape)
-                print("Targets Shape: ", targets.shape)
+                # print("Loss Shape After: ", loss.shape)
+                # print("Correct Shape: ", correct.shape)
+                # print("Targets Shape: ", targets.shape)
                 log(model, loss.cpu(), correct.cpu(), scheduler.lr())
                 scheduler(epoch)
 
