@@ -27,13 +27,14 @@ if __name__ == "__main__":
     parser.add_argument("--rho", default=2.0, type=int, help="Rho parameter for SAM.")
     parser.add_argument("--weight_decay", default=0.0005, type=float, help="L2 weight decay.")
     parser.add_argument("--width_factor", default=8, type=int, help="How many times wider compared to normal ResNet.")
+    parser.add_argument("--label", default="Baseline SGD", type=str, help="Label for the experiment.")
     args = parser.parse_args()
 
     initialize(args, seed=42)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     dataset = Cifar(args.batch_size, args.threads)
-    log = Log(filename="SAM",log_each=10)
+    log = Log(filename=args.label,log_each=10)
     model = WideResNet(args.depth, args.width_factor, args.dropout, in_channels=3, labels=10).to(device)
 
     base_optimizer = torch.optim.SGD
@@ -77,3 +78,6 @@ if __name__ == "__main__":
                 log(model, loss.cpu(), correct.cpu())
 
     log.flush()
+    # Save the plots after all epochs
+    log.save_loss_plot(log.train_losses, log.val_losses, filename='training_validation_loss.png')
+    log.save_accuracy_plot(log.train_accuracies, log.val_accuracies, filename='training_validation_accuracy.png')
