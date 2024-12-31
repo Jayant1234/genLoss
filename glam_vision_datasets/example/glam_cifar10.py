@@ -122,7 +122,7 @@ if __name__ == "__main__":
             print("predictions_half2 Shape:", predictions_half2.shape)
             print("L2 Shape:", L_B2.shape)
             # Calculate loss and accuracy for both halves combined
-            loss_combined = L_B1 + L_B2
+            loss_combined = torch.cat([L_B1, L_B2], dim=0)
             
             print("Predictions Shape:", predictions.shape)
             print("Targets Shape:", targets_combined.shape)
