@@ -115,45 +115,45 @@ class Log:
         print(f"┠──────────────╂──────────────┼──────────────╂──────────────┼──────────────╂──────────────┼──────────────┨")
 
 
-# Save the training and validation loss plot
-def save_loss_plot(train_losses, val_losses, filename='loss_plot.png'):
-    epochs = range(1, len(train_losses) + 1)
-    plt.figure(figsize=(10, 5))
-    plt.plot(epochs, train_losses, label='Training Loss', color='blue')
-    plt.plot(epochs, val_losses, label='Validation Loss', color='red')
-    plt.title('Training and Validation Loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.legend()
-    plt.grid(True)
-    newfilename =self.filename + "_" + filename
-    # Save the plot
-    plt.savefig(newfilename)
-    print(f"Loss plot saved as {newfilename}")
-    plt.close()  # Close the plot to free up memory
+    # Save the training and validation loss plot
+    def save_loss_plot(train_losses, val_losses, filename='loss_plot.png'):
+        epochs = range(1, len(train_losses) + 1)
+        plt.figure(figsize=(10, 5))
+        plt.plot(epochs, train_losses, label='Training Loss', color='blue')
+        plt.plot(epochs, val_losses, label='Validation Loss', color='red')
+        plt.title('Training and Validation Loss')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.grid(True)
+        newfilename =self.filename + "_" + filename
+        # Save the plot
+        plt.savefig(newfilename)
+        print(f"Loss plot saved as {newfilename}")
+        plt.close()  # Close the plot to free up memory
 
 
-# Save the training and validation accuracy plot
-def save_accuracy_plot(train_accuracies, val_accuracies, filename='accuracy_plot.png'):
-    epochs = range(1, len(train_accuracies) + 1)
-    plt.figure(figsize=(10, 5))
-    plt.plot(epochs, train_accuracies, label='Training Accuracy', color='blue')
-    plt.plot(epochs, val_accuracies, label='Validation Accuracy', color='red')
-    plt.title('Training and Validation Accuracy')
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
-    plt.legend()
-    plt.grid(True)
-    newfilename =self.filename + "_" + filename
-    # Save the plot
-    plt.savefig(newfilename)
-    print(f"Accuracy plot saved as {newfilename}")
-    plt.close()  # Close the plot to free up memory
+    # Save the training and validation accuracy plot
+    def save_accuracy_plot(train_accuracies, val_accuracies, filename='accuracy_plot.png'):
+        epochs = range(1, len(train_accuracies) + 1)
+        plt.figure(figsize=(10, 5))
+        plt.plot(epochs, train_accuracies, label='Training Accuracy', color='blue')
+        plt.plot(epochs, val_accuracies, label='Validation Accuracy', color='red')
+        plt.title('Training and Validation Accuracy')
+        plt.xlabel('Epochs')
+        plt.ylabel('Accuracy')
+        plt.legend()
+        plt.grid(True)
+        newfilename =self.filename + "_" + filename
+        # Save the plot
+        plt.savefig(newfilename)
+        print(f"Accuracy plot saved as {newfilename}")
+        plt.close()  # Close the plot to free up memory
 
 
-"""
-    # Save the plots after all epochs
-    save_loss_plot(log.train_losses, log.val_losses, filename='training_validation_loss.png')
-    save_accuracy_plot(log.train_accuracies, log.val_accuracies, filename='training_validation_accuracy.png')
+    """
+        # Save the plots after all epochs
+        save_loss_plot(log.train_losses, log.val_losses, filename='training_validation_loss.png')
+        save_accuracy_plot(log.train_accuracies, log.val_accuracies, filename='training_validation_accuracy.png')
 
-"""
+    """
