@@ -68,10 +68,16 @@ class Log:
         self.learning_rate = learning_rate
         self.last_steps_state["loss"] += loss.sum().item()
         self.last_steps_state["accuracy"] += accuracy.sum().item()
-        self.last_steps_state["steps"] += loss.size(0)
+        if loss.dim() == 0:
+             self.last_steps_state["steps"] = loss
+        else:
+             self.last_steps_state["steps"] += loss.size(0)
         self.epoch_state["loss"] += loss.sum().item()
         self.epoch_state["accuracy"] += accuracy.sum().item()
-        self.epoch_state["steps"] += loss.size(0)
+        if loss.dim() == 0:
+             self.epoch_state["steps"] += loss
+        else:
+             self.epoch_state["steps"] += loss.size(0)
         self.step += 1
 
         if self.step % self.log_each == self.log_each - 1:
