@@ -1,7 +1,7 @@
 #!/bin/bash 
 #SBATCH --job-name=sam_example
-#SBATCH --output=glam0.5_similarity_cifar_ouput_o.log
-#SBATCH --error=glam0.5_similarity_cifar_error_o.log
+#SBATCH --output=glam_power_loss_similarity_cifar_ouput_o.log
+#SBATCH --error=glam_power_loss_similarity_cifar_error_o.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
