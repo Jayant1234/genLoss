@@ -1,7 +1,7 @@
 #!/bin/bash 
 #SBATCH --job-name=sam_example
-#SBATCH --output=glam_0.5_power_loss_cifar_ouput_o.log
-#SBATCH --error=glam_0.5power_loss_cifar_error_o.log
+#SBATCH --output=glam_power_loss_cifar_ouput_o.log
+#SBATCH --error=glam_power_loss_cifar_error_o.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
@@ -17,4 +17,4 @@ module load cuDNN/8.9.2.26-CUDA-12.1.1
 #activate your environment
 source /home/bg91882/environments/gen/bin/activate
 
-python glam_cifar10.py --label glam_0.5_Powerloss__batch_256_200_epochs --batch_size 256
+python glam_cifar10.py --label glam_Powerloss__batch_256_200_epochs --batch_size 256
