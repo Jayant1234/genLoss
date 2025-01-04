@@ -88,7 +88,7 @@ if __name__ == "__main__":
                 similarity = s / (norm_g_B1 * norm_g_B2 + 1e-8)  # Add epsilon for numerical stability
                 power_loss = torch.pow(1-similarity, 2)
                 # Compute gradient of s with respect to model parameters
-                grad_s = torch.autograd.grad((power_loss), model.parameters())
+                grad_s = torch.autograd.grad(0.5*(power_loss), model.parameters())
                 if steps % 1000 == 0: 
                         #print("gradient for coherence is:", grad_s)
                         #print("gradient for baseline is:", g_B1)
