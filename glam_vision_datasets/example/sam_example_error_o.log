@@ -1,0 +1,2 @@
+/var/lib/slurmd/job34115849/slurm_script: line 20: 1603594 Killed                  python glam_cifar10.py --labels glam_200_epochs
+slurmstepd: error: Detected 3 oom_kill events in StepId=34115849.batch. Some of the step tasks have been OOM Killed.
