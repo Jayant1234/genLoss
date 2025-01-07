@@ -29,6 +29,7 @@ if __name__ == "__main__":
     parser.add_argument("--weight_decay", default=0.0005, type=float, help="L2 weight decay.")
     parser.add_argument("--width_factor", default=8, type=int, help="How many times wider compared to normal ResNet.")
     parser.add_argument("--disable_glam", default=False, type=bool, help="Disable the gradient local alignment mechanism.")
+    parser.add_argument("--epoch_stopping_value", default=-1, type=int, help="Epoch to disable the gradient local alignment mechanism.")
     parser.add_argument("--label", default="Glam", type=str, help="Label for the experiment.")
     args = parser.parse_args()
 
@@ -49,6 +50,7 @@ if __name__ == "__main__":
     )
     scheduler = StepLR(optimizer, args.learning_rate, args.epochs)
     steps = 0
+    
     for epoch in range(args.epochs):
         model.train()
         log.train(len_dataset=len(dataset.train))
@@ -94,7 +96,7 @@ if __name__ == "__main__":
                         #print("gradient for baseline is:", g_B1)
                         print("similarity of both gradients is::::",similarity)
                     
-            if args.disable_glam:
+            if args.disable_glam or args.epoch_stopping_value<epoch:
                 total_grad = [g1+g2 for g1,g2 in zip(g_B1, g_B2)]
             else:      
                 total_grad = [g1+g2 + gs for g1,g2, gs in zip(g_B1, g_B2, grad_s)]
