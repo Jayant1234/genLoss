@@ -104,8 +104,9 @@ if __name__ == "__main__":
     )
     optimizer = Lookahead(base_optimizer, alpha=0.5, k=5)
     scheduler = StepLR(base_optimizer, args.learning_rate, args.epochs)
-
-    for epoch in range(args.epochs):
+    
+    epoch=0
+    while (epoch<=args.epochs):
         model.train()
         log.train(len_dataset=len(dataset.train))
 
@@ -134,6 +135,7 @@ if __name__ == "__main__":
                     # print("Targets Shape: ", targets.shape)
                     log(model, loss.cpu(), correct.cpu(), scheduler.lr())
                     scheduler(epoch)
+            epoch+=1
 
         elif args.method_type =='lookdeep': 
             for batch in dataset.train:
@@ -160,6 +162,7 @@ if __name__ == "__main__":
                         # print("Targets Shape: ", targets.shape)
                         log(model, loss.cpu(), correct.cpu(), scheduler.lr())
                         scheduler(epoch)
+            epoch+=5
 
         model.eval()
         log.eval(len_dataset=len(dataset.test))
