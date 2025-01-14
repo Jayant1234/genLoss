@@ -16,7 +16,7 @@ from sam import SAM
 import torch
 
 class Lookahead(torch.optim.Optimizer):
-    def __init__(self, base_optimizer, alpha=0.5, k=2):
+    def __init__(self, base_optimizer, alpha=0.5, k=5):
         if not 0.0 <= alpha <= 1.0:
             raise ValueError(f"Invalid alpha: {alpha}")
         if not k >= 1:
@@ -71,7 +71,7 @@ class Lookahead(torch.optim.Optimizer):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--adaptive", default=True, type=bool, help="True if you want to use the Adaptive SAM.")
-    parser.add_argument("--batch_size", default=128, type=int, help="Batch size used in the training and validation loop.")
+    parser.add_argument("--batch_size", default=256, type=int, help="Batch size used in the training and validation loop.")
     parser.add_argument("--depth", default=16, type=int, help="Number of layers.")
     parser.add_argument("--dropout", default=0.0, type=float, help="Dropout rate.")
     parser.add_argument("--epochs", default=200, type=int, help="Total number of epochs.")
@@ -84,6 +84,9 @@ if __name__ == "__main__":
     parser.add_argument("--width_factor", default=8, type=int, help="How many times wider compared to normal ResNet.")
     parser.add_argument("--label", default="Baseline SGD", type=str, help="Label for the experiment.")
     parser.add_argument("--method_type", default="lookahead", type=str, help="Label for the experiment.")
+    parser.add_argument("--k_same", default=5, type=int, help="k for the same batch repetition")
+    parser.add_argument("--k", default=5, type=int, help="k for the lookahead")
+    parser.add_argument("--alpha", default=0.5, type=float, help="k for the lookahead")
 
     args = parser.parse_args()
 
@@ -102,7 +105,7 @@ if __name__ == "__main__":
         momentum=args.momentum,
         weight_decay=args.weight_decay,
     )
-    optimizer = Lookahead(base_optimizer, alpha=0.5, k=5)
+    optimizer = Lookahead(base_optimizer, alpha=args.alpha, k=args.k)
     scheduler = StepLR(base_optimizer, args.learning_rate, args.epochs)
     
     epoch=0
@@ -138,8 +141,10 @@ if __name__ == "__main__":
             epoch+=1
 
         elif args.method_type =='lookdeep': 
+            if not arg.k == arg.k_same:
+                raise ValueError(f"k values needs to be synced")
+            k=args.k_same
             for batch in dataset.train:
-                k=2
                 inputs, targets = (b.to(device) for b in batch)
                 for i in range(k): 
                     
@@ -162,8 +167,35 @@ if __name__ == "__main__":
                         # print("Targets Shape: ", targets.shape)
                         log(model, loss.cpu(), correct.cpu(), scheduler.lr())
                         scheduler(epoch)
-            epoch+=2
+            epoch+=k
+            
+        elif args.method_type =='lad': 
+            k=args.k_same
+            for batch in dataset.train:
+                inputs, targets = (b.to(device) for b in batch)
+                
+                for i in range(k): 
+                    
+                    # enable_running_stats(model)
 
+                    predictions = model(inputs)
+                    loss = smooth_crossentropy(predictions, targets, smoothing=args.label_smoothing)
+                    # print("Predictions Shape: ", predictions.shape)
+                    # print("Targets Shape: ", targets.shape)
+                    # print("Loss Shape Before: ", loss.shape)
+                    
+                    optimizer.zero_grad()
+                    loss.mean().backward()
+                    optimizer.step()
+
+                    with torch.no_grad():
+                        correct = torch.argmax(predictions.data, 1) == targets
+                        # print("Loss Shape After: ", loss.shape)
+                        # print("Correct Shape: ", correct.shape)
+                        # print("Targets Shape: ", targets.shape)
+                        log(model, loss.cpu(), correct.cpu(), scheduler.lr())
+                        scheduler(epoch)
+            epoch+=k
         model.eval()
         log.eval(len_dataset=len(dataset.test))
 
