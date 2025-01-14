@@ -1,284 +1,225 @@
-<div align="center">
+<h1 align="center"><b>(Adaptive) SAM Optimizer</b></h1>
+<h3 align="center"><b>Sharpness-Aware Minimization for Efficiently Improving Generalization</b></h3>
+<p align="center">
+  <i>~ in Pytorch ~</i>
+</p> 
+ 
+--------------
 
-<h1>Grokfast: Accelerated Grokking by</br>Amplifying Slow Gradients</h1>
+<br>
 
-[**Jaerin Lee**](http://jaerinlee.com/)\* · [**Bong Gyun Kang**](https://scholar.google.com/citations?hl=en&user=iuMRdnIAAAAJ)\* · [**Kihoon Kim**](https://github.com/kihoon96/) · [**Kyoung Mu Lee**](https://cv.snu.ac.kr/index.php/~kmlee/)
+SAM simultaneously minimizes loss value and loss sharpness. In particular, it seeks parameters that lie in **neighborhoods having uniformly low loss**. SAM improves model generalization and yields [SoTA performance for several datasets](https://paperswithcode.com/paper/sharpness-aware-minimization-for-efficiently-1). Additionally, it provides robustness to label noise on par with that provided by SoTA procedures that specifically target learning with noisy labels.
 
-<h5 align="center">Seoul National University</h5>
+This is an **unofficial** repository for [Sharpness-Aware Minimization for Efficiently Improving Generalization](https://arxiv.org/abs/2010.01412) and [ASAM: Adaptive Sharpness-Aware Minimization for Scale-Invariant Learning of Deep Neural Networks](https://arxiv.org/abs/2102.11600). Implementation-wise, SAM class is a light wrapper that computes the regularized "sharpness-aware" gradient, which is used by the underlying optimizer (such as SGD with momentum). This repository also includes a simple [WRN for Cifar10](example); as a proof-of-concept, it beats the performance of SGD with momentum on this dataset.
 
-<p align="left">
-*Denotes equal contribution.
+<p align="center">
+  <img src="img/loss_landscape.png" alt="Loss landscape with and without SAM" width="512"/>  
 </p>
 
+<p align="center">
+  <sub><em>ResNet loss landscape at the end of training with and without SAM. Sharpness-aware updates lead to a significantly wider minimum, which then leads to better generalization properties.</em></sub>
+</p>
 
-[![Project](https://img.shields.io/badge/Project-Page-green)](https://jaerinlee.com/research/grokfast)
-[![ArXiv](https://img.shields.io/badge/Arxiv-2405.20233-red)](https://arxiv.org/abs/2405.20233)
-[![Github](https://img.shields.io/github/stars/ironjr/grokfast)](https://github.com/ironjr/grokfast)
-[![X](https://img.shields.io/twitter/url?label=_ironjr_&url=https%3A%2F%2Ftwitter.com%2F_ironjr_)](https://twitter.com/_ironjr_)
-[![HFPaper](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Paper-yellow)](https://huggingface.co/papers/2405.20233)
-[![LICENSE](https://img.shields.io/badge/license-MIT-lightgrey)](https://github.com/ironjr/grokfast/blob/main/LICENSE)
-
-</div>
-
-**tl;dr:** We accelerate the [grokking phenomenon](https://arxiv.org/abs/2201.02177) by amplifying low-frequencies of the parameter gradients with an augmented optimizer.
-
-![fig2](./assets/schematics.png) |  ![fig3](./assets/param_space.gif)  |
-:----------------------------: | :----------------------------: |
-
-**Abstract:** 
-One puzzling artifact in machine learning dubbed *grokking* is where delayed generalization is achieved tenfolds of iterations after near perfect overfitting to the training data.
-Focusing on the long delay itself on behalf of machine learning practitioners, our goal is to accelerate generalization of a model under grokking phenomenon.
-By regarding a series of gradients of a parameter over training iterations as a random signal over time, we can spectrally decompose the parameter trajectories under gradient descent into two components: the fast-varying, overfitting-yielding component and the slow-varying, generalization-inducing component.
-This analysis allows us to accelerate the grokking phenomenon more than $\times$ 50 with only a few lines of code that amplifies the slow-varying components of gradients.
-The experiments show that our algorithm applies to diverse tasks involving images, languages, and graphs, enabling practical availability of this peculiar artifact of sudden generalization.
-
-![fig2](./assets/grokfast_ma_main.png) |  ![fig3](./assets/grokfast_ma_loss_main.png)  |
-:----------------------------: | :----------------------------: |
-
----
+<br>
 
 ## Usage
 
-### Installation
+It should be straightforward to use SAM in your training pipeline. Just keep in mind that the training will run twice as slow, because SAM needs two forward-backward passes to estime the "sharpness-aware" gradient. If you're using gradient clipping, make sure to change only the magnitude of gradients, not their direction.
 
-Grokfast doesn't require additional packages except for [PyTorch](https://pytorch.org/get-started/locally/). The file `requirements.txt` is only for reproduction of the experiments in the article, as described in the [Reproduction](#reproduction) section below.
-
-### Instructions
-
-Grokfast can be applied by inserting a single line before the optimizer call.
-
-1. Download a single file `grokfast.py` from our repository.
-```bash
-wget https://raw.githubusercontent.com/ironjr/grokfast/main/grokfast.py
-```
-2. Import the helper function.
 ```python
-from grokfast import gradfilter_ma, gradfilter_ema
-```
-3. Insert the following line **before** the training loop.
-```python
-grads = None
-```
-4. Between `loss.backward()` and `optimizer.step()`, insert one of the following line. Make sure `model` is of type `nn.Module` and `grads` are initialized properly before the training loop:
-```python
-# ... in the optimization loop.
-loss.backwards() # Calculate the gradients.
+from sam import SAM
+...
 
-### Option 1: Grokfast (has argument alpha, lamb)
-grads = gradfilter_ema(model, grads=grads, alpha=alpha, lamb=lamb)
-### Option 2: Grokfast-MA (has argument window_size, lamb)
-# grads = gradfilter_ma(model, grads=grads, window_size=window_size, lamb=lamb)
+model = YourModel()
+base_optimizer = torch.optim.SGD  # define an optimizer for the "sharpness-aware" update
+optimizer = SAM(model.parameters(), base_optimizer, lr=0.1, momentum=0.9)
+...
 
-optimizer.step() # Call the optimizer.
-# ... logging & other codes.
-```
+for input, output in data:
 
-Done!
-
-<details>
+  # first forward-backward pass
+  loss = loss_function(output, model(input))  # use this loss for any training statistics
+  loss.backward()
+  optimizer.first_step(zero_grad=True)
   
-<summary>(2-1) ...or, copy and paste the method directly into your code!</summary>
+  # second forward-backward pass
+  loss_function(output, model(input)).backward()  # make sure to do a full forward pass
+  optimizer.second_step(zero_grad=True)
+...
+```
+
+<br>
+
+**Alternative usage with a single closure-based `step` function**. This alternative offers similar API to native PyTorch optimizers like LBFGS (kindly suggested by [@rmcavoy](https://github.com/rmcavoy)):
 
 ```python
-### Imports
-from collections import deque
-from typing import Dict, Optional, Literal
-import torch
-import torch.nn as nn
+from sam import SAM
+...
 
+model = YourModel()
+base_optimizer = torch.optim.SGD  # define an optimizer for the "sharpness-aware" update
+optimizer = SAM(model.parameters(), base_optimizer, lr=0.1, momentum=0.9)
+...
 
-### Grokfast
-def gradfilter_ema(
-    m: nn.Module,
-    grads: Optional[Dict[str, torch.Tensor]] = None,
-    alpha: float = 0.99,
-    lamb: float = 5.0,
-) -> Dict[str, torch.Tensor]:
-    if grads is None:
-        grads = {n: p.grad.data.detach() for n, p in m.named_parameters() if p.requires_grad}
+for input, output in data:
+  def closure():
+    loss = loss_function(output, model(input))
+    loss.backward()
+    return loss
 
-    for n, p in m.named_parameters():
-        if p.requires_grad:
-            grads[n] = grads[n] * alpha + p.grad.data.detach() * (1 - alpha)
-            p.grad.data = p.grad.data + grads[n] * lamb
-
-    return grads
-
-
-### Grokfast-MA
-def gradfilter_ma(
-    m: nn.Module,
-    grads: Optional[Dict[str, deque]] = None,
-    window_size: int = 128,
-    lamb: float = 5.0,
-    filter_type: Literal['mean', 'sum'] = 'mean',
-    warmup: bool = True,
-    trigger: bool = False,
-) -> Dict[str, deque]:
-    if grads is None:
-        grads = {n: deque(maxlen=window_size) for n, p in m.named_parameters() if p.requires_grad}
-
-    for n, p in m.named_parameters():
-        if p.requires_grad:
-            grads[n].append(p.grad.data.detach())
-
-            if not warmup or len(grads[n]) == window_size and not trigger:
-                if filter_type == "mean":
-                    avg = sum(grads[n]) / len(grads[n])
-                elif filter_type == "sum":
-                    avg = sum(grads[n])
-                else:
-                    raise ValueError(f"Unrecognized filter_type {filter_type}")
-                p.grad.data = p.grad.data + avg * lamb
-
-    return grads
+  loss = loss_function(output, model(input))
+  loss.backward()
+  optimizer.step(closure)
+  optimizer.zero_grad()
+...
 ```
 
-</details>
+### Training tips
+- [@hjq133](https://github.com/hjq133): The suggested usage can potentially cause problems if you use batch normalization. The running statistics are computed in both forward passes, but they should be computed only for the first one. A possible solution is to set BN momentum to zero (kindly suggested by [@ahmdtaha](https://github.com/ahmdtaha)) to bypass the running statistics during the second pass. An example usage is on lines [51](https://github.com/davda54/sam/blob/cdcbdc1574022d3a3c3240da136378c38562d51d/example/train.py#L51) and [58](https://github.com/davda54/sam/blob/cdcbdc1574022d3a3c3240da136378c38562d51d/example/train.py#L58) in [example/train.py](https://github.com/davda54/sam/blob/cdcbdc1574022d3a3c3240da136378c38562d51d/example/train.py):
+```python
+for batch in dataset.train:
+  inputs, targets = (b.to(device) for b in batch)
 
-### Arguments
+  # first forward-backward step
+  enable_running_stats(model)  # <- this is the important line
+  predictions = model(inputs)
+  loss = smooth_crossentropy(predictions, targets)
+  loss.mean().backward()
+  optimizer.first_step(zero_grad=True)
 
-1. Grokfast (`gradfilter_ema`)
-
-    - `m: nn.Module`: Model that contains every trainable parameters.
-    - `grads: Optional[Dict[str, torch.Tensor]] = None`: Running memory (EMA). Initialize by setting it to `None`. Feed the output of the method recursively after on.
-    - `alpha: float = 0.98`: Momentum hyperparmeter of the EMA.
-    - `lamb: float = 2.0`: Amplifying factor hyperparameter of the filter.
-
-2. Grokfast-MA (`gradfilter_ma`)
-
-    - `m: nn.Module`: Model that contains every trainable parameters.
-    - `grads: Optional[Dict[str, deque]] = None`: Running memory (Queue for windowed moving average). Initialize by setting it to `None`. Feed the output of the method recursively after on.
-    - `window_size: int = 100`: The width of the filter window. Additional memory requirements increases linearly with respect to the windows size.
-    - `lamb: float = 5.0`: Amplifying factor hyperparameter of the filter.
-    - `filter_type: Literal['mean', 'sum'] = 'mean'`: Aggregation method for the running queue.
-    - `warmup: bool = True`: If true, filter is not applied until the queue is filled.
-    - `trigger: bool = False`:  For ablation study only. If true, the filter is simply not applied.
-
----
-
-## Reproduction
-
-We also note the additional computational resources required for each run. Time & memory costs are measured with a single GTX 1080 Ti GPU.
-
-### Installation
-
-This will install the additional packages to preprocess each data and to summarize the results. 
-
-```bash
-conda create -n grok python=3.10 && conda activate grok
-git clone https://github.com/ironjr/grokfast
-pip install -r requirements.txt
+  # second forward-backward step
+  disable_running_stats(model)  # <- this is the important line
+  smooth_crossentropy(model(inputs), targets).mean().backward()
+  optimizer.second_step(zero_grad=True)
 ```
 
-### Algorithmic Data (Transformer decoder, *Grokfast-MA*)
-
-| Run | Iterations to Reach 95% Val. Acc. | Wall Clock Time to Reach 95% Val. Acc. (s) | VRAM Requirements (MB) | Latency Per Iteration (s) |
-| :-: | :-------------------------------: | :------------------------------------: | :--------------------: | :-----------------------: |
-| Baseline | 39890 | 5984 | 290 | 0.15 |
-| Grokfast-MA | 790 ($\times$ 50.49 $\downarrow$) | 292 ($\times$ 20.49 $\downarrow$) | 458 | 0.37 |
-
-```bash
-# python main.py --label test # Baseline.
-python main.py --label test --filter ma --window_size 100 --lamb 5.0 --weight_decay 0.01
+- [@evanatyourservice](https://github.com/evanatyourservice): If you plan to train on multiple GPUs, the paper states that *"To compute the SAM update when parallelizing across multiple accelerators, we divide each data batch evenly among the accelerators, independently compute the SAM gradient on each accelerator, and average the resulting sub-batch SAM gradients to obtain the final SAM update."* This can be achieved by the following code:
+```python
+for input, output in data:
+  # first forward-backward pass
+  loss = loss_function(output, model(input))
+  with model.no_sync():  # <- this is the important line
+    loss.backward()
+  optimizer.first_step(zero_grad=True)
+  
+  # second forward-backward pass
+  loss_function(output, model(input)).backward()
+  optimizer.second_step(zero_grad=True)
 ```
+- [@evanatyourservice](https://github.com/evanatyourservice): Adaptive SAM reportedly performs better than the original SAM. The ASAM paper suggests to use higher `rho` for the adaptive updates (~10x larger)
 
-### Algorithmic Data (Transformer decoder, *Grokfast*)
-
-| Run | Iterations to Reach 95% Val. Acc. | Wall Clock Time to Reach 95% Val. Acc. (s) | VRAM Requirements (MB) | Latency Per Iteration (s) |
-| :-: | :-------------------------------: | :------------------------------------: | :--------------------: | :-----------------------: |
-| Baseline | 39890 | 5984 | $290 | 0.15 |
-| Grokfast | 910 ($\times$ 43.84 $\downarrow$) | 137 ($\times$ 43.79 $\downarrow$) | 294 | 0.15 |
-
-```bash
-# python main.py --label test # Baseline.
-python main.py --label test --filter ema --alpha 0.98 --lamb 2.0 --weight_decay 0.005
+- [@mlaves](https://github.com/mlaves): LR scheduling should be either applied to the base optimizer or you should use SAM with a single `step` call (with a closure):
+```python
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer.base_optimizer, T_max=200)
 ```
+- [@AlbertoSabater](https://github.com/AlbertoSabater): Integration with Pytorch Lightning — you can write the `training_step` function as:
+```python
+def training_step(self, batch, batch_idx):
+    optimizer = self.optimizers()
 
-### MNIST (MLP)
+    # first forward-backward pass
+    loss_1 = self.compute_loss(batch)
+    self.manual_backward(loss_1, optimizer)
+    optimizer.first_step(zero_grad=True)
 
-| Run | Iterations to Reach 95% Val. Acc. | Wall Clock Time to Reach 95% Val. Acc. (s) | VRAM Requirements (MB) | Latency Per Iteration (ms) |
-| :-: | :-------------------------------: | :------------------------------------: | :--------------------: | :------------------------: |
-| Baseline | 44022 | 1928 | 196 | 43.8 |
-| Grokfast | 2001 ($\times$ 22.00 $\downarrow$) | 87.8 ($\times$ 21.96 $\downarrow$) | 198 | 43.9 |
+    # second forward-backward pass
+    loss_2 = self.compute_loss(batch)
+    self.manual_backward(loss_2, optimizer)
+    optimizer.second_step(zero_grad=True)
 
-```bash
-# python main_mnist.py --label test # Baseline.
-python main_mnist.py --label test --alpha 0.8 --lamb 0.1 --weight_decay 2.0
+    return loss_1
 ```
-
-### IMDb (LSTM)
-
-| Run | Best Validation Acc. | Minimum Validation Loss | VRAM Requirements (MB) | Latency Per Iteration (ms) |
-| :-: | :------------------: | :---------------------: | :--------------------: | :------------------------: |
-| Baseline | 0.84 | 0.517 | 754 | 20.4 |
-| Grokfast | 0.90 | 0.412 | 762 | 21.2 |
-
-- Before training, download the IMDb dataset from [Google Drive](https://drive.google.com/file/d/11dNiqE5Y5tigaeyYP6JPV3xxa1MOu1L-/view?usp=sharing) or [Baidu Webdisk](https://pan.baidu.com/s/1kNDXlqPHxuDLtQWbdItwhw) (pw: vdp7).
-
-```bash
-# python main_imdb.py --label test # Baseline.
-python main_imdb.py --label test --alpha 0.98 --lamb 2.0 --weight_decay 10.0
-```
-
-### QM9 (G-CNN)
-
-| Run | Minimum Validation Loss | VRAM Requirements (MB) | Latency Per Iteration (ms) |
-| :-: | :---------------------: | :--------------------: | :------------------------: |
-| Baseline | 0.00659 | 216 | 40.2 |
-| Grokfast | 0.00348 | 216 | 41.4 |
-
-```bash
-# python main_qm9.py --label test # Baseline.
-python main_qm9.py --label test --alpha 0.9 --lamb 1.0 --weight_decay 0.01
-```
-
----
-
-## FAQ
-
-### Choosing the right hyperparameters
-
-These recommendations are based on my experiences during the experiments shown in the main manuscript. This may not work perfectly to every other problems, and maybe more intelligent techniques can do better jobs than this procedure. So, please take these as one possible starting guidelines for designing your own filters.
+<br>
 
 
-1. **Cutoff parameters**: The work uses MA/EMA filters to implement the filtering techniques. The cutoff frequency is determined by the _window size_ for the MA filter, and the _momentum parameter_ for the EMA filter.
-    1. **Roughly figure out the amount of acceleration you want to achieve.** For example, in the main manuscript, the cutoff parameters are determined based on the original grokking report, where experiments shows generalization happening X100 slower than overfitting. Therefore, we want *N=100* times faster acceleration.
-    2. **Set the pivotal values for the cutoff parameter search.** For MA, I started to set the window size of "w=N=100" and for EMA, I began with the momentum parameter alpha that satisfies "alpha^{N} = alpha^{100} = 0.1" (which is roughly alpha ~ 0.98).
-    3. **Perform hyperparameter search near the pivot values.** I swept across hyperparameter values near the values set in (1.b).
-3. **Weight decay**: The weight decay is set in the optimizer constructor as usual (e.g., `optimizer = optim.Adam(m.parameters(), weight_decay=wd)`).
-    1. **Start from the default weight decay of that task.** For example, the value chosen by the most widely used Github repository of that task.
-    2. **Fix the weight decay and try to find the optimal setting for the Grokfast filter parameters (momentum, window size, and amplitude) first.** Although weight decay do affect the values of the optimal filter parameters, its effect seems to be insignificant in my experiences.
-    3. **Start _increasing_ the weight decay value.** Start from X1 then try (X2, X5, X10). I couldn't get better results with X100 scale of the default value.
+## Documentation
+
+#### `SAM.__init__`
+
+| **Argument**    | **Description** |
+| :-------------- | :-------------- |
+| `params` (iterable) | iterable of parameters to optimize or dicts defining parameter groups |
+| `base_optimizer` (torch.optim.Optimizer) | underlying optimizer that does the "sharpness-aware" update |
+| `rho` (float, optional)           | size of the neighborhood for computing the max loss *(default: 0.05)* |
+| `adaptive` (bool, optional)       | set this argument to True if you want to use an experimental implementation of element-wise Adaptive SAM *(default: False)* |
+| `**kwargs` | keyword arguments passed to the `__init__` method of `base_optimizer` |
+
+<br>
+
+#### `SAM.first_step`
+
+Performs the first optimization step that finds the weights with the highest loss in the local `rho`-neighborhood.
+
+| **Argument**    | **Description** |
+| :-------------- | :-------------- |
+| `zero_grad` (bool, optional) | set to True if you want to automatically zero-out all gradients after this step *(default: False)* |
+
+<br>
+
+#### `SAM.second_step`
+
+Performs the second optimization step that updates the original weights with the gradient from the (locally) highest point in the loss landscape.
+
+| **Argument**    | **Description** |
+| :-------------- | :-------------- |
+| `zero_grad` (bool, optional) | set to True if you want to automatically zero-out all gradients after this step *(default: False)* |
+
+<br>
+
+#### `SAM.step`
+
+Performs both optimization steps in a single call. This function is an alternative to explicitly calling `SAM.first_step` and `SAM.second_step`.
+
+| **Argument**    | **Description** |
+| :-------------- | :-------------- |
+| `closure` (callable) | the closure should do an additional full forward and backward pass on the optimized model *(default: None)* |
 
 
-## Acknowledgement
-
-Our code is heavily based on the following projects:
-- Ziming Liu et al., "Omnigrok: Grokking Beyond Algorithmic Data," ICLR 2023. [\[arXiv\]](https://arxiv.org/abs/2210.01117) [\[code\]](https://github.com/KindXiaoming/Omnigrok)
-- Alethea Power et al., "Grokking: Generalization Beyond Overfitting on Small Algorithmic Datasets," arXiv preprint arXiv:2201.02177. [\[arXiv\]](https://arxiv.org/abs/2201.02177) [\[code\]](https://github.com/openai/grok)
-- [@danielmamay](https://github.com/danielmamay)'s Re-implementation of Grokking. [\[code\]](https://github.com/danielmamay/grokking)
-
-Thank you all for providing useful references!
 
 
-## Citation
+<br>
 
-Please cite us if you find our project useful!
+## Experiments
 
-```latex
-@article{lee2024grokfast,
-    title={{Grokfast}: Accelerated Grokking by Amplifying Slow Gradients},
-    author={Lee, Jaerin and Kang, Bong Gyun and Kim, Kihoon and Lee, Kyoung Mu},
-    journal={arXiv preprint arXiv:2405.20233},
-    year={2024}
+I've verified that SAM works on a simple WRN 16-8 model run on CIFAR10; you can replicate the experiment by running [train.py](example/train.py). The Wide-ResNet is enhanced only by label smoothing and the most basic image augmentations with cutout, so the errors are higher than those in the [SAM paper](https://arxiv.org/abs/2010.01412). Theoretically, you can get even lower errors by running for longer (1800 epochs instead of 200), because SAM shouldn't be as prone to overfitting. SAM uses `rho=0.05`, while ASAM is set to `rho=2.0`, as [suggested by its authors](https://github.com/davda54/sam/issues/37).
+
+| Optimizer             | Test error rate |
+| :-------------------- |   -----: |
+| SGD + momentum        |   3.20 % |
+| SAM + SGD + momentum  |   2.86 % |
+| ASAM + SGD + momentum |   2.55 % |
+
+
+<br>
+
+## Cite
+
+Please cite the original authors if you use this optimizer in your work:
+
+```bibtex
+@inproceedings{foret2021sharpnessaware,
+  title={Sharpness-aware Minimization for Efficiently Improving Generalization},
+  author={Pierre Foret and Ariel Kleiner and Hossein Mobahi and Behnam Neyshabur},
+  booktitle={International Conference on Learning Representations},
+  year={2021},
+  url={https://openreview.net/forum?id=6Tm1mposlrM}
 }
 ```
 
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=ironjr/grokfast&type=Date)](https://star-history.com/#ironjr/grokfast&Date)
-
-## Contact
-
-If you have any questions, please email `jarin.lee@gmail.com`.
+```bibtex
+@inproceesings{pmlr-v139-kwon21b,
+  title={ASAM: Adaptive Sharpness-Aware Minimization for Scale-Invariant Learning of Deep Neural Networks},
+  author={Kwon, Jungmin and Kim, Jeongseop and Park, Hyunseo and Choi, In Kwon},
+  booktitle ={Proceedings of the 38th International Conference on Machine Learning},
+  pages={5905--5914},
+  year={2021},
+  editor={Meila, Marina and Zhang, Tong},
+  volume={139},
+  series={Proceedings of Machine Learning Research},
+  month={18--24 Jul},
+  publisher ={PMLR},
+  pdf={http://proceedings.mlr.press/v139/kwon21b/kwon21b.pdf},
+  url={https://proceedings.mlr.press/v139/kwon21b.html},
+  abstract={Recently, learning algorithms motivated from sharpness of loss surface as an effective measure of generalization gap have shown state-of-the-art performances. Nevertheless, sharpness defined in a rigid region with a fixed radius, has a drawback in sensitivity to parameter re-scaling which leaves the loss unaffected, leading to weakening of the connection between sharpness and generalization gap. In this paper, we introduce the concept of adaptive sharpness which is scale-invariant and propose the corresponding generalization bound. We suggest a novel learning method, adaptive sharpness-aware minimization (ASAM), utilizing the proposed generalization bound. Experimental results in various benchmark datasets show that ASAM contributes to significant improvement of model generalization performance.}
+}
+```
