@@ -82,7 +82,7 @@ if __name__ == "__main__":
     parser.add_argument("--rho", default=2.0, type=int, help="Rho parameter for SAM.")
     parser.add_argument("--weight_decay", default=0.0005, type=float, help="L2 weight decay.")
     parser.add_argument("--width_factor", default=8, type=int, help="How many times wider compared to normal ResNet.")
-    parser.add_argument("--label", default="Baseline SGD", type=str, help="Label for the experiment.")
+    parser.add_argument("--label", default="Lookahead", type=str, help="Label for the experiment.")
     parser.add_argument("--method_type", default="lookahead", type=str, help="Label for the experiment.")
 
     args = parser.parse_args()
