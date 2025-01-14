@@ -16,7 +16,7 @@ from sam import SAM
 import torch
 
 class Lookahead(torch.optim.Optimizer):
-    def __init__(self, base_optimizer, alpha=0.5, k=5):
+    def __init__(self, base_optimizer, alpha=0.5, k=2):
         if not 0.0 <= alpha <= 1.0:
             raise ValueError(f"Invalid alpha: {alpha}")
         if not k >= 1:
@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
         elif args.method_type =='lookdeep': 
             for batch in dataset.train:
-                k=5
+                k=2
                 inputs, targets = (b.to(device) for b in batch)
                 for i in range(k): 
                     
@@ -162,7 +162,7 @@ if __name__ == "__main__":
                         # print("Targets Shape: ", targets.shape)
                         log(model, loss.cpu(), correct.cpu(), scheduler.lr())
                         scheduler(epoch)
-            epoch+=5
+            epoch+=2
 
         model.eval()
         log.eval(len_dataset=len(dataset.test))
