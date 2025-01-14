@@ -141,7 +141,7 @@ if __name__ == "__main__":
             epoch+=1
 
         elif args.method_type =='lookdeep': 
-            if not arg.k == arg.k_same:
+            if not args.k == args.k_same:
                 raise ValueError(f"k values needs to be synced")
             k=args.k_same
             for batch in dataset.train:
