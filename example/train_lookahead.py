@@ -109,7 +109,7 @@ if __name__ == "__main__":
         model.train()
         log.train(len_dataset=len(dataset.train))
 
-        if method_type =='lookahead': 
+        if args.method_type =='lookahead': 
             for batch in dataset.train:
                 inputs, targets = (b.to(device) for b in batch)
 
@@ -135,7 +135,7 @@ if __name__ == "__main__":
                     log(model, loss.cpu(), correct.cpu(), scheduler.lr())
                     scheduler(epoch)
 
-        elif method_type =='lookdeep': 
+        elif args.method_type =='lookdeep': 
             for batch in dataset.train:
                 k=5
                 inputs, targets = (b.to(device) for b in batch)
