@@ -1,7 +1,7 @@
 #!/bin/bash 
 #SBATCH --job-name=sam_example
-#SBATCH --output=lookahead_cifar10_ouput_o.log
-#SBATCH --error=lookahead_cifar10_error_o.log
+#SBATCH --output=lookahead_K10_cifar10_ouput_o.log
+#SBATCH --error=lookahead_K10_cifar10_error_o.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
@@ -17,4 +17,5 @@ module load cuDNN/8.9.2.26-CUDA-12.1.1
 #activate your environment
 source /home/bg91882/environments/gen/bin/activate
 
-python train_lookahead.py --label lookahead_cifar10_epochs --batch_size 256 --epochs 10
+python train_lookagead.py --label lookahead_cifar10_epochs_btach_job_aplha0.5K10
+
