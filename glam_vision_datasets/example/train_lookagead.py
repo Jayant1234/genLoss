@@ -102,7 +102,7 @@ if __name__ == "__main__":
         momentum=args.momentum,
         weight_decay=args.weight_decay,
     )
-    optimizer = Lookahead(base_optimizer, alpha=0.5, k=5)
+    optimizer = Lookahead(base_optimizer, alpha=0.5, k=10)
     scheduler = StepLR(base_optimizer, args.learning_rate, args.epochs)
 
     for epoch in range(args.epochs):
