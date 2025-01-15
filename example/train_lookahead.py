@@ -9,7 +9,6 @@ from utility.log import Log
 from utility.initialize import initialize
 from utility.step_lr import StepLR
 from utility.bypass_bn import enable_running_stats, disable_running_stats
-
 import sys; sys.path.append("..")
 from sam import SAM
 
@@ -171,9 +170,17 @@ if __name__ == "__main__":
             
         elif args.method_type =='lad': 
             k=args.k_same
+            
+
             for batch in dataset.train:
                 inputs, targets = (b.to(device) for b in batch)
-                
+                #define the slow parameters for lookdeep part. 
+                slow_params = []
+                for group in optimizer.param_groups:
+                    sp = []
+                    for p in group['params']:
+                        sp.append(p.clone().detach())
+                    slow_params.append(sp)
                 for i in range(k): 
                     
                     # enable_running_stats(model)
@@ -186,8 +193,9 @@ if __name__ == "__main__":
                     
                     optimizer.zero_grad()
                     loss.mean().backward()
-                    optimizer.step()
-
+                    
+                    lr = optimizer.param_groups[0]["lr"]  # or however you extract LR
+                    
                     with torch.no_grad():
                         correct = torch.argmax(predictions.data, 1) == targets
                         # print("Loss Shape After: ", loss.shape)
@@ -195,6 +203,25 @@ if __name__ == "__main__":
                         # print("Targets Shape: ", targets.shape)
                         log(model, loss.cpu(), correct.cpu(), scheduler.lr())
                         scheduler(epoch)
+                        # 2) Manually update parameters ignoring momentum/WD:
+                        for group in optimizer.param_groups:
+                            for p in group["params"]:
+                                if p.grad is None:
+                                    continue
+                                # "Manual SGD" step: param = param - lr * grad
+                                p.data -= lr * p.grad
+                # Suppose self.slow_params[group_idx][p_idx] holds the "slow" copy
+                # of the parameter p in the real model.
+
+                with torch.no_grad():
+                    for group_idx, group in enumerate(optimizer.param_groups):
+                        for p_idx, p in enumerate(group["params"]):
+                            slow_p = slow_params[group_idx][p_idx]  # the "slow" parameter tensor
+                            #gradient update
+                            p.grad = args.alpha * (slow_p - p.data)
+                            p.data=slow_p
+
+                optimizer.step()
             epoch+=k
         model.eval()
         log.eval(len_dataset=len(dataset.test))
