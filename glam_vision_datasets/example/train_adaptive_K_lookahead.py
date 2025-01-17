@@ -43,7 +43,7 @@ class AdaptiveLookahead(torch.optim.Optimizer):
         """Check if learning rate has changed and update k accordingly"""
         current_lr = self.base_optimizer.param_groups[0]['lr']
         if current_lr < self.last_lr:
-            self.k *= self.k_multiplier
+            self.k += self.k_multiplier
             print(f"\nLearning rate decreased from {self.last_lr:.6f} to {current_lr:.6f}. New k: {self.k}")
         self.last_lr = current_lr
 
