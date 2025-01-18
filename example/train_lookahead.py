@@ -152,7 +152,7 @@ class multi_lookahead(torch.optim.Optimizer):
                 with torch.no_grad():
                     for group_idx, group in enumerate(fast_weights):
                         fast_groups = group if layer>0 else group['params']
-                        for p_idx, p in enumerate(group['params']):
+                        for p_idx, p in enumerate(fast_groups):
 
                             #if p.grad is None:
                                 #continue # this is a bug since it causes model to not update some param that may have values changed from previous gradients.
