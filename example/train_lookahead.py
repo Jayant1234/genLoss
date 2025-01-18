@@ -87,7 +87,7 @@ class Lookahead(torch.optim.Optimizer):
         return loss
 
 class multi_lookahead(torch.optim.Optimizer):
-    def __init__(self, base_optimizer, alpha=0.5, k=5, layers=5, lk_momentum=[]):
+    def __init__(self, base_optimizer, alpha=0.5, k=[], layers=5, lk_momentum=[]):
         if not 0.0 <= alpha <= 1.0:
             raise ValueError(f"Invalid alpha: {alpha}")
         if not k >= 1:
@@ -141,7 +141,7 @@ class multi_lookahead(torch.optim.Optimizer):
         self.k_counters[0] += 1
         print(self.k_counters)
         for layer in range(self.layers):
-            if self.k_counters[layer]% self.k == 0:
+            if self.k_counters[layer]% self.k[layer] == 0:
                 if layer!=self.layers-1: 
                     self.k_counters[layer+1] += 1
                 #define fast and slow parameters based on what layer it is. 
@@ -193,14 +193,16 @@ if __name__ == "__main__":
     parser.add_argument("--learning_rate", default=0.1, type=float, help="Base learning rate at the start of the training.")
     parser.add_argument("--momentum", default=0.9, type=float, help="SGD Momentum.")
     parser.add_argument("--lk_momentum", default=0.0, type=float, help="Momentum for lookahead")
-
+    parser.add_argument("--lk_momentums",default=[],type=float, nargs="+",help="Momentums for multi-layer lookahead")
     parser.add_argument("--threads", default=2, type=int, help="Number of CPU threads for dataloaders.")
     parser.add_argument("--rho", default=2.0, type=int, help="Rho parameter for SAM.")
     parser.add_argument("--weight_decay", default=0.0005, type=float, help="L2 weight decay.")
     parser.add_argument("--width_factor", default=8, type=int, help="How many times wider compared to normal ResNet.")
     parser.add_argument("--label", default="Baseline SGD", type=str, help="Label for the experiment.")
-    parser.add_argument("--k", default=5, type=int, help="k for the lookahead")
+    parser.add_argument("--k_list", default=5, type=int, nargs="+", help="k for the lookahead")
+    parser.add_argument("--k", default=[], type=int, help="k for the lookahead")
     parser.add_argument("--alpha", default=0.5, type=float, help="k for the lookahead")
+    
 
     args = parser.parse_args()
 
@@ -219,7 +221,8 @@ if __name__ == "__main__":
         momentum=args.momentum,
         weight_decay=args.weight_decay,
     )
-    optimizer = Lookahead(base_optimizer, alpha=args.alpha, k=args.k, lk_momentum=args.lk_momentum)
+    #optimizer = Lookahead(base_optimizer, alpha=args.alpha, k=args.k, lk_momentum=args.lk_momentum)
+    optimizer = multi_lookahead(base_optimizer, alpha=args.alpha, k=args.k_list, lk_momentum=args.lk_momentums)
     scheduler = StepLR(base_optimizer, args.learning_rate, args.epochs)
     
     epoch=0
