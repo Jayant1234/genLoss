@@ -151,6 +151,7 @@ class multi_lookahead(torch.optim.Optimizer):
                 fast_weights = self.slow_params[layer-1] if layer>0 else self.base_optimizer.param_groups
                 with torch.no_grad():
                     for group_idx, group in enumerate(fast_weights):
+                        fast_groups = group if layer>0 else group['params']
                         for p_idx, p in enumerate(group['params']):
 
                             #if p.grad is None:
