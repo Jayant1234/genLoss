@@ -201,6 +201,8 @@ if __name__ == "__main__":
     parser.add_argument("--label", default="Baseline SGD", type=str, help="Label for the experiment.")
     parser.add_argument("--k_list", default=5, type=int, nargs="+", help="k for the lookahead")
     parser.add_argument("--k", default=[], type=int, help="k for the lookahead")
+    parser.add_argument("--layers", type=int, default=3, help= "layers for multi-layer lookahead")
+
     parser.add_argument("--alpha", default=0.5, type=float, help="k for the lookahead")
     
 
