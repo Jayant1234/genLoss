@@ -179,7 +179,7 @@ class multi_lookahead(torch.optim.Optimizer):
                                     self.slow_params[lower_layer][group_idx][p_idx].copy_(slow)
                             if layer>1:
                                 print("Synchronized layer",layer, "with base optimizer")
-                                self.base_optimizer.param_groups[group_idx][p_idx].copy_(slow)
+                                self.base_optimizer.param_groups[group_idx]['params'][p_idx].copy_(slow)
 
         return loss
 
