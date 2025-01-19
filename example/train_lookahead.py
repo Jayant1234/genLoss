@@ -172,7 +172,7 @@ class multi_lookahead(torch.optim.Optimizer):
                             # Then copy back to fast parameters
                             p.data.copy_(slow)
                             # **Synchronization Step: Update all lower layers to match the current slow weights**
-                            if layer>2:
+                            if layer>1:
                                 for lower_layer in range(layer-2,-1,-1):
                                     #print("Synchronized layer",layer, "with layer:",lower_layer)
                                     self.slow_params[lower_layer][group_idx][p_idx].copy_(slow)
