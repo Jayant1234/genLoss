@@ -87,14 +87,16 @@ class Lookahead(torch.optim.Optimizer):
         return loss
 
 class multi_lookahead(torch.optim.Optimizer):
-    def __init__(self, base_optimizer, alpha=0.5, k=[], layers=5, lk_momentum=[]):
+    def __init__(self, base_optimizer, alpha=[], k=[], layers=5, lk_momentum=[]):
         if not 0.0 <= alpha <= 1.0:
             raise ValueError(f"Invalid alpha: {alpha}")
         if not len(k) == len(lk_momentum):
             raise ValueError(f"Invalid k: {k}")
         if not len(lk_momentum) == layers:
             raise ValueError(f"Invalid momentum list size: {lk_momentum}")
-
+        if not len(alpha) == layers:
+            raise ValueError(f"Invalid alpha list size: {lk_momentum}")
+            
         self.base_optimizer = base_optimizer
         self.alpha = alpha
         self.k = k
@@ -166,7 +168,7 @@ class multi_lookahead(torch.optim.Optimizer):
                             momentum.mul_(self.lk_momentum[layer]).add_(delta)
 
                             # Update the slow weights with the momentum buffer
-                            slow.add_(self.alpha * momentum)
+                            slow.add_(self.alpha[layer] * momentum)
                             # # slow <- slow + alpha * (fast - slow)
                             # slow += self.alpha * (p.data - slow)
                             # Then copy back to fast parameters
@@ -199,12 +201,12 @@ if __name__ == "__main__":
     parser.add_argument("--weight_decay", default=0.0005, type=float, help="L2 weight decay.")
     parser.add_argument("--width_factor", default=8, type=int, help="How many times wider compared to normal ResNet.")
     parser.add_argument("--label", default="Baseline SGD", type=str, help="Label for the experiment.")
-    parser.add_argument("--k_list", default=5, type=int, nargs="+", help="k for the lookahead")
-    parser.add_argument("--k", default=[], type=int, help="k for the lookahead")
+    parser.add_argument("--k_list", default=[], type=int, nargs="+", help="list of k for the multi lookahead")
+    parser.add_argument("--k", default=5, type=int, help="k for the lookahead")
     parser.add_argument("--layers", type=int, default=3, help= "layers for multi-layer lookahead")
 
-    parser.add_argument("--alpha", default=0.5, type=float, help="k for the lookahead")
-    
+    parser.add_argument("--alpha", default=0.5, type=float, help="alpha for the lookahead")
+    parser.add_argument("--alpha_list", default=[], type=float, help="list of alpha for the multi lookahead")
 
     args = parser.parse_args()
 
@@ -224,7 +226,7 @@ if __name__ == "__main__":
         weight_decay=args.weight_decay,
     )
     #optimizer = Lookahead(base_optimizer, alpha=args.alpha, k=args.k, lk_momentum=args.lk_momentum)
-    optimizer = multi_lookahead(base_optimizer, alpha=args.alpha, k=args.k_list,layers=args.layers, lk_momentum=args.lk_momentums)
+    optimizer = multi_lookahead(base_optimizer, alpha=args.alpha_list, k=args.k_list,layers=args.layers, lk_momentum=args.lk_momentums)
     scheduler = StepLR(base_optimizer, args.learning_rate, args.epochs)
     
     epoch=0
