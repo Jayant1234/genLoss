@@ -139,7 +139,7 @@ class multi_lookahead(torch.optim.Optimizer):
         """
         loss = self.base_optimizer.step(closure)
         self.k_counters[0] += 1
-        print(self.k_counters)
+        #print(self.k_counters)
         for layer in range(self.layers):
             if self.k_counters[layer]% self.k[layer] == 0 and self.k_counters[layer]!=0:
                 if layer!=self.layers-1: 
@@ -174,10 +174,10 @@ class multi_lookahead(torch.optim.Optimizer):
                             # **Synchronization Step: Update all lower layers to match the current slow weights**
                             if layer>1:
                                 for lower_layer in range(layer-2,-1,-1):
-                                    print("Synchronized layer",layer, "with layer:",lower_layer)
+                                    #print("Synchronized layer",layer, "with layer:",lower_layer)
                                     self.slow_params[lower_layer][group_idx][p_idx].copy_(slow)
                             if layer>0:
-                                print("Synchronized layer",layer, "with base optimizer")
+                                #print("Synchronized layer",layer, "with base optimizer")
                                 self.base_optimizer.param_groups[group_idx]['params'][p_idx].copy_(slow)
 
         return loss
