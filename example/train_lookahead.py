@@ -88,8 +88,6 @@ class Lookahead(torch.optim.Optimizer):
 
 class multi_lookahead(torch.optim.Optimizer):
     def __init__(self, base_optimizer, alpha=[], k=[], layers=5, lk_momentum=[]):
-        if not 0.0 <= alpha <= 1.0:
-            raise ValueError(f"Invalid alpha: {alpha}")
         if not len(k) == len(lk_momentum):
             raise ValueError(f"Invalid k: {k}")
         if not len(lk_momentum) == layers:
