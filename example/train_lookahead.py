@@ -141,7 +141,7 @@ class multi_lookahead(torch.optim.Optimizer):
         self.k_counters[0] += 1
         print(self.k_counters)
         for layer in range(self.layers):
-            if self.k_counters[layer]% self.k[layer] == 0:
+            if self.k_counters[layer]% self.k[layer] == 0 and self.k_counters[layer]!=0:
                 if layer!=self.layers-1: 
                     self.k_counters[layer+1] += 1
                 #define fast and slow parameters based on what layer it is. 
