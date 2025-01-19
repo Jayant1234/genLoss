@@ -144,6 +144,7 @@ class multi_lookahead(torch.optim.Optimizer):
             if self.k_counters[layer]% self.k[layer] == 0 and self.k_counters[layer]!=0:
                 if layer!=self.layers-1: 
                     self.k_counters[layer+1] += 1
+            self.k_counters[layer]=0 #resetting the counter
                 #define fast and slow parameters based on what layer it is. 
                 #if it is layer=0, then below is fine, but if layer=1 or more...fast weights need to be self.slow[layer-1]
                 #need to send param_groups for each of the slow weights progressively too!
