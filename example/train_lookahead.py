@@ -206,7 +206,7 @@ if __name__ == "__main__":
     parser.add_argument("--layers", type=int, default=3, help= "layers for multi-layer lookahead")
 
     parser.add_argument("--alpha", default=0.5, type=float, help="alpha for the lookahead")
-    parser.add_argument("--alpha_list", default=[], type=float, nargs="+" help="list of alpha for the multi lookahead")
+    parser.add_argument("--alpha_list", default=[], type=float, nargs="+", help="list of alpha for the multi lookahead")
 
     args = parser.parse_args()
 
