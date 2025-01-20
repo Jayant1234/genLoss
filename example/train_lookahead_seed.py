@@ -224,8 +224,8 @@ if __name__ == "__main__":
         momentum=args.momentum,
         weight_decay=args.weight_decay,
     )
-    #optimizer = Lookahead(base_optimizer, alpha=args.alpha, k=args.k, lk_momentum=args.lk_momentum)
-    optimizer = multi_lookahead(base_optimizer, alpha=args.alpha_list, k=args.k_list,layers=args.layers, lk_momentum=args.lk_momentums)
+    optimizer = Lookahead(base_optimizer, alpha=args.alpha, k=args.k, lk_momentum=args.lk_momentum)
+    #optimizer = multi_lookahead(base_optimizer, alpha=args.alpha_list, k=args.k_list,layers=args.layers, lk_momentum=args.lk_momentums)
     scheduler = StepLR(base_optimizer, args.learning_rate, args.epochs)
     
     epoch=0

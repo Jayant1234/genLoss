@@ -218,14 +218,14 @@ if __name__ == "__main__":
 
     # base_optimizer = torch.optim.SGD
     # optimizer = SAM(model.parameters(), base_optimizer, rho=args.rho, adaptive=args.adaptive, lr=args.learning_rate, momentum=args.momentum, weight_decay=args.weight_decay)
-    base_optimizer = torch.optim.SGD(
+    optimizer = torch.optim.SGD(
         model.parameters(),
         lr=args.learning_rate,
         momentum=args.momentum,
         weight_decay=args.weight_decay,
     )
     #optimizer = Lookahead(base_optimizer, alpha=args.alpha, k=args.k, lk_momentum=args.lk_momentum)
-    optimizer = multi_lookahead(base_optimizer, alpha=args.alpha_list, k=args.k_list,layers=args.layers, lk_momentum=args.lk_momentums)
+    #optimizer = multi_lookahead(base_optimizer, alpha=args.alpha_list, k=args.k_list,layers=args.layers, lk_momentum=args.lk_momentums)
     scheduler = StepLR(base_optimizer, args.learning_rate, args.epochs)
     
     epoch=0
