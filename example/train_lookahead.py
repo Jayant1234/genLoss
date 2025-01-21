@@ -86,8 +86,8 @@ class Lookahead(torch.optim.Optimizer):
 
         return loss
 
-class multi_lookahead(torch.optim.Optimizer):
-    def __init__(self, base_optimizer, alpha=[], k=[], layers=5, lk_momentum=[]):
+class multi_lookahead():
+    def __init__(self, base_optimizer, alpha, k, layers=5, lk_momentum=[]):
         if not len(k) == len(lk_momentum):
             raise ValueError(f"Invalid k: {k}")
         if not len(lk_momentum) == layers:
@@ -116,7 +116,6 @@ class multi_lookahead(torch.optim.Optimizer):
                 for p in group['params']:
                     # Initialize slow_params as a copy of the current parameter
                     slow = p.clone().detach()
-                    slow.requires_grad = False
                     group_slow.append(slow)
                     group_momentum.append(torch.zeros_like(p))
                 layer_slow.append(group_slow)
@@ -152,9 +151,6 @@ class multi_lookahead(torch.optim.Optimizer):
                     for group_idx, group in enumerate(fast_weights):
                         fast_groups = group if layer>0 else group['params']
                         for p_idx, p in enumerate(fast_groups):
-
-                            #if p.grad is None:
-                                #continue # this is a bug since it causes model to not update some param that may have values changed from previous gradients.
 
                             slow = self.slow_params[layer][group_idx][p_idx]
                             momentum = self.momentum_buffer[layer][group_idx][p_idx]

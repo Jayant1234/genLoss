@@ -144,10 +144,8 @@ class multi_lookahead(torch.optim.Optimizer):
             if self.k_counters[layer]% self.k[layer] == 0 and self.k_counters[layer]!=0:
                 if layer!=self.layers-1: 
                     self.k_counters[layer+1] += 1
-                self.k_counters[layer]=0 #resetting the counter
-
                 # Slow update
-                fast_weights = self.slow_params[layer-1] if layer>0 else self.base_optimizer.param_groups
+                fast_weights = self.slow_params[layer-1] if layer>0 else self.base_optimizer.param_groups 
                 with torch.no_grad():
                     for group_idx, group in enumerate(fast_weights):
                         fast_groups = group if layer>0 else group['params']
@@ -179,7 +177,9 @@ class multi_lookahead(torch.optim.Optimizer):
                             if layer>0:
                                 #print("Synchronized layer",layer, "with base optimizer")
                                 self.base_optimizer.param_groups[group_idx]['params'][p_idx].copy_(slow)
-
+                
+                self.k_counters[layer]=0 #resetting the counter
+                
         return loss
 
 if __name__ == "__main__":
