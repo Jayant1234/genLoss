@@ -77,12 +77,17 @@ class Lookahead(torch.optim.Optimizer):
                         # Update the momentum buffer in place
                         momentum.mul_(self.lk_momentum).add_(delta)
 
-                        # Update the slow weights with the momentum buffer
-                        slow.add_(self.alpha * momentum)
-                        # # slow <- slow + alpha * (fast - slow)
-                        # slow += self.alpha * (p.data - slow)
+                        # removing the momentum update from slow weights.
+                        slow.add_(self.alpha * delta)
+                        
                         # Then copy back to fast parameters
                         p.data.copy_(slow)
+
+                        # ---- Now sync momentum into the base optimizer’s internal momentum buffer ----
+                        state = self.base_optimizer.state[p]
+                        if 'momentum_buffer' in state:
+                            # Overwrite it completely:
+                            state['momentum_buffer'].copy_(momentum)
 
         return loss
 
