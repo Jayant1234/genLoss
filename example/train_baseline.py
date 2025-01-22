@@ -93,7 +93,7 @@ class multi_lookahead(torch.optim.Optimizer):
         if not len(lk_momentum) == layers:
             raise ValueError(f"Invalid momentum list size: {lk_momentum}")
         if not len(alpha) == layers:
-            raise ValueError(f"Invalid alpha list size: {lk_momentum}")
+            raise ValueError(f"Invalid alpha list size: {alpha}")
             
         self.base_optimizer = base_optimizer
         self.alpha = alpha
