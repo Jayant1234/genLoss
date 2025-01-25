@@ -44,6 +44,8 @@ class AdaptiveLookahead(torch.optim.Optimizer):
         current_lr = self.base_optimizer.param_groups[0]['lr']
         if current_lr < self.last_lr:
             self.k -= self.k_multiplier
+            if self.k < 1:
+                self.k = 1
             print(f"\nLearning rate decreased from {self.last_lr:.6f} to {current_lr:.6f}. New k: {self.k}")
         self.last_lr = current_lr
 
