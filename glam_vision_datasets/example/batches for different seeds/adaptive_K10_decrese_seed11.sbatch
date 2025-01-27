@@ -8,7 +8,7 @@
 #SBATCH --partition=gpu_p
 #SBATCH --gres=gpu:L4:1# Request 1 L4 per node
 #SBATCH --mem=78G # Request 64GB memory
-#SBATCH --time=24:00:00 # Request 12 hours runtime
+#SBATCH --time=12:00:00 # Request 12 hours runtime
 
 module load Python/3.10.4-GCCcore-11.3.0
 module load CUDA/12.1.1
