@@ -17,5 +17,5 @@ module load cuDNN/8.9.2.26-CUDA-12.1.1
 #activate your environment
 source /home/bg91882/environments/gen/bin/activate
 
-python train_adaptive_K_lookahead.py --label adaptive_K10_dec_seed_42 --method adaptive_decrease --inital_K 10 --k_multiplier 5 --seed 42
+python train_adaptive_K_lookahead.py --label adaptive_K10_dec_seed_42 --method adaptive_decrease --initial_k 10 --k_multiplier 5 --seed 42
 
