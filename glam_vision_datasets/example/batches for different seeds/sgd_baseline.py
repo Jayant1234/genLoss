@@ -1,7 +1,11 @@
 
 import argparse
 import torch
+import sys
+import os
 
+# Add the parent folder to sys.path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 from model.wide_res_net import WideResNet
 from model.smooth_cross_entropy import smooth_crossentropy
 from data.cifar import Cifar
@@ -10,8 +14,8 @@ from utility.initialize import initialize
 from utility.step_lr import StepLR
 from utility.bypass_bn import enable_running_stats, disable_running_stats
 
-import sys; sys.path.append("..")
-from sam import SAM
+#import sys; sys.path.append("..")
+#from sam import SAM
 
 
 if __name__ == "__main__":
