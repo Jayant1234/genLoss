@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    initialize(args, seed=42)
+    initialize(args, seed=45)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     dataset = Cifar(args.batch_size, args.threads)
