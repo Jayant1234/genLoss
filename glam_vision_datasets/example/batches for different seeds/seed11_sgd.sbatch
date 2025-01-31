@@ -17,4 +17,4 @@ module load cuDNN/8.9.2.26-CUDA-12.1.1
 #activate your environment
 source /home/bg91882/environments/gen/bin/activate
 
-python sgd_baseline.py --label sgd_200_epochs_baseline_seed42 --seed 11
+python sgd_baseline.py --label sgd_200_epochs_baseline_seed11 --seed 11

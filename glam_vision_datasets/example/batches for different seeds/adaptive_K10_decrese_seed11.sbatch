@@ -6,7 +6,7 @@
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --partition=gpu_p
-#SBATCH --gres=gpu:L4:1# Request 1 L4 per node
+#SBATCH --gres=gpu:A100:1# Request 1 L4 per node
 #SBATCH --mem=78G # Request 64GB memory
 #SBATCH --time=12:00:00 # Request 12 hours runtime
 
