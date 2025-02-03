@@ -1,7 +1,7 @@
 #!/bin/bash 
-#SBATCH --job-name=adaptive_K10_inc_seed_42lr0.2
-#SBATCH --output=adaptive_K10_inc_seed_42_lr0.2output.log
-#SBATCH --error=adaptive_K10_inc_seed_42_lr0.2error.log
+#SBATCH --job-name=adaptive_K10_dec_seed_42_lr0.2
+#SBATCH --output=adaptive_K10_dec_seed_42lr0.2_output.log
+#SBATCH --error=adaptive_K10_dec_seed_42lr0.2_error.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
@@ -17,6 +17,5 @@ module load cuDNN/8.9.2.26-CUDA-12.1.1
 #activate your environment
 source /home/bg91882/environments/gen/bin/activate
 
-python train_adaptive_K_lookahead.py --label adaptive_K10_inc_seed_42_lr0.2 --method adaptive_increase --initial_k 10 --k_multiplier 5 --seed 42 --learning_rate 0.2
-
+python train_adaptive_K_lookahead.py --label adaptive_K10_dec_seed_42lr0.2 --method adaptive_decrease --initial_k 10 --k_multiplier 5 --seed 42
 
