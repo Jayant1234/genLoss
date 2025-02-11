@@ -17,5 +17,5 @@ module load cuDNN/8.9.2.26-CUDA-12.1.1
 #activate your environment
 source /home/bg91882/environments/gen/bin/activate
 
-python train_adaptive_K_lookahead.py 
+python train_adaptive_k_grid_search.py
 
