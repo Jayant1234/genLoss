@@ -109,7 +109,17 @@ if __name__ == "__main__":
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     dataset = Cifar(args.batch_size, args.threads)
-    print(dataset.train.shape)
+    train_set = dataset.train
+    train_size = int(0.9 * len(train_set))  # 90% for training
+    val_size = len(train_set) - train_size  # 10% for validation
+    train_subset, val_subset = torch.utils.data.random_split(train_set, [train_size, val_size])
+    dataset.train = train_subset
+
+    print(dataset.train)
+
+   
+
+    print(dataset.train)
     print(dataset)
     log = Log(filename=args.label, log_each=10)
     model = WideResNet(args.depth, args.width_factor, args.dropout, in_channels=3, labels=10).to(device)
