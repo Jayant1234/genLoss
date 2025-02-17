@@ -1,88 +1,26 @@
-import torch
-from torch.optim import Optimizer
-from torch.optim.lr_scheduler import StepLR
 import argparse
 import sys
 import os
 # Add the parent folder to sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
-from model.wide_res_net import WideResNet
-from model.smooth_cross_entropy import smooth_crossentropy
-from data.cifar import Cifar
+import argparse
+import torch
+import os
+import sys
+import copy
+from torch.utils.data import DataLoader, random_split
+import torch.nn as nn
+from torch.optim import SGD
 from utility.log import Log
-from utility.initialize import initialize
 from utility.step_lr import StepLR
-from utility.bypass_bn import enable_running_stats, disable_running_stats
-
-# Define OuterLoopLookahead Optimizer
-class OuterLoopLookahead(Optimizer):
-    def __init__(self, outer_optimizer, alpha=0.5, k=5):
-        if not 0.0 <= alpha <= 1.0:
-            raise ValueError(f"Invalid alpha: {alpha}")
-        if not k >= 1:
-            raise ValueError(f"Invalid k: {k}")
-        
-        self.outer_optimizer = outer_optimizer
-        self.alpha = alpha
-        self.k = k
-        self._step_count = 0
-        
-        # Copy of the slow parameters
-        self.slow_params = []
-        self.momentum_buffer = []
-        
-        for group in self.outer_optimizer.param_groups:
-            sp, mb = [], []
-            for p in group['params']:
-                sp.append(p.clone().detach())
-                mb.append(torch.zeros_like(p))
-            self.slow_params.append(sp)
-            self.momentum_buffer.append(mb)
-    
-    @property
-    def param_groups(self):
-        return self.outer_optimizer.param_groups
-    
-    def zero_grad(self):
-        self.outer_optimizer.zero_grad()
-    
-    def step(self, closure=None):
-        self._step_count += 1
-        self.outer_optimizer.step(closure)
-        
-        if self._step_count % self.k == 0:
-            for group_idx, group in enumerate(self.outer_optimizer.param_groups):
-                for p_idx, p in enumerate(group['params']):
-                    if p.grad is None:
-                        continue
-                    
-                    slow = self.slow_params[group_idx][p_idx]
-                    momentum = self.momentum_buffer[group_idx][p_idx]
-                    
-                    # Compute the difference between fast and slow weights
-                    delta = p.data - slow
-                    
-                    # Apply Lookahead Update
-                    slow += self.alpha * delta
-                    p.data.copy_(slow)
-                    
-                    # Store in momentum buffer for outer optimizer updates
-                    momentum.mul_(0.9).add_(delta)
-                    p.grad.add_(momentum)
-                    
-            # Ensure gradients are updated correctly before calling the outer optimizer step
-            for group in self.outer_optimizer.param_groups:
-                for p in group['params']:
-                    if p.grad is not None:
-                        p.grad.detach_()
-                        p.grad.zero_()
-                    
-            self.outer_optimizer.step()
-        
-        return
+from model.wide_res_net import WideResNet
+from data.cifar import Cifar
+from utility.initialize import initialize
+from model.smooth_cross_entropy import smooth_crossentropy
 
 
-if __name__ == "__main__":
+def train():
+    # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("--adaptive", default=True, type=bool, help="True if you want to use the Adaptive SAM.")
     parser.add_argument("--batch_size", default=128, type=int, help="Batch size used in the training and validation loop.")
@@ -105,79 +43,86 @@ if __name__ == "__main__":
     parser.add_argument("--seed", default=42, type=int, help="Seed for random number generators.")
     args = parser.parse_args()
 
-    initialize(args, seed=45)
+    # Initialize the experiment
+    initialize(args, seed=42)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+    # Dataset and DataLoader
     dataset = Cifar(args.batch_size, args.threads)
-    train_set = dataset.train
-    train_size = int(0.9 * len(train_set))  # 90% for training
-    val_size = len(train_set) - train_size  # 10% for validation
-    train_subset, val_subset = torch.utils.data.random_split(train_set, [train_size, val_size])
-    dataset.train = train_subset
+    full_train_dataset = dataset.train.dataset  # Extract the dataset from DataLoader
 
-    print(dataset.train)
+    # Split dataset into training (90%) and validation (10%)
+    train_size = int(0.9 * len(full_train_dataset))
+    val_size = len(full_train_dataset) - train_size
+    train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size])
 
-   
-
-    print(dataset.train)
-    print(dataset)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.threads)
+    val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.threads)
+    
+    # Logging and model setup
     log = Log(filename=args.label, log_each=10)
     model = WideResNet(args.depth, args.width_factor, args.dropout, in_channels=3, labels=10).to(device)
 
     # Initialize base_optimizer as SGD
-    base_optimizer = torch.optim.SGD(
+    base_optimizer = SGD(
         model.parameters(),
         lr=args.learning_rate,
         momentum=args.momentum,
         weight_decay=args.weight_decay,
     )
 
-    # Use OuterLoopLookahead for Lookahead functionality
-    optimizer = OuterLoopLookahead(
-        base_optimizer,
-        alpha=args.alpha,
-        k=args.initial_k  # You can adjust this as needed
-    )
-
+    # Loss function (criterion) and scheduler
+    criterion = nn.CrossEntropyLoss()
     scheduler = StepLR(base_optimizer, args.learning_rate, args.epochs)
 
+    # Greedy lookahead parameters
+    k = 10  # Number of batches before performing validation
+    current_weights_fraction = 0.5  # Fraction of the current model weights
+    best_model_weights_fraction = 0.5  # Fraction of the best model weights
+    best_val_accuracy = 0.0  # Best validation accuracy so far
+    best_model_weights = None  # Best model weights buffer
+    batch_count = 0  # Batch count for periodic validation check
+
+    # Training loop
     for epoch in range(args.epochs):
         model.train()
-        log.train(len_dataset=len(dataset.train))
+        log.train(len_dataset=len(train_loader))
 
-        if args.method_type == 'lookahead':
-            for batch in dataset.train:
-                inputs, targets = (b.to(device) for b in batch)
+        for batch in train_loader:
+            inputs, targets = (b.to(device) for b in batch)
 
-                predictions = model(inputs)
-                loss = smooth_crossentropy(predictions, targets, smoothing=args.label_smoothing)
+            predictions = model(inputs)
+            loss = smooth_crossentropy(predictions, targets, smoothing=args.label_smoothing)
 
-                optimizer.zero_grad()
-                loss.mean().backward()
-                optimizer.step()
+            base_optimizer.zero_grad()
+            loss.mean().backward()
 
-                with torch.no_grad():
-                    correct = torch.argmax(predictions.data, 1) == targets
-                    log(model, loss.cpu(), correct.cpu(), scheduler.lr())
-                    scheduler(epoch)
+            # Regular SGD optimization step
+            base_optimizer.step()
 
-        elif args.method_type == 'lookdeep':
-            for batch in dataset.train:
-                k = 5
-                inputs, targets = (b.to(device) for b in batch)
-                for i in range(k):
-                    predictions = model(inputs)
-                    loss = smooth_crossentropy(predictions, targets, smoothing=args.label_smoothing)
+            # Increment batch count
+            batch_count += 1
 
-                    optimizer.zero_grad()
-                    loss.mean().backward()
-                    optimizer.step()
+            # Periodic validation check
+            if batch_count % k == 0:
+                # Evaluate the model on the validation set
+                current_val_accuracy = evaluate(model, val_loader, criterion, device)
+                
+                # If the current model is better than the best model, update the best model weights and accuracy
+                if current_val_accuracy > best_val_accuracy:
+                    best_val_accuracy = current_val_accuracy
+                    best_model_weights = copy.deepcopy(model.state_dict())
+                else:
+                    # If the current model is not better, average the current weights with the best weights
+                    average_weights(model, best_model_weights,current_weight_fraction=current_weights_fraction,best_weight_fraction=best_model_weights_fraction)
 
-                    with torch.no_grad():
-                        correct = torch.argmax(predictions.data, 1) == targets
-                        log(model, loss.cpu(), correct.cpu(), scheduler.lr())
-                        scheduler(epoch)
+            # Log the loss and accuracy for the current batch
+            with torch.no_grad():
+                correct = torch.argmax(predictions.data, 1) == targets
+                log(model, loss.cpu(), correct.cpu(), scheduler.lr())
+                scheduler(epoch)
 
+        # Evaluation on validation set at the end of each epoch
         model.eval()
         log.eval(len_dataset=len(dataset.test))
 
@@ -189,7 +134,50 @@ if __name__ == "__main__":
                 loss = smooth_crossentropy(predictions, targets)
                 correct = torch.argmax(predictions, 1) == targets
                 log(model, loss.cpu(), correct.cpu())
-    
+
     log.flush()
     log.save_loss_plot(log.train_losses, log.val_losses, filename='training_validation_loss.png')
     log.save_accuracy_plot(log.train_accuracies, log.val_accuracies, filename='training_validation_accuracy.png')
+
+
+def evaluate(model, val_loader, criterion, device):
+    """Evaluates the model on the validation set and returns the accuracy."""
+    model.eval()
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for inputs, targets in val_loader:
+            # Move inputs and targets to the same device as the model
+            inputs, targets = inputs.to(device), targets.to(device)
+
+            outputs = model(inputs)
+            _, predicted = torch.max(outputs, 1)
+            total += targets.size(0)
+            correct += (predicted == targets).sum().item()
+
+    accuracy = correct / total
+    model.train()
+    return accuracy
+
+
+def average_weights(model, best_model_weights, current_weight_fraction=0.5, best_weight_fraction=0.5):
+    """
+    Averages the current model weights with the best model weights, and loads the result back into the model.
+    
+    Parameters:
+    - model: The current model.
+    - best_model_weights: The best model weights.
+    - current_weight_fraction: The fraction of the current model weights (in [0, 1]).
+    - best_weight_fraction: The fraction of the best model weights (in [0, 1]).
+    """
+    assert current_weight_fraction + best_weight_fraction == 1.0, "The fractions must sum to 1."
+    
+    current_weights = model.state_dict()
+    for key in current_weights.keys():
+        current_weights[key] = current_weight_fraction * current_weights[key] + best_weight_fraction * best_model_weights[key]
+    model.load_state_dict(current_weights)
+
+
+if __name__ == "__main__":
+    train()
+

@@ -1,6 +1,6 @@
 # Data directory of the glam vision dataset
 glam_vision_datasets/example/greedy_lookahead_optimizer/data
-glam_vision_datasets/example/greedy_lookahead_optimizer/cifer
+glam_vision_datasets/example/greedy_lookahead_optimizer/cifar
 glam_vision_datasets/example/data/
 glam_vision_datasets/example/batches for different seeds/data
 glam_vision_datasets/example/batches for different seeds/cifer
