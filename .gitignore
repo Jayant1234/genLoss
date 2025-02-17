@@ -5,6 +5,9 @@ glam_vision_datasets/example/data/
 glam_vision_datasets/example/batches for different seeds/data
 glam_vision_datasets/example/batches for different seeds/cifer
 glam_vision_datasets/example/cifer/
+
+# all the zip files of data
+*.tar.gz
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
