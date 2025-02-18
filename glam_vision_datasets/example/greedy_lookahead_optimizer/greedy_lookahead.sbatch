@@ -1,7 +1,7 @@
 #!/bin/bash 
-#SBATCH --job-name=greedy_lookahead
-#SBATCH --output=greedy_lookahead_output.log
-#SBATCH --error=greedy_lookahead_error.log
+#SBATCH --job-name=greedy_lookahead_k100_lr_0.1
+#SBATCH --output=greedy_lookahead_k100_lr0.1_output.log
+#SBATCH --error=greedy_lookahead_k100_lr0.1_error.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
@@ -17,6 +17,6 @@ module load cuDNN/8.9.2.26-CUDA-12.1.1
 #activate your environment
 source /home/bg91882/environments/gen/bin/activate
 
-python train_greedy_lookahead_optimizer.py --label greedy_lookahead_k_10_cw_0.5_bw_0.5
+python train_greedy_lookahead_optimizer.py --label greedy_lookahead_k_100_cw_0.5_bw_0.5
 
 
