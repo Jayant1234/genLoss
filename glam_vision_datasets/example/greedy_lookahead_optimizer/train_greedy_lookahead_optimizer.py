@@ -76,15 +76,16 @@ def train():
     scheduler = StepLR(base_optimizer, args.learning_rate, args.epochs)
 
     # Greedy lookahead parameters
-    k = 100  # Number of batches before performing validation
+    k = 10  # Number of batches before performing validation
     current_weights_fraction = 0.5  # Fraction of the current model weights
     best_model_weights_fraction = 0.5  # Fraction of the best model weights
     best_val_accuracy = 0.0  # Best validation accuracy so far
     best_model_weights = None  # Best model weights buffer
     batch_count = 0  # Batch count for periodic validation check
-
+    epoch_step = 0
     # Training loop
     for epoch in range(args.epochs):
+        epoch_step += 1
         model.train()
         log.train(len_dataset=len(train_loader))
 
@@ -104,7 +105,7 @@ def train():
             batch_count += 1
 
             # Periodic validation check
-            if batch_count % k == 0:
+            if batch_count % k == 0 and epoch_step > 130:
                 # Evaluate the model on the validation set
                 current_val_accuracy = evaluate(model, val_loader, criterion, device)
                 
