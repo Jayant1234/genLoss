@@ -76,7 +76,7 @@ def train():
     scheduler = StepLR(base_optimizer, args.learning_rate, args.epochs)
 
     # Greedy lookahead parameters
-    k = 10  # Number of batches before performing validation
+    k = 100  # Number of batches before performing validation
     current_weights_fraction = 0.5  # Fraction of the current model weights
     best_model_weights_fraction = 0.5  # Fraction of the best model weights
     best_val_accuracy = 0.0  # Best validation accuracy so far
