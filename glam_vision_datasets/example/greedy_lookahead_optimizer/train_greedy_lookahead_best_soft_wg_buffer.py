@@ -117,6 +117,7 @@ if __name__ == "__main__":
     parser.add_argument("--weight_decay", default=0.0005, type=float, help="L2 weight decay.")
     parser.add_argument("--width_factor", default=8, type=int, help="How many times wider compared to normal ResNet.")
     parser.add_argument("--label", default="Lookahead", type=str, help="Label for the experiment.")
+    parser.add_argument("--k_step", default=10, type=int, help="Initial k value for AdaptiveLookahead.")
     parser.add_argument("--method_type", default="lookahead", type=str, help="Method type: 'lookahead' or 'lookdeep'.")
     args = parser.parse_args()
 
@@ -140,7 +141,8 @@ if __name__ == "__main__":
         momentum=args.momentum,
         weight_decay=args.weight_decay,
     )
-    optimizer = GreedySoftWeightLookahead(base_optimizer, alpha=0.5, k=10, eval_func=eval_func)
+    K = args.k_step
+    optimizer = GreedySoftWeightLookahead(base_optimizer, alpha=0.5, k=K, eval_func=eval_func)
     scheduler = StepLR(base_optimizer, args.learning_rate, args.epochs)
 
     # Training loop
