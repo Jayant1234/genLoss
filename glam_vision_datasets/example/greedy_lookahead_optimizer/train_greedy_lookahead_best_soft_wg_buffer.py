@@ -10,9 +10,6 @@ from utility.initialize import initialize
 from utility.step_lr import StepLR
 from utility.bypass_bn import enable_running_stats, disable_running_stats
 
-
-from sam import SAM  # Optional: if you want to use SAM
-
 class GreedySoftWeightLookahead(torch.optim.Optimizer):
     def __init__(self, base_optimizer, alpha=0.5, k=5, eval_func=None):
         if not 0.0 <= alpha <= 1.0:
