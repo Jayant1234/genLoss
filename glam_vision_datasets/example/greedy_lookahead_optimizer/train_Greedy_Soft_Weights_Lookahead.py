@@ -2,7 +2,7 @@ import argparse
 import torch
 import sys
 from torch.utils.data import DataLoader, random_split
-
+sys.path.append("..")
 from model.wide_res_net import WideResNet
 from model.smooth_cross_entropy import smooth_crossentropy
 from data.cifar import Cifar
@@ -11,7 +11,7 @@ from utility.initialize import initialize
 from utility.step_lr import StepLR
 from utility.bypass_bn import enable_running_stats, disable_running_stats
 
-sys.path.append("..")
+
 from sam import SAM  # Optional: if you want to use SAM
 
 class GreedySoftWeightsLookahead(torch.optim.Optimizer):
