@@ -52,7 +52,7 @@ def train():
     full_train_dataset = dataset.train.dataset  # Extract the dataset from DataLoader
 
     # Split dataset into training (90%) and validation (10%)
-    train_size = int(0.9 * len(full_train_dataset))
+    train_size = int(0.95 * len(full_train_dataset))
     val_size = len(full_train_dataset) - train_size
     train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size])
 
