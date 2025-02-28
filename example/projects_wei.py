@@ -114,8 +114,9 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
 
             optimizer.step()
             running_loss += loss.item()
+            scheduler(epoch)
 
-        print(f"Epoch {epoch}/{num_epochs} Loss: {running_loss/num_batches:.4f}")
+        print(f"Epoch {epoch}/{num_epochs} Loss: {running_loss/num_batches:.4f} lr: {lr:.4f}")
 
         if epoch == 9:
             state_epoch9 = copy.deepcopy(model.state_dict())
