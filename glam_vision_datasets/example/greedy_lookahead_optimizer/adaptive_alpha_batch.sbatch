@@ -1,7 +1,7 @@
 #!/bin/bash 
-#SBATCH --job-name=adaptive_alpha_lr0.1
-#SBATCH --output=adaptive_alpha_K10_lr0.1_output.log
-#SBATCH --error=adaptive_alpha_K10_lr0.1_error.log
+#SBATCH --job-name=adaptive_alpha_v2_lr0.1
+#SBATCH --output=adaptive_alpha_v2_K10_lr0.1_output.log
+#SBATCH --error=adaptive_alpha_v2_K10_lr0.1_error.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
@@ -17,6 +17,6 @@ module load cuDNN/8.9.2.26-CUDA-12.1.1
 #activate your environment
 source /home/bg91882/environments/gen/bin/activate
 
-python train_Adaptive_Alpha_Lookahead.py --label adaptive_alpha_K10_lr0.1 --learning_rate 0.1 --k_steps 10
+python adaptive_alpha_v2.py --label adaptive_alpha_v2_K10_lr0.1 --learning_rate 0.1 --k_steps 10
 
 
