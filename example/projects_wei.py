@@ -82,60 +82,85 @@ def get_model():
 # -----------------------------
 # Phase 1: Baseline Training & Data Collection
 # -----------------------------
-def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.9):
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=5e-4)
-    scheduler = StepLR(optimizer, lr, num_epochs)
+def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.9,
+                 epoch_offsets=[0, 1, 10, 20, 30, 50, 80]):
+
+    
+    criterion = torch.nn.CrossEntropyLoss()
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=5e-4)
+    # Assuming your custom StepLR is defined to be called once per epoch
+    scheduler = StepLR(optimizer, lr, num_epochs)  
     state_init = copy.deepcopy(model.state_dict())
 
-    grad_directions_batches = []
-    state_epoch9 = None
-
+    # Determine which epochs to save states from.
+    # Always include the first epoch.
+    desired_epoch_indices = set([1])
+    for offset in epoch_offsets:
+        epoch_idx = num_epochs - offset
+        if epoch_idx >= 1:
+            desired_epoch_indices.add(epoch_idx)
+    desired_epoch_indices = sorted(desired_epoch_indices)
+    
+    saved_epoch_states = {}           # key: epoch number, value: state dict
+    grad_directions_last_epoch_batches = []  # list to collect gradients for each batch in the final epoch
     num_batches = len(trainloader)
-
+    
     for epoch in range(1, num_epochs + 1):
         model.train()
         running_loss = 0.0
+        
         for batch_idx, (inputs, targets) in enumerate(trainloader):
             inputs, targets = inputs.to(device), targets.to(device)
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, targets)
             loss.backward()
-
-            if epoch == num_epochs-1 and batch_idx >= num_batches - 7:
+            optimizer.step()
+            
+            running_loss += loss.item()
+            
+            # If we're in the final epoch, record gradients for every batch.
+            if epoch == num_epochs:
                 grad_snapshot = {}
                 for name, param in model.named_parameters():
                     if param.grad is not None:
                         grad_snapshot[name] = param.grad.detach().clone()
                     else:
                         grad_snapshot[name] = torch.zeros_like(param)
-                grad_directions_batches.append(grad_snapshot)
-
-            optimizer.step()
-            running_loss += loss.item()
-            scheduler(epoch)
-
-        print(f"Epoch {epoch}/{num_epochs} Loss: {running_loss/num_batches:.4f} lr: {lr:.4f}")
-
-        if epoch == num_epochs-1:
-            state_epoch9 = copy.deepcopy(model.state_dict())
-
-    state_epoch10 = copy.deepcopy(model.state_dict())
-    d1 = state_dict_diff(state_epoch10, state_init)
-    d2 = state_dict_diff(state_epoch10, state_epoch9)
-    d3 = {}
+                grad_directions_last_epoch_batches.append(grad_snapshot)
+        
+        # Save the model state at epochs we desire.
+        if epoch in desired_epoch_indices:
+            saved_epoch_states[epoch] = copy.deepcopy(model.state_dict())
+        
+        # Step the scheduler once per epoch (ensure your StepLR is designed for this)
+        scheduler.step()
+        print(f"Epoch {epoch}/{num_epochs} Loss: {running_loss/num_batches:.4f}")
+    
+    final_state = copy.deepcopy(model.state_dict())
+    
+    # Compute epoch-level directions: the difference between the final state and each saved state.
+    epoch_level_directions = []
+    for epoch in desired_epoch_indices:
+        direction = state_dict_diff(final_state, saved_epoch_states[epoch])
+        epoch_level_directions.append(direction)
+    
+    # Capture the momentum buffer as a separate direction.
+    momentum_buffer_direction = {}
     for name, param in model.named_parameters():
         state = optimizer.state.get(param, {})
         if 'momentum_buffer' in state:
-            d3[name] = state['momentum_buffer'].detach().clone()
+            momentum_buffer_direction[name] = state['momentum_buffer'].detach().clone()
         else:
-            d3[name] = torch.zeros_like(param)
+            momentum_buffer_direction[name] = torch.zeros_like(param)
+    
+    # Combine all directions.
+    stored_directions = epoch_level_directions + [momentum_buffer_direction] + grad_directions_last_epoch_batches
+    total_directions = len(stored_directions)
+    print(f"Total directions saved: {total_directions}")
+    
+    return final_state, stored_directions
 
-    d4_to_d10 = grad_directions_batches
-    stored_directions = [d1, d2, d3] + d4_to_d10
-
-    return state_epoch10, stored_directions
 
 # -----------------------------
 # Phase 2: Extrapolation Training
@@ -144,7 +169,7 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
 # add extrapolated weights into the parameters
 def phase2_extrapolation(model, valloader, device, baseline_state, stored_directions, num_epochs=1, lr_aux=1e-2):
 
-    aux_params = torch.nn.Parameter(torch.randn(10, device=device) * 0.01) #create a parameter object with 10 random scalars
+    aux_params = torch.nn.Parameter(torch.randn(len(stored_directions), device=device) * 0.01) #create a parameter object with 10 random scalars
     optimizer_aux = optim.Adam([aux_params], lr=lr_aux)# apply them to optimizer
     criterion = nn.CrossEntropyLoss()
     aux_history = []
