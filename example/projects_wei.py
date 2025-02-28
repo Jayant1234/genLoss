@@ -177,6 +177,33 @@ def phase2_extrapolation(model, valloader, device, baseline_state, stored_direct
 
     return aux_params, aux_history
 
+def evaluate_baseline(model, dataloader, device, baseline_state, dataset_name="dataset"):
+    """
+    Evaluates the baseline model (using baseline_state) on the given dataloader.
+    Returns the accuracy and average loss.
+    """
+    model.eval()
+    total = 0
+    correct = 0
+    running_loss = 0.0
+    criterion = nn.CrossEntropyLoss()
+    
+    with torch.no_grad():
+        for batch_idx, (inputs, targets) in enumerate(dataloader):
+            inputs, targets = inputs.to(device), targets.to(device)
+            # Use the baseline state for a functional forward pass.
+            outputs = functional_call(model, baseline_state, (inputs,))
+            loss = criterion(outputs, targets)
+            running_loss += loss.item()
+            _, predicted = outputs.max(1)
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
+    
+    avg_loss = running_loss / len(dataloader)
+    acc = 100. * correct / total
+    print(f"Baseline {dataset_name} --> Accuracy: {acc:.2f}% | Loss: {avg_loss:.4f}")
+    return acc, avg_loss
+
 # -----------------------------
 # Evaluation function on test set using extrapolated weights
 # -----------------------------
@@ -205,15 +232,21 @@ def main():
 
     print("=== Phase 1: Baseline Training (Epochs 1-10) ===")
     baseline_state, stored_directions = phase1_train(model, trainloader, device, num_epochs=10, lr=0.1, momentum=0.9)
+    
+    print("\n=== Evaluating Baseline Model ===")
+    # Evaluate baseline on the validation set.
+    evaluate_baseline(model, valloader, device, baseline_state, dataset_name="Validation Set")
+    
+    # Evaluate baseline on the test set.
+    evaluate_baseline(model, testloader, device, baseline_state, dataset_name="Test Set")
 
     print("\n=== Phase 2: Extrapolation Training (Epoch 11) using Validation Set ===")
     aux_params, aux_history = phase2_extrapolation(model, valloader, device, baseline_state, stored_directions, num_epochs=1, lr_aux=1e-2)
 
     print("\n=== Final Evaluation on Test Set ===")
     evaluate_extrapolated(model, testloader, device, baseline_state, stored_directions, aux_params)
-
+    
+    print(aux_params)
 
 if __name__ == "__main__":
     main()
-
-aux_params
