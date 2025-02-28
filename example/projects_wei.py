@@ -103,7 +103,7 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
             loss = criterion(outputs, targets)
             loss.backward()
 
-            if epoch == 9 and batch_idx >= num_batches - 7:
+            if epoch == num_epochs-1 and batch_idx >= num_batches - 7:
                 grad_snapshot = {}
                 for name, param in model.named_parameters():
                     if param.grad is not None:
@@ -118,7 +118,7 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
 
         print(f"Epoch {epoch}/{num_epochs} Loss: {running_loss/num_batches:.4f} lr: {lr:.4f}")
 
-        if epoch == 9:
+        if epoch == num_epochs-1:
             state_epoch9 = copy.deepcopy(model.state_dict())
 
     state_epoch10 = copy.deepcopy(model.state_dict())
