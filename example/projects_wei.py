@@ -169,7 +169,9 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
 # add extrapolated weights into the parameters
 def phase2_extrapolation(model, valloader, device, baseline_state, stored_directions, num_epochs=1, lr_aux=1e-2):
 
-    aux_params = torch.nn.Parameter(torch.randn(len(stored_directions), device=device) * 0.01) #create a parameter object with 10 random scalars
+    #aux_params = torch.nn.Parameter(torch.randn(len(stored_directions), device=device) * 0.01) #create a parameter object with 10 random scalars
+    aux_params = torch.nn.Parameter(torch.FloatTensor(len(stored_directions)).uniform_(-1, 1).to(device))* 0.01
+
     optimizer_aux = optim.Adam([aux_params], lr=lr_aux)# apply them to optimizer
     criterion = nn.CrossEntropyLoss()
     aux_history = []
@@ -191,6 +193,9 @@ def phase2_extrapolation(model, valloader, device, baseline_state, stored_direct
             loss = criterion(outputs, targets)
             loss.backward()
             optimizer_aux.step()
+            
+            with torch.no_grad():
+                aux_params.clamp_(-1, 1)
 
             running_loss += loss.item()
             _, predicted = outputs.max(1)
