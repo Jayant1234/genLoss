@@ -261,9 +261,6 @@ def periodic_extrapolation_training(model, valloader, device, baseline_state, st
     
     return baseline_state
 
-if __name__ == "__main__":
-    main()
-
 def evaluate_baseline(model, dataloader, device, baseline_state, dataset_name="dataset"):
     """
     Evaluates the baseline model (using baseline_state) on the given dataloader.
