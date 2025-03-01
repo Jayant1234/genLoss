@@ -36,7 +36,7 @@ def state_dict_linear_combination(baseline, direction_list, coeffs):
         for a, d in zip(coeffs, direction_list):
             if key in d:
                 update += a * d[key].to(dtype=torch.float32)
-
+        update = update / len(direction_list)  # Normalize by total number of directions
         new_state[key] = (baseline[key].to(dtype=torch.float32) + update).to(baseline[key].dtype)
 
     return new_state
@@ -134,7 +134,7 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
             saved_epoch_states[epoch] = copy.deepcopy(model.state_dict())
         
         # Step the scheduler once per epoch (ensure your StepLR is designed for this)
-        scheduler.step()
+        scheduler(epoch)
         print(f"Epoch {epoch}/{num_epochs} Loss: {running_loss/num_batches:.4f}")
     
     final_state = copy.deepcopy(model.state_dict())
