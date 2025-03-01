@@ -256,7 +256,7 @@ def periodic_extrapolation_training(model, valloader, device, baseline_state, st
         # Load the new state into the model.
         model.load_state_dict(new_extrapolated_state)
         # Update the baseline state for future rounds.
-        baseline_state = copy.deepcopy(new_extrapolated_state)
+        baseline_state = {k: v.clone().detach() for k, v in new_extrapolated_state.items()}
         print(f"Baseline updated after Round {round_idx+1}.\n")
     
     return baseline_state
