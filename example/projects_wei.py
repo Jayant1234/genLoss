@@ -209,6 +209,61 @@ def phase2_extrapolation(model, valloader, device, baseline_state, stored_direct
 
     return aux_params, aux_history
 
+def periodic_extrapolation_training(model, valloader, device, baseline_state, stored_directions, num_rounds=5, n_epochs_per_round=1, lr_aux=1e-2):
+
+    criterion = nn.CrossEntropyLoss()
+    
+    for round_idx in range(num_rounds):
+        # Initialize auxiliary parameters uniformly between -1 and 1.
+        
+        aux_tensor = torch.FloatTensor(len(stored_directions)).uniform_(-1, 1).to(device) * 0.01
+        aux_params = torch.nn.Parameter(aux_tensor)
+
+        optimizer_aux = optim.Adam([aux_params], lr=lr_aux)
+        
+        print(f"\n=== Extrapolation Round {round_idx+1} ===")
+        for epoch in range(n_epochs_per_round):
+            model.eval()  # keep the model in eval mode for the functional call
+            running_loss = 0.0
+            total = 0
+            correct = 0
+            
+            for inputs, targets in valloader:
+                inputs, targets = inputs.to(device), targets.to(device)
+                optimizer_aux.zero_grad()
+                
+                # Compute the extrapolated state using current aux_params.
+                extrapolated_state = state_dict_linear_combination(baseline_state, stored_directions, aux_params)
+                outputs = functional_call(model, extrapolated_state, (inputs,))
+                loss = criterion(outputs, targets)
+                loss.backward()
+                optimizer_aux.step()
+                
+                # Clip the auxiliary parameters to keep them between -1 and 1.
+                with torch.no_grad():
+                    aux_params.clamp_(-1, 1)
+                
+                running_loss += loss.item()
+                _, predicted = outputs.max(1)
+                total += targets.size(0)
+                correct += predicted.eq(targets).sum().item()
+            
+            acc = 100. * correct / total
+            print(f"Round {round_idx+1}, Epoch {epoch+1}: Loss: {running_loss/len(valloader):.4f} | Acc: {acc:.2f}%")
+        
+        # After n_epochs_per_round, update the baseline with the extrapolated weights.
+        new_extrapolated_state = state_dict_linear_combination(baseline_state, stored_directions, aux_params)
+        # Load the new state into the model.
+        model.load_state_dict(new_extrapolated_state)
+        # Update the baseline state for future rounds.
+        baseline_state = copy.deepcopy(new_extrapolated_state)
+        print(f"Baseline updated after Round {round_idx+1}.\n")
+    
+    return baseline_state
+
+if __name__ == "__main__":
+    main()
+
 def evaluate_baseline(model, dataloader, device, baseline_state, dataset_name="dataset"):
     """
     Evaluates the baseline model (using baseline_state) on the given dataloader.
@@ -272,11 +327,14 @@ def main():
     # Evaluate baseline on the test set.
     evaluate_baseline(model, testloader, device, baseline_state, dataset_name="Test Set")
 
-    print("\n=== Phase 2: Extrapolation Training (Epoch 11) using Validation Set ===")
-    aux_params, aux_history = phase2_extrapolation(model, valloader, device, baseline_state, stored_directions, num_epochs=1, lr_aux=1e-2)
 
-    print("\n=== Final Evaluation on Test Set ===")
-    evaluate_extrapolated(model, testloader, device, baseline_state, stored_directions, aux_params)
+    print("\n=== Phase 2: Periodic Extrapolation Training ===")
+    # For example, run 5 rounds of 1 epoch each.
+    updated_baseline_state = periodic_extrapolation_training(model, valloader, device, baseline_state, stored_directions, num_rounds=5, n_epochs_per_round=1, lr_aux=1e-2)
+
+    print("\n=== Final Evaluation on Test Set with Updated Baseline ===")
+    evaluate_extrapolated(model, testloader, device, updated_baseline_state, stored_directions, aux_params=torch.zeros(len(stored_directions), device=device))
+    # Note: In the final evaluation here, aux_params is set to zero for simplicity.
     
     print(aux_params)
 
