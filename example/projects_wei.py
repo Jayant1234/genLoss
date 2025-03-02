@@ -175,7 +175,8 @@ def periodic_extrapolation_training(model, valloader, device, baseline_state, st
         # Initialize auxiliary parameters uniformly between -1 and 1.
         
         aux_tensor = torch.FloatTensor(len(stored_directions)).uniform_(-1, 1).to(device) * 0.01
-        aux_params = torch.nn.Parameter(aux_tensor)
+        aux_params_raw = torch.nn.Parameter(aux_tensor)
+        aux_params = torch.tanh(aux_params_raw)
 
         optimizer_aux = optim.Adam([aux_params], lr=lr_aux)
         
@@ -196,10 +197,6 @@ def periodic_extrapolation_training(model, valloader, device, baseline_state, st
                 loss = criterion(outputs, targets)
                 loss.backward()
                 optimizer_aux.step()
-                
-                # Clip the auxiliary parameters to keep them between -1 and 1.
-                with torch.no_grad():
-                    aux_params.clamp_(-1, 1)
                 
                 running_loss += loss.item()
                 _, predicted = outputs.max(1)
