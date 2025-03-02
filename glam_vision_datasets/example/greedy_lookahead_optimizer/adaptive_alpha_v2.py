@@ -83,7 +83,7 @@ class AdaptiveLookahead(torch.optim.Optimizer):
             # Use sigmoid to map to (0,1) and then scale to (alpha_min, alpha_max)
             sigmoid_value = self.sigmoid(scaled_improvement)
             self.current_alpha = self.alpha_min + sigmoid_value * (self.alpha_max - self.alpha_min)
-            
+            print("\n")            
             print(f"Val Loss: {val_loss:.6f}, Running Avg: {self.running_val_loss:.6f}, Best: {self.best_val_loss:.6f}, Ratio: {improvement_ratio:.4f}, Alpha: {self.current_alpha:.4f}")
         
         return self.current_alpha

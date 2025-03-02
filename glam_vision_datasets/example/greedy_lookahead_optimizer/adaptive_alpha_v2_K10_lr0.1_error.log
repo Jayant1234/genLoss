@@ -1,0 +1,12 @@
+usage: adaptive_alpha_v2.py [-h] [--adaptive ADAPTIVE]
+                            [--batch_size BATCH_SIZE] [--depth DEPTH]
+                            [--dropout DROPOUT] [--epochs EPOCHS]
+                            [--label_smoothing LABEL_SMOOTHING]
+                            [--learning_rate LEARNING_RATE]
+                            [--momentum MOMENTUM] [--threads THREADS]
+                            [--rho RHO] [--weight_decay WEIGHT_DECAY]
+                            [--width_factor WIDTH_FACTOR] [--label LABEL]
+                            [--method_type METHOD_TYPE]
+                            [--alpha_min ALPHA_MIN] [--alpha_max ALPHA_MAX]
+                            [--lookahead_k LOOKAHEAD_K]
+adaptive_alpha_v2.py: error: unrecognized arguments: --k_steps 10
