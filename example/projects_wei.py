@@ -115,7 +115,7 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
             outputs = model(inputs)
             loss = criterion(outputs, targets)
             loss.backward()
-            optimizer.step()
+
             
             running_loss += loss.item()
             
@@ -128,7 +128,8 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
                     else:
                         grad_snapshot[name] = torch.zeros_like(param)
                 grad_directions_last_epoch_batches.append(grad_snapshot)
-        
+                continue
+            optimizer.step()
         # Save the model state at epochs we desire.
         if epoch in desired_epoch_indices:
             saved_epoch_states[epoch] = copy.deepcopy(model.state_dict())
@@ -165,49 +166,6 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
 # -----------------------------
 # Phase 2: Extrapolation Training
 # -----------------------------
-
-# add extrapolated weights into the parameters
-def phase2_extrapolation(model, valloader, device, baseline_state, stored_directions, num_epochs=1, lr_aux=1e-2):
-
-    #aux_params = torch.nn.Parameter(torch.randn(len(stored_directions), device=device) * 0.01) #create a parameter object with 10 random scalars
-    aux_tensor = torch.FloatTensor(len(stored_directions)).uniform_(-1, 1).to(device) * 0.01
-    aux_params = torch.nn.Parameter(aux_tensor)
-
-    optimizer_aux = optim.Adam([aux_params], lr=lr_aux)# apply them to optimizer
-    criterion = nn.CrossEntropyLoss()
-    aux_history = []
-    model.eval()
-
-    for epoch in range(num_epochs):
-        running_loss = 0.0
-        total = 0
-        correct = 0
-
-        for batch_idx, (inputs, targets) in enumerate(valloader):
-            inputs, targets = inputs.to(device), targets.to(device)
-
-            optimizer_aux.zero_grad()
-            # extrapolated parameter：θ_extrapolated = baseline_state + Σ a_i * d_i, Implements the Formula
-            extrapolated_state = state_dict_linear_combination(baseline_state, stored_directions, aux_params)
-
-            outputs = functional_call(model, extrapolated_state, (inputs,))
-            loss = criterion(outputs, targets)
-            loss.backward()
-            optimizer_aux.step()
-            
-            with torch.no_grad():
-                aux_params.clamp_(-1, 1)
-
-            running_loss += loss.item()
-            _, predicted = outputs.max(1)
-            total += targets.size(0)
-            correct += predicted.eq(targets).sum().item()
-
-        acc = 100. * correct / total
-        print(f"[Extrapolation Epoch {epoch+1}] Loss: {running_loss/len(valloader):.4f} | Acc: {acc:.2f}%")
-        aux_history.append(aux_params.detach().cpu().clone())
-
-    return aux_params, aux_history
 
 def periodic_extrapolation_training(model, valloader, device, baseline_state, stored_directions, num_rounds=5, n_epochs_per_round=1, lr_aux=1e-2):
 
