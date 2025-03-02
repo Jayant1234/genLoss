@@ -35,7 +35,7 @@ def state_dict_linear_combination(baseline, direction_list, coeffs):
         update = torch.zeros_like(baseline[key], dtype=torch.float32)
         for a, d in zip(coeffs, direction_list):
             if key in d:
-                update += a * d[key].to(dtype=torch.float32)#/ len(direction_list) #normalization
+                update += a * d[key].to(dtype=torch.float32)/ len(direction_list) #normalization
                 
         new_state[key] = (baseline[key].to(dtype=torch.float32) + update).to(baseline[key].dtype)
 
@@ -176,9 +176,8 @@ def periodic_extrapolation_training(model, valloader, device, baseline_state, st
         
         # Initialize raw auxiliary parameters
         aux_params_raw = torch.nn.Parameter(
-         torch.ones(len(stored_directions), device=device))   
-            #torch.FloatTensor(len(stored_directions)).uniform_(-1, 1).to(device) #* 0.01
-        #)
+            torch.FloatTensor(len(stored_directions)).uniform_(-1, 1).to(device) #* 0.01
+        )
         
         optimizer_aux = optim.Adam([aux_params_raw], lr=lr_aux, weight_decay=1e-3)
         
@@ -287,7 +286,7 @@ def main():
 
     print("\n=== Phase 2: Periodic Extrapolation Training ===")
     # For example, run 5 rounds of 1 epoch each.
-    updated_baseline_state = periodic_extrapolation_training(model, valloader, device, baseline_state, stored_directions, num_rounds=2, n_epochs_per_round=5, lr_aux=1e-1)
+    updated_baseline_state = periodic_extrapolation_training(model, valloader, device, baseline_state, stored_directions, num_rounds=2, n_epochs_per_round=20, lr_aux=1e-1)
 
     print("\n=== Final Evaluation on Test Set with Updated Baseline ===")
     evaluate_extrapolated(model, testloader, device, updated_baseline_state, stored_directions, aux_params=torch.zeros(len(stored_directions), device=device))
