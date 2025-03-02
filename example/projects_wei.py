@@ -193,8 +193,8 @@ def periodic_extrapolation_training(model, valloader, device, baseline_state, st
                 optimizer_aux.zero_grad()
                 
                 # Gradients flow through this transformation.
-                #aux_params = torch.tanh(aux_params_raw)
-                aux_params = torch.sigmoid(aux_params_raw) #lets try sig because non negative is more stable
+                aux_params = torch.tanh(aux_params_raw)
+                #aux_params = torch.sigmoid(aux_params_raw) #lets try sig because non negative is more stable
                 # Compute the extrapolated state using current aux_params.
                 extrapolated_state = state_dict_linear_combination(baseline_state, stored_directions, aux_params)
                 outputs = functional_call(model, extrapolated_state, (inputs,))
@@ -209,7 +209,7 @@ def periodic_extrapolation_training(model, valloader, device, baseline_state, st
             
             acc = 100. * correct / total
             print(f"Round {round_idx+1}, Epoch {epoch+1}: Loss: {running_loss/len(valloader):.4f} | Acc: {acc:.2f}%")
-        
+        print(aux_params_raw)
         # After n_epochs_per_round, update the baseline with the extrapolated weights.
         new_extrapolated_state = state_dict_linear_combination(baseline_state, stored_directions, aux_params)
         # Load the new state into the model.
@@ -286,13 +286,13 @@ def main():
 
     print("\n=== Phase 2: Periodic Extrapolation Training ===")
     # For example, run 5 rounds of 1 epoch each.
-    updated_baseline_state = periodic_extrapolation_training(model, valloader, device, baseline_state, stored_directions, num_rounds=5, n_epochs_per_round=1, lr_aux=1e-2)
+    updated_baseline_state = periodic_extrapolation_training(model, valloader, device, baseline_state, stored_directions, num_rounds=2, n_epochs_per_round=5, lr_aux=5e-3)
 
     print("\n=== Final Evaluation on Test Set with Updated Baseline ===")
     evaluate_extrapolated(model, testloader, device, updated_baseline_state, stored_directions, aux_params=torch.zeros(len(stored_directions), device=device))
     # Note: In the final evaluation here, aux_params is set to zero for simplicity.
     
-    print(aux_params)
+    #print(aux_params)
 
 if __name__ == "__main__":
     main()
