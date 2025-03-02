@@ -178,7 +178,8 @@ def periodic_extrapolation_training(model, valloader, device, baseline_state, st
         aux_params_raw = torch.nn.Parameter(
             torch.FloatTensor(len(stored_directions)).uniform_(-1, 1).to(device) * 0.01
         )
-                optimizer_aux = optim.Adam([aux_params_raw], lr=lr_aux, weight_decay=1e-3)
+        
+        optimizer_aux = optim.Adam([aux_params_raw], lr=lr_aux, weight_decay=1e-3)
         
         print(f"\n=== Extrapolation Round {round_idx+1} ===")
         for epoch in range(n_epochs_per_round):
