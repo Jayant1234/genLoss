@@ -35,8 +35,8 @@ def state_dict_linear_combination(baseline, direction_list, coeffs):
         update = torch.zeros_like(baseline[key], dtype=torch.float32)
         for a, d in zip(coeffs, direction_list):
             if key in d:
-                update += a * d[key].to(dtype=torch.float32)
-        #update = update / len(direction_list)  # Normalize by total number of directions
+                update += a * d[key].to(dtype=torch.float32)/ len(direction_list) #normalization
+                
         new_state[key] = (baseline[key].to(dtype=torch.float32) + update).to(baseline[key].dtype)
 
     return new_state
@@ -83,7 +83,7 @@ def get_model():
 # Phase 1: Baseline Training & Data Collection
 # -----------------------------
 def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.9,
-                 epoch_offsets=[0, 1, 10, 20, 30, 50, 80]):
+                 epoch_offsets=[2, 5, 10, 20, 30, 50, 80]):
 
     
     criterion = torch.nn.CrossEntropyLoss()
@@ -176,7 +176,7 @@ def periodic_extrapolation_training(model, valloader, device, baseline_state, st
         
         # Initialize raw auxiliary parameters
         aux_params_raw = torch.nn.Parameter(
-            torch.FloatTensor(len(stored_directions)).uniform_(-1, 1).to(device) * 0.01
+            torch.FloatTensor(len(stored_directions)).uniform_(-1, 1).to(device) #* 0.01
         )
         
         optimizer_aux = optim.Adam([aux_params_raw], lr=lr_aux, weight_decay=1e-3)
