@@ -174,11 +174,11 @@ def periodic_extrapolation_training(model, valloader, device, baseline_state, st
     for round_idx in range(num_rounds):
         # Initialize auxiliary parameters uniformly between -1 and 1.
         
-        aux_tensor = torch.FloatTensor(len(stored_directions)).uniform_(-1, 1).to(device) * 0.01
-        aux_params_raw = torch.nn.Parameter(aux_tensor)
-        aux_params = torch.tanh(aux_params_raw)
-
-        optimizer_aux = optim.Adam([aux_params], lr=lr_aux)
+        # Initialize raw auxiliary parameters
+        aux_params_raw = torch.nn.Parameter(
+            torch.FloatTensor(len(stored_directions)).uniform_(-1, 1).to(device) * 0.01
+        )
+                optimizer_aux = optim.Adam([aux_params_raw], lr=lr_aux, weight_decay=1e-3)
         
         print(f"\n=== Extrapolation Round {round_idx+1} ===")
         for epoch in range(n_epochs_per_round):
@@ -191,6 +191,8 @@ def periodic_extrapolation_training(model, valloader, device, baseline_state, st
                 inputs, targets = inputs.to(device), targets.to(device)
                 optimizer_aux.zero_grad()
                 
+                # Gradients flow through this transformation.
+                aux_params = torch.tanh(aux_params_raw)
                 # Compute the extrapolated state using current aux_params.
                 extrapolated_state = state_dict_linear_combination(baseline_state, stored_directions, aux_params)
                 outputs = functional_call(model, extrapolated_state, (inputs,))
