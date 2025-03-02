@@ -193,7 +193,8 @@ def periodic_extrapolation_training(model, valloader, device, baseline_state, st
                 optimizer_aux.zero_grad()
                 
                 # Gradients flow through this transformation.
-                aux_params = torch.tanh(aux_params_raw)
+                #aux_params = torch.tanh(aux_params_raw)
+                aux_params = torch.sigmoid(aux_params_raw) #lets try sig because non negative is more stable
                 # Compute the extrapolated state using current aux_params.
                 extrapolated_state = state_dict_linear_combination(baseline_state, stored_directions, aux_params)
                 outputs = functional_call(model, extrapolated_state, (inputs,))
