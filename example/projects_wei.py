@@ -286,7 +286,7 @@ def main():
 
     print("\n=== Phase 2: Periodic Extrapolation Training ===")
     # For example, run 5 rounds of 1 epoch each.
-    updated_baseline_state = periodic_extrapolation_training(model, valloader, device, baseline_state, stored_directions, num_rounds=2, n_epochs_per_round=20, lr_aux=1e-1)
+    updated_baseline_state = periodic_extrapolation_training(model, valloader, device, baseline_state, stored_directions, num_rounds=20, n_epochs_per_round=1, lr_aux=1e-1)
 
     print("\n=== Final Evaluation on Test Set with Updated Baseline ===")
     evaluate_extrapolated(model, testloader, device, updated_baseline_state, stored_directions, aux_params=torch.zeros(len(stored_directions), device=device))
