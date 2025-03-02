@@ -170,17 +170,17 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
 def periodic_extrapolation_training(model, valloader, device, baseline_state, stored_directions, num_rounds=5, n_epochs_per_round=1, lr_aux=1e-2):
 
     criterion = nn.CrossEntropyLoss()
+
+    # Initialize raw auxiliary parameters
+    aux_params_raw = torch.nn.Parameter(
+        torch.FloatTensor(len(stored_directions)).uniform_(-1, 1).to(device) #* 0.01
+    )
     
+    optimizer_aux = optim.Adam([aux_params_raw], lr=lr_aux, weight_decay=1e-3)
+
     for round_idx in range(num_rounds):
         # Initialize auxiliary parameters uniformly between -1 and 1.
-        
-        # Initialize raw auxiliary parameters
-        aux_params_raw = torch.nn.Parameter(
-            torch.FloatTensor(len(stored_directions)).uniform_(-1, 1).to(device) #* 0.01
-        )
-        
-        optimizer_aux = optim.Adam([aux_params_raw], lr=lr_aux, weight_decay=1e-3)
-        
+                
         print(f"\n=== Extrapolation Round {round_idx+1} ===")
         for epoch in range(n_epochs_per_round):
             model.eval()  # keep the model in eval mode for the functional call
