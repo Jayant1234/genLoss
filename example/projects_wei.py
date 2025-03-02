@@ -36,7 +36,7 @@ def state_dict_linear_combination(baseline, direction_list, coeffs):
         for a, d in zip(coeffs, direction_list):
             if key in d:
                 update += a * d[key].to(dtype=torch.float32)
-        update = update / len(direction_list)  # Normalize by total number of directions
+        #update = update / len(direction_list)  # Normalize by total number of directions
         new_state[key] = (baseline[key].to(dtype=torch.float32) + update).to(baseline[key].dtype)
 
     return new_state
