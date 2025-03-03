@@ -128,8 +128,8 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
                     else:
                         grad_snapshot[name] = torch.zeros_like(param)
                 grad_directions_last_epoch_batches.append(grad_snapshot)
-            else: 
-                optimizer.step()
+            #else: 
+            optimizer.step()
         # Save the model state at epochs we desire.
         if epoch in desired_epoch_indices:
             saved_epoch_states[epoch] = copy.deepcopy(model.state_dict())
