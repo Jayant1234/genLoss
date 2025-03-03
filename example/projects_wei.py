@@ -83,7 +83,7 @@ def get_model():
 # Phase 1: Baseline Training & Data Collection
 # -----------------------------
 def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.9,
-                 epoch_offsets=[2, 5, 10, 20, 30, 50, 80]):
+                 epoch_offsets=[2, 3, 4, 5, 10, 20, 30, 50, 80, num_epochs-2,]):
 
     
     criterion = torch.nn.CrossEntropyLoss()
@@ -128,8 +128,8 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
                     else:
                         grad_snapshot[name] = torch.zeros_like(param)
                 grad_directions_last_epoch_batches.append(grad_snapshot)
-                continue
-            optimizer.step()
+            else: 
+                optimizer.step()
         # Save the model state at epochs we desire.
         if epoch in desired_epoch_indices:
             saved_epoch_states[epoch] = copy.deepcopy(model.state_dict())
@@ -286,7 +286,7 @@ def main():
 
     print("\n=== Phase 2: Periodic Extrapolation Training ===")
     # For example, run 5 rounds of 1 epoch each.
-    updated_baseline_state = periodic_extrapolation_training(model, valloader, device, baseline_state, stored_directions, num_rounds=20, n_epochs_per_round=1, lr_aux=1e-1)
+    updated_baseline_state = periodic_extrapolation_training(model, valloader, device, baseline_state, stored_directions, num_rounds=2, n_epochs_per_round=1, lr_aux=1e-2)
 
     print("\n=== Final Evaluation on Test Set with Updated Baseline ===")
     evaluate_extrapolated(model, testloader, device, updated_baseline_state, stored_directions, aux_params=torch.zeros(len(stored_directions), device=device))
