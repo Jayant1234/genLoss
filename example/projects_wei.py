@@ -120,7 +120,7 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
             running_loss += loss.item()
             
             # If we're in the final epoch, record gradients for every batch.
-            if epoch == num_epochs:
+            if epoch == num_epochs and batch_idx> num_batches-7:
                 grad_snapshot = {}
                 for name, param in model.named_parameters():
                     if param.grad is not None:
