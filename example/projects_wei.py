@@ -83,9 +83,9 @@ def get_model():
 # Phase 1: Baseline Training & Data Collection
 # -----------------------------
 def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.9,
-                 epoch_offsets=[2, 3, 4, 5, 10, 20, 30, 50, 80, num_epochs-2,]):
+                 epoch_offsets=[2, 3, 4, 5, 10, 20, 30, 50, 80]):
 
-    
+    epoch_offsets+= epoch_offsets + [num_epochs-1,num_epochs-2]
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=5e-4)
     # Assuming your custom StepLR is defined to be called once per epoch
