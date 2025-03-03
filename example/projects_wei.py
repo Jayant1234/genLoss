@@ -173,7 +173,7 @@ def periodic_extrapolation_training(model, valloader, device, baseline_state, st
 
     # Initialize raw auxiliary parameters
     aux_params_raw = torch.nn.Parameter(
-        torch.FloatTensor(len(stored_directions)).uniform_(-1, 1).to(device) #* 0.01
+        torch.randn(len(stored_directions), device=device)
     )
     
     optimizer_aux = optim.Adam([aux_params_raw], lr=lr_aux, weight_decay=1e-3)
