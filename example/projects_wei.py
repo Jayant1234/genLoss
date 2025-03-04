@@ -163,7 +163,7 @@ def get_model():
     # return final_state, stored_directions
 
 def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.9,
-                 long_term_momentum=0.999, epoch_offsets=[2, 3, 4, 5, 10, 20, 30, 50, 80]):
+                 long_term_momentum=0.99, epoch_offsets=[2, 3, 4, 5, 10, 20, 30, 50, 80]):
     # We'll still use the optimizer for zero_grad and for the scheduler's learning rate
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0, weight_decay=5e-4)
     scheduler = StepLR(optimizer, lr, num_epochs)
