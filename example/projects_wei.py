@@ -219,7 +219,7 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
                 if epoch>2: 
                 # Compute the effective update:
                 # Note: The current gradient g appears only once in the final update.
-                    update = momentum_buffers[name] - long_term_buffers[name] + grad
+                    update = momentum_buffers[name] - 0.1*long_term_buffers[name] + grad
                 else: 
                     update = momentum_buffers[name] + grad
                 
