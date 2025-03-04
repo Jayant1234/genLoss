@@ -224,7 +224,7 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
                     update = momentum_buffers[name] + grad
                 
                 # Update the parameter
-                param.data.add_(-current_lr, update)
+                param.data.add_(update, alpha=-current_lr)
             
             running_loss += loss.item()
             
