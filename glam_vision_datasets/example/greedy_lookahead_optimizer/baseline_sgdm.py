@@ -38,7 +38,7 @@ if __name__ == "__main__":
     dataset = Cifar(args.batch_size, args.threads)
     full_train_dataset = dataset.train.dataset  # Extract dataset from DataLoader
 
-    # Split into training (90%) and validation (10%) sets
+    # Split into training (95%) and validation (5%) sets
     train_size = int(0.95 * len(full_train_dataset))
     val_size = len(full_train_dataset) - train_size
     train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size])
