@@ -191,6 +191,8 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
     for epoch in range(1, num_epochs + 1):
         model.train()
         running_loss = 0.0
+        epoch_short_term_norms = []
+        epoch_long_term_norms = []
         
         for batch_idx, (inputs, targets) in enumerate(trainloader):
             inputs, targets = inputs.to(device), targets.to(device)
@@ -202,6 +204,9 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
             # Get current learning rate (scheduler updates the optimizer)
             current_lr = optimizer.param_groups[0]['lr']
             
+            short_term_total = 0.0
+            long_term_total = 0.0
+            num_params = 0
             # Manual parameter update with dual momentum
             for name, param in model.named_parameters():
                 if param.grad is None:
@@ -219,14 +224,25 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
                 if epoch>2: 
                 # Compute the effective update:
                 # Note: The current gradient g appears only once in the final update.
-                    update = momentum_buffers[name] - 0.01*long_term_buffers[name] + grad
+                    update = momentum_buffers[name] - 0.005*long_term_buffers[name] + grad
                 else: 
                     update = momentum_buffers[name] + grad
                 
                 # Update the parameter
                 param.data.add_(update,alpha=-current_lr)
+                
+                short_term_total += momentum_buffers[name].norm().item()
+                long_term_total += long_term_buffers[name].norm().item()
+                num_params += 1
+                
             
             running_loss += loss.item()
+            
+            avg_short_term_norm = short_term_total / num_params
+            avg_long_term_norm = long_term_total / num_params
+
+            epoch_short_term_norms.append(avg_short_term_norm)
+            epoch_long_term_norms.append(avg_long_term_norm)
             
             # If in final epoch, record gradients for selected batches (as before)
             if epoch == num_epochs and batch_idx > num_batches - 7:
@@ -244,6 +260,12 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
         
         # Update the scheduler (which updates optimizer's learning rate)
         scheduler(epoch)
+        # At the end of the epoch, average across batches:
+        epoch_avg_short_term_norm = sum(epoch_short_term_norms) / len(epoch_short_term_norms)
+        epoch_avg_long_term_norm = sum(epoch_long_term_norms) / len(epoch_long_term_norms)
+        print(f"Epoch {epoch}: Epoch-Level Avg Short-term Momentum Norm = {epoch_avg_short_term_norm:.4f}, "
+              f"Epoch-Level Avg Long-term Momentum Norm = {epoch_avg_long_term_norm:.4f}")
+              
         print(f"Epoch {epoch}/{num_epochs} Loss: {running_loss/num_batches:.4f}")
     
     final_state = copy.deepcopy(model.state_dict())
