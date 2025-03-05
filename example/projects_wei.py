@@ -407,7 +407,7 @@ def main():
     model = get_model().to(device)
 
     print("=== Phase 1: Baseline Training (Epochs 1-10) ===")
-    baseline_state, stored_directions = phase1_train(model, trainloader, device, num_epochs=100, lr=0.1, momentum=0.9)
+    baseline_state, stored_directions = phase1_train(model, trainloader, device, num_epochs=100, lr=0.1, momentum=0.0)
     
     print("\n=== Evaluating Baseline Model ===")
     # Evaluate baseline on the validation set.
