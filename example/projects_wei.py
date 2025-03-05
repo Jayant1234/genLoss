@@ -407,7 +407,7 @@ def main():
     model = get_model().to(device)
 
     print("=== Phase 1: Baseline Training (Epochs 1-10) ===")
-    baseline_state, stored_directions = phase1_train(model, trainloader, device, num_epochs=10, lr=0.1, momentum=0.9)
+    baseline_state, stored_directions = phase1_train(model, trainloader, device, num_epochs=100, lr=0.1, momentum=0.9)
     
     print("\n=== Evaluating Baseline Model ===")
     # Evaluate baseline on the validation set.
@@ -421,8 +421,8 @@ def main():
     # For example, run 5 rounds of 1 epoch each.
     updated_baseline_state = periodic_extrapolation_training(model, valloader, device, baseline_state, stored_directions, num_rounds=2, n_epochs_per_round=1, lr_aux=1e-2)
 
-    print("\n=== Final Evaluation on Test Set with Updated Baseline ===")
-    evaluate_extrapolated(model, testloader, device, updated_baseline_state, stored_directions, aux_params=torch.zeros(len(stored_directions), device=device))
+    #print("\n=== Final Evaluation on Test Set with Updated Baseline ===")
+    #evaluate_extrapolated(model, testloader, device, updated_baseline_state, stored_directions, aux_params=torch.zeros(len(stored_directions), device=device))
     # Note: In the final evaluation here, aux_params is set to zero for simplicity.
     
     #print(aux_params)
