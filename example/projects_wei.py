@@ -163,7 +163,7 @@ def get_model():
     # return final_state, stored_directions
 
 def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.9,
-                 long_term_momentum=0.99, epoch_offsets=[2, 3, 4, 5, 10, 20, 30, 50, 80]):
+                 long_term_momentum=0.999, epoch_offsets=[2, 3, 4, 5, 10, 20, 30, 50, 80]):
     # We'll still use the optimizer for zero_grad and for the scheduler's learning rate
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0, weight_decay=5e-4)
     scheduler = StepLR(optimizer, lr, num_epochs)
@@ -224,7 +224,7 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
                 long_term_norm_sq = long_term_buffers[name].pow(2).sum()
                 eps = 1e-8  # avoid division by zero
                 if long_term_norm_sq > eps:
-                    proj = (momentum_buffers[name] * long_term_buffers[name]).sum() / long_term_norm_sq * long_term_buffers[name]
+                    proj = (grad*long_term_buffers[name]).sum() / long_term_norm_sq * long_term_buffers[name]
                     # Effective update: remove the projected (long-term) part from the momentum buffer.
                     # Add the current gradient once, since it is only used once in the final update.
                     effective_update = momentum_buffers[name] - proj + grad
