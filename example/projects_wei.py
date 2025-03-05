@@ -221,15 +221,18 @@ def phase1_train(model, trainloader, device, num_epochs=120, lr=0.1, momentum=0.
                 # Update long-term momentum buffer
                 long_term_buffers[name] = long_term_momentum * long_term_buffers[name] + grad
                 
-                if epoch>2: 
-                # Compute the effective update:
-                # Note: The current gradient g appears only once in the final update.
-                    update = momentum_buffers[name] - 0.1*long_term_buffers[name] + grad
-                else: 
-                    update = momentum_buffers[name] + grad
+                long_term_norm_sq = long_term_buffers[name].pow(2).sum()
+                eps = 1e-8  # avoid division by zero
+                if long_term_norm_sq > eps:
+                    proj = (momentum_buffers[name] * long_term_buffers[name]).sum() / long_term_norm_sq * long_term_buffers[name]
+                    # Effective update: remove the projected (long-term) part from the momentum buffer.
+                    # Add the current gradient once, since it is only used once in the final update.
+                    effective_update = momentum_buffers[name] - proj + grad
+                else:
+                    effective_update = momentum_buffers[name] + grad
                 
                 # Update the parameter
-                param.data.add_(update,alpha=-current_lr)
+                param.data.add_(effective_update,alpha=-current_lr)
                 
                 short_term_total += momentum_buffers[name].norm().item()
                 long_term_total += long_term_buffers[name].norm().item()
