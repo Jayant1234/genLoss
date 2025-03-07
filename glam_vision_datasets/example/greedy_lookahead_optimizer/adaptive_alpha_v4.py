@@ -175,6 +175,26 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # [argument parsing code remains unchanged]
     # ...
+    parser.add_argument("--adaptive", default=True, type=bool, help="True if you want to use the Adaptive SAM.")
+    parser.add_argument("--batch_size", default=128, type=int, help="Batch size used in the training and validation loop.")
+    parser.add_argument("--depth", default=16, type=int, help="Number of layers.")
+    parser.add_argument("--dropout", default=0.0, type=float, help="Dropout rate.")
+    parser.add_argument("--epochs", default=200, type=int, help="Total number of epochs.")
+    parser.add_argument("--label_smoothing", default=0.1, type=float, help="Use 0.0 for no label smoothing.")
+    parser.add_argument("--learning_rate", default=0.1, type=float, help="Base learning rate at the start of the training.")
+    parser.add_argument("--momentum", default=0.9, type=float, help="SGD Momentum.")
+    parser.add_argument("--threads", default=2, type=int, help="Number of CPU threads for dataloaders.")
+    parser.add_argument("--rho", default=2.0, type=int, help="Rho parameter for SAM.")
+    parser.add_argument("--weight_decay", default=0.0005, type=float, help="L2 weight decay.")
+    parser.add_argument("--width_factor", default=8, type=int, help="How many times wider compared to normal ResNet.")
+    parser.add_argument("--label", default="AdaptiveLookahead", type=str, help="Label for the experiment.")
+    parser.add_argument("--method_type", default="adaptive_lookahead", type=str, help="Method type for training.")
+    parser.add_argument("--alpha_min", default=0.1, type=float, help="Minimum alpha value for adaptive lookahead.")
+    parser.add_argument("--alpha_max", default=0.9, type=float, help="Maximum alpha value for adaptive lookahead.")
+    parser.add_argument("--lookahead_k", default=10, type=int, help="Number of fast updates before slow update in lookahead.")
+    parser.add_argument("--sigmoid_scale", default=5.0, type=float, help="Controls the steepness of the sigmoid function.")
+    parser.add_argument("--sigmoid_shift", default=0.0, type=float, help="Controls the center point of the sigmoid function.")
+
 
     args = parser.parse_args()
     
