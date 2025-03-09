@@ -1,7 +1,7 @@
 #!/bin/bash 
-#SBATCH --job-name=adaptive_alpha_v4
-#SBATCH --output=adaptive_alpha_v4_K10_output.log
-#SBATCH --error=adaptive_alpha_v4_K10_error.log
+#SBATCH --job-name=adaptive_alpha_v4_k10_grid_3
+#SBATCH --output=adaptive_alpha_v4_K10_grid_seed42_3output.log
+#SBATCH --error=adaptive_alpha_v4_K10_grid_seed42_3error.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
@@ -17,5 +17,7 @@ module load cuDNN/8.9.2.26-CUDA-12.1.1
 #activate your environment
 source /home/bg91882/environments/gen/bin/activate
 
-python adaptive_alpha_v4.py 
+python adaptive_alpha_v4.py --label adaptive_alpha_v4_grid_3
+
+
 
