@@ -202,7 +202,7 @@ if __name__ == "__main__":
         for j in range(len(alpha)):
             args.learning_rate = lr[i]
             args.alpha_max = alpha[j]
-            seed = 42
+            seed = 25
             args.label = f"AdaptiveLookahead4_lr{args.learning_rate}_alpha{args.alpha_max}_seed{seed}"
             print(args.label)
             initialize(args, seed=seed)
