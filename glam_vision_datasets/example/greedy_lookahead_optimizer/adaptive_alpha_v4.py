@@ -173,8 +173,6 @@ class AdaptiveLookahead(torch.optim.Optimizer):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    # [argument parsing code remains unchanged]
-    # ...
     parser.add_argument("--adaptive", default=True, type=bool, help="True if you want to use the Adaptive SAM.")
     parser.add_argument("--batch_size", default=128, type=int, help="Batch size used in the training and validation loop.")
     parser.add_argument("--depth", default=16, type=int, help="Number of layers.")
@@ -204,9 +202,10 @@ if __name__ == "__main__":
         for j in range(len(alpha)):
             args.learning_rate = lr[i]
             args.alpha_max = alpha[j]
-            args.label = f"AdaptiveLookahead4_lr{args.learning_rate}_alpha{args.alpha_max}"
+            seed = 42
+            args.label = f"AdaptiveLookahead4_lr{args.learning_rate}_alpha{args.alpha_max}_seed{seed}"
             print(args.label)
-            initialize(args, seed=42)
+            initialize(args, seed=seed)
             device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
             # Initialize the Cifar dataset
