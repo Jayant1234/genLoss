@@ -196,7 +196,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     
-    lr = [0.1]
+    lr = [0.1,0.2,0.3]
     alpha = [0.5,0.6,0.7]
     for i in range(len(lr)):
         for j in range(len(alpha)):
@@ -294,21 +294,22 @@ if __name__ == "__main__":
                             scheduler(epoch)
 
                 elif args.method_type == 'lookdeep': 
-                    for batch in train_loader:
-                        k = 5
-                        inputs, targets = (b.to(device) for b in batch)
-                        for i in range(k): 
-                            predictions = model(inputs)
-                            loss = smooth_crossentropy(predictions, targets, smoothing=args.label_smoothing)
+                    pass
+                    # for batch in train_loader:
+                    #     k = 5
+                    #     inputs, targets = (b.to(device) for b in batch)
+                    #     for i in range(k): 
+                    #         predictions = model(inputs)
+                    #         loss = smooth_crossentropy(predictions, targets, smoothing=args.label_smoothing)
                             
-                            optimizer.zero_grad()
-                            loss.mean().backward()
-                            optimizer.step()
+                    #         optimizer.zero_grad()
+                    #         loss.mean().backward()
+                    #         optimizer.step()
 
-                            with torch.no_grad():
-                                correct = torch.argmax(predictions.data, 1) == targets
-                                log(model, loss.cpu(), correct.cpu(), scheduler.lr())
-                                scheduler(epoch)
+                    #         with torch.no_grad():
+                    #             correct = torch.argmax(predictions.data, 1) == targets
+                    #             log(model, loss.cpu(), correct.cpu(), scheduler.lr())
+                    #             scheduler(epoch)
 
                 # Validation phase
                 model.eval()
