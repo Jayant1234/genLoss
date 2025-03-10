@@ -192,17 +192,20 @@ if __name__ == "__main__":
     parser.add_argument("--lookahead_k", default=10, type=int, help="Number of fast updates before slow update in lookahead.")
     parser.add_argument("--sigmoid_scale", default=5.0, type=float, help="Controls the steepness of the sigmoid function.")
     parser.add_argument("--sigmoid_shift", default=0.0, type=float, help="Controls the center point of the sigmoid function.")
+    parser.add_argument("--seed", default=42, type=int, help="Random seed for reproducibility.")
+    parser.add_argument("--alpha", default=0.5, type=float, help="Alpha value for adaptive lookahead.")
+    
 
 
     args = parser.parse_args()
     
-    lr = [0.1,0.2,0.3]
+    lr = [0.1,0.2]
     alpha = [0.5,0.6,0.7]
     for i in range(len(lr)):
         for j in range(len(alpha)):
             args.learning_rate = lr[i]
             args.alpha_max = alpha[j]
-            seed = 15
+            seed = args.seed
             args.label = f"AdaptiveLookahead4_lr{args.learning_rate}_alpha{args.alpha_max}_seed{seed}"
             print(args.label)
             initialize(args, seed=seed)
@@ -217,8 +220,7 @@ if __name__ == "__main__":
             # Split into training (95%) and validation (5%) sets
             train_size = int(0.95 * len(full_train_dataset))
             val_size = len(full_train_dataset) - train_size
-            train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size], 
-                                                     generator=torch.Generator().manual_seed(42))
+            train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size])
             
             # Create new DataLoaders for the split datasets
             train_loader = DataLoader(
