@@ -13,7 +13,32 @@ from utility.step_lr import StepLR
 from utility.bypass_bn import enable_running_stats, disable_running_stats
 
 import numpy as np
+import matplotlib.pyplot as plt
 
+alpha_history = []
+def plot_alpha_history(alpha_history, filename="alpha_history.png"):
+    """
+    Plot the history of alpha values during training
+    """
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(len(alpha_history)), alpha_history, 'b-', linewidth=2)
+    plt.title('Adaptive Alpha Value Over Training', fontsize=14)
+    plt.xlabel('Update Steps', fontsize=12)
+    plt.ylabel('Alpha Value', fontsize=12)
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.ylim(0, 1)  # Alpha is between 0 and 1
+    
+    # Add horizontal lines for min and max alpha values
+    if alpha_history:
+        plt.axhline(y=min(alpha_history), color='r', linestyle='--', alpha=0.5, 
+                   label=f'Min: {min(alpha_history):.4f}')
+        plt.axhline(y=max(alpha_history), color='g', linestyle='--', alpha=0.5, 
+                   label=f'Max: {max(alpha_history):.4f}')
+    
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(filename, dpi=300)
+    plt.close()
 class AdaptiveLookahead(torch.optim.Optimizer):
     def __init__(self, base_optimizer, alpha_min=0.1, alpha_max=0.9, k=5):
         if not 0.0 <= alpha_min <= alpha_max <= 1.0:
@@ -117,7 +142,7 @@ class AdaptiveLookahead(torch.optim.Optimizer):
             normalized_trend = self.normalize_loss(recent_trend)
             
             # Combine improvement ratio with trend
-            combined_signal = 0.7 * normalized_improvement + 0.3 * normalized_trend
+            combined_signal = 0.8 * normalized_improvement + 0.2 * normalized_trend
         else:
             combined_signal = normalized_improvement
         
@@ -156,6 +181,7 @@ class AdaptiveLookahead(torch.optim.Optimizer):
         # If validation loss is provided, update alpha
         if val_loss is not None:
             self.update_alpha(val_loss)
+            alpha_history.append(self.current_alpha)
 
         if self._step_count % self.k == 0:
             # Slow update with adaptive alpha
@@ -206,7 +232,10 @@ if __name__ == "__main__":
             args.learning_rate = lr[i]
             args.alpha_max = alpha[j]
             seed = args.seed
-            args.label = f"AdaptiveLookahead4_lr{args.learning_rate}_alpha{args.alpha_max}_seed{seed}"
+            if args.alpha_max - 0.2 > 0.1:
+                args.alpha_min = args.alpha_max - 0.2
+        
+            args.label = f"AdaptiveLookahead6_lr{args.learning_rate}_alpha{args.alpha_max}_seed{seed}"
             print(args.label)
             initialize(args, seed=seed)
             device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -255,6 +284,7 @@ if __name__ == "__main__":
                                         alpha_min=args.alpha_min, 
                                         alpha_max=args.alpha_max, 
                                         k=args.lookahead_k)
+                optimizer.current_alpha = args.alpha_max
                 
                 # Set sigmoid parameters if provided
                 if hasattr(optimizer, 'sigmoid_scale'):
@@ -315,7 +345,7 @@ if __name__ == "__main__":
 
                 # Validation phase
                 model.eval()
-                log.eval(len_dataset=len(val_loader.dataset))
+                # log.eval(len_dataset=len(val_loader.dataset))
                 val_losses = []
 
                 with torch.no_grad():
@@ -326,15 +356,17 @@ if __name__ == "__main__":
                         loss = smooth_crossentropy(predictions, targets)
                         val_losses.append(loss.mean().item())
                         correct = torch.argmax(predictions, 1) == targets
-                        log(model, loss.cpu(), correct.cpu())
+                        # log(model, loss.cpu(), correct.cpu())
                 
                 # Update current validation loss for next epoch
                 current_val_loss = sum(val_losses) / len(val_losses) if val_losses else None
                 print(f"Epoch {epoch+1}/{args.epochs} - Validation Loss: {current_val_loss:.6f}")
                 
+                
                 # Test phase (optional)
                 model.eval()
                 test_losses = []
+                log.eval(len_dataset=len(test_loader.dataset))
                 test_correct = 0
                 test_total = 0
                 
@@ -348,6 +380,8 @@ if __name__ == "__main__":
                         
                         pred = torch.argmax(predictions, 1)
                         test_correct += (pred == targets).sum().item()
+                        correct = torch.argmax(predictions, 1) == targets
+                        log(model, loss.cpu(), correct.cpu())
                         test_total += targets.size(0)
                 
                 test_loss = sum(test_losses) / len(test_losses) if test_losses else 0
@@ -358,3 +392,12 @@ if __name__ == "__main__":
             # Save the plots after all epochs
             log.save_loss_plot(log.train_losses, log.val_losses, filename=f'{args.label}_training_validation_loss.png')
             log.save_accuracy_plot(log.train_accuracies, log.val_accuracies, filename=f'{args.label}_training_validation_accuracy.png')
+            plot_alpha_history(alpha_history, filename=f'{args.label}_alpha_history.png')
+            # Print some statistics about alpha
+            print(f"Alpha Statistics:")
+            print(f"  Initial: {alpha_history[0]:.4f}")
+            print(f"  Final: {alpha_history[-1]:.4f}")
+            print(f"  Min: {min(alpha_history):.4f}")
+            print(f"  Max: {max(alpha_history):.4f}")
+            print(f"  Mean: {sum(alpha_history)/len(alpha_history):.4f}")
+    
