@@ -83,7 +83,7 @@ if __name__ == "__main__":
         log.eval(len_dataset=len(test_loader.dataset))
 
         with torch.no_grad():
-            for batch in val_loader:
+            for batch in test_loader:
                 inputs, targets = (b.to(device) for b in batch)
 
                 predictions = model(inputs)
@@ -95,5 +95,5 @@ if __name__ == "__main__":
 
     log.flush()
     # Save loss and accuracy plots
-    log.save_loss_plot(log.train_losses, log.val_losses, filename="training_validation_loss.png")
-    log.save_accuracy_plot(log.train_accuracies, log.val_accuracies, filename="training_validation_accuracy.png")
+    log.save_loss_plot(log.train_losses, log.val_losses, filename="{args.label}_seed{args.seed}_lr{args.learning_rate}_training_validation_loss.png")
+    log.save_accuracy_plot(log.train_accuracies, log.val_accuracies, filename="{args.label}_seed{args.seed}_lr_{args.learning_rate}_training_validation_accuracy.png")

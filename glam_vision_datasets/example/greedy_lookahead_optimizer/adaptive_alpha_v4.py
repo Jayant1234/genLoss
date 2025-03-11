@@ -199,7 +199,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     
-    lr = [0.1,0.2]
+    lr = [0.2]
     alpha = [0.5,0.6,0.7]
     for i in range(len(lr)):
         for j in range(len(alpha)):
