@@ -1,0 +1,1657 @@
+/home/bg91882/environments/gen/lib/python3.10/site-packages/torch/utils/data/dataloader.py:557: UserWarning: This DataLoader will create 2 worker processes in total. Our suggested max number of worker in current system is 1, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(_create_warning_msg(
+AdaptiveLookahead4_lr0.1_alpha0.5_seed42
+Files already downloaded and verified
+Files already downloaded and verified
+Files already downloaded and verified
+┏━━━━━━━━━━━━━━┳━━━━━━━╸T╺╸R╺╸A╺╸I╺╸N╺━━━━━━━┳━━━━━━━╸S╺╸T╺╸A╺╸T╺╸S╺━━━━━━━┳━━━━━━━╸V╺╸A╺╸L╺╸I╺╸D╺━━━━━━━┓
+┃              ┃              ╷              ┃              ╷              ┃              ╷              ┃
+┃       epoch  ┃        loss  │    accuracy  ┃        l.r.  │     elapsed  ┃        loss  │    accuracy  ┃
+┠──────────────╂──────────────┼──────────────╂──────────────┼──────────────╂──────────────┼──────────────┨
+┃           0  ┃      1.7680  │     11.37 %  ┃   1.000e-01  │   00:03 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.6979  │     19.53 %  ┃   1.000e-01  │   00:04 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.6155  │     21.09 %  ┃   1.000e-01  │   00:06 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.5755  │     24.22 %  ┃   1.000e-01  │   00:07 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.5127  │     26.48 %  ┃   1.000e-01  │   00:09 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.4255  │     29.14 %  ┃   1.000e-01  │   00:10 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.4194  │     30.39 %  ┃   1.000e-01  │   00:11 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.4139  │     30.39 %  ┃   1.000e-01  │   00:13 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.3695  │     30.78 %  ┃   1.000e-01  │   00:14 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.3725  │     28.83 %  ┃   1.000e-01  │   00:16 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.4310  │     30.70 %  ┃   1.000e-01  │   00:17 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.3933  │     30.70 %  ┃   1.000e-01  │   00:19 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.3751  │     32.58 %  ┃   1.000e-01  │   00:20 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.2591  │     39.53 %  ┃   1.000e-01  │   00:22 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.3149  │     38.05 %  ┃   1.000e-01  │   00:23 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.3527  │     35.47 %  ┃   1.000e-01  │   00:24 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.2496  │     39.61 %  ┃   1.000e-01  │   00:26 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.2462  │     40.47 %  ┃   1.000e-01  │   00:27 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.2302  │     38.59 %  ┃   1.000e-01  │   00:29 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.2555  │     37.89 %  ┃   1.000e-01  │   00:30 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.2477  │     39.92 %  ┃   1.000e-01  │   00:32 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.1630  │     45.78 %  ┃   1.000e-01  │   00:33 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.1806  │     44.22 %  ┃   1.000e-01  │   00:35 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.1772  │     42.58 %  ┃   1.000e-01  │   00:36 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.1434  │     44.77 %  ┃   1.000e-01  │   00:37 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.1582  │     45.47 %  ┃   1.000e-01  │   00:39 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.1140  │     46.72 %  ┃   1.000e-01  │   00:40 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.1173  │     45.70 %  ┃   1.000e-01  │   00:42 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.1044  │     47.19 %  ┃   1.000e-01  │   00:43 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.1335  │     44.77 %  ┃   1.000e-01  │   00:45 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.1196  │     47.58 %  ┃   1.000e-01  │   00:46 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.0878  │     50.00 %  ┃   1.000e-01  │   00:48 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.0607  │     49.22 %  ┃   1.000e-01  │   00:49 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.0750  │     49.06 %  ┃   1.000e-01  │   00:50 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.1184  │     48.44 %  ┃   1.000e-01  │   00:52 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.1105  │     47.89 %  ┃   1.000e-01  │   00:53 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.0750  │     51.56 %  ┃   1.000e-01  │   00:55 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨┃           0  ┃      1.2798  │     38.19 %  ┃   1.000e-01  │   00:55 min  ┃Epoch 1/200 - Validation Loss: 1.248044
+Epoch 1/200 - Test Loss: 1.240666, Test Accuracy: 47.97%
+      1.2454  │     44.40 %  ┃
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.0000, Sigmoid: 0.5000, Alpha: 0.3000
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: -0.2683, Sigmoid: 0.2072, Alpha: 0.2766
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: -0.0068, Sigmoid: 0.4915, Alpha: 0.2806
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.0989, Sigmoid: 0.6211, Alpha: 0.2942
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.1593, Sigmoid: 0.6893, Alpha: 0.3105
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.1991, Sigmoid: 0.7302, Alpha: 0.3268
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.2274, Sigmoid: 0.7571, Alpha: 0.3420
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.2486, Sigmoid: 0.7761, Alpha: 0.3557
+┃           1  ┃      1.0911  │     49.91 %  ┃   1.000e-01  │   00:02 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.2651, Sigmoid: 0.7901, Alpha: 0.3678
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.2783, Sigmoid: 0.8009, Alpha: 0.3783
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.2892, Sigmoid: 0.8094, Alpha: 0.3874
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.2983, Sigmoid: 0.8163, Alpha: 0.3952
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3060, Sigmoid: 0.8220, Alpha: 0.4019
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3126, Sigmoid: 0.8268, Alpha: 0.4077
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3183, Sigmoid: 0.8308, Alpha: 0.4126
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3233, Sigmoid: 0.8343, Alpha: 0.4168
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3278, Sigmoid: 0.8374, Alpha: 0.4205
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3317, Sigmoid: 0.8401, Alpha: 0.4236
+┃           1  ┃      1.0279  │     51.41 %  ┃   1.000e-01  │   00:03 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3353, Sigmoid: 0.8424, Alpha: 0.4262
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3385, Sigmoid: 0.8445, Alpha: 0.4286
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3414, Sigmoid: 0.8464, Alpha: 0.4306
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3440, Sigmoid: 0.8481, Alpha: 0.4323
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3464, Sigmoid: 0.8497, Alpha: 0.4338
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3486, Sigmoid: 0.8511, Alpha: 0.4351
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3506, Sigmoid: 0.8524, Alpha: 0.4363
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3525, Sigmoid: 0.8535, Alpha: 0.4373
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3542, Sigmoid: 0.8546, Alpha: 0.4382
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3559, Sigmoid: 0.8556, Alpha: 0.4390
+┃           1  ┃      0.9796  │     55.70 %  ┃   1.000e-01  │   00:05 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3574, Sigmoid: 0.8565, Alpha: 0.4397
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3588, Sigmoid: 0.8574, Alpha: 0.4404
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3601, Sigmoid: 0.8582, Alpha: 0.4410
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3613, Sigmoid: 0.8590, Alpha: 0.4415
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3625, Sigmoid: 0.8597, Alpha: 0.4420
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3636, Sigmoid: 0.8603, Alpha: 0.4424
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3646, Sigmoid: 0.8609, Alpha: 0.4428
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3656, Sigmoid: 0.8615, Alpha: 0.4432
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3665, Sigmoid: 0.8621, Alpha: 0.4435
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3674, Sigmoid: 0.8626, Alpha: 0.4438
+┃           1  ┃      0.9875  │     55.08 %  ┃   1.000e-01  │   00:06 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3682, Sigmoid: 0.8631, Alpha: 0.4441
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3690, Sigmoid: 0.8635, Alpha: 0.4444
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3698, Sigmoid: 0.8640, Alpha: 0.4446
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3705, Sigmoid: 0.8644, Alpha: 0.4448
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3712, Sigmoid: 0.8648, Alpha: 0.4451
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3718, Sigmoid: 0.8652, Alpha: 0.4453
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3724, Sigmoid: 0.8655, Alpha: 0.4454
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3730, Sigmoid: 0.8659, Alpha: 0.4456
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3736, Sigmoid: 0.8662, Alpha: 0.4458
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3741, Sigmoid: 0.8665, Alpha: 0.4460
+┃           1  ┃      1.0105  │     52.73 %  ┃   1.000e-01  │   00:07 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3747, Sigmoid: 0.8668, Alpha: 0.4461
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3752, Sigmoid: 0.8671, Alpha: 0.4463
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3757, Sigmoid: 0.8674, Alpha: 0.4464
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3761, Sigmoid: 0.8677, Alpha: 0.4465
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3766, Sigmoid: 0.8679, Alpha: 0.4467
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3770, Sigmoid: 0.8682, Alpha: 0.4468
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3774, Sigmoid: 0.8684, Alpha: 0.4469
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3778, Sigmoid: 0.8686, Alpha: 0.4470
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3782, Sigmoid: 0.8689, Alpha: 0.4471
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3786, Sigmoid: 0.8691, Alpha: 0.4472
+┃           1  ┃      0.9178  │     57.19 %  ┃   1.000e-01  │   00:09 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3789, Sigmoid: 0.8693, Alpha: 0.4473
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3793, Sigmoid: 0.8695, Alpha: 0.4474
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3796, Sigmoid: 0.8697, Alpha: 0.4475
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3799, Sigmoid: 0.8699, Alpha: 0.4476
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3803, Sigmoid: 0.8700, Alpha: 0.4477
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3806, Sigmoid: 0.8702, Alpha: 0.4478
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3809, Sigmoid: 0.8704, Alpha: 0.4478
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3812, Sigmoid: 0.8705, Alpha: 0.4479
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3814, Sigmoid: 0.8707, Alpha: 0.4480
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3817, Sigmoid: 0.8709, Alpha: 0.4481
+┃           1  ┃      0.9845  │     55.55 %  ┃   1.000e-01  │   00:10 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3820, Sigmoid: 0.8710, Alpha: 0.4481
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3822, Sigmoid: 0.8711, Alpha: 0.4482
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3825, Sigmoid: 0.8713, Alpha: 0.4483
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3827, Sigmoid: 0.8714, Alpha: 0.4483
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3830, Sigmoid: 0.8716, Alpha: 0.4484
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3832, Sigmoid: 0.8717, Alpha: 0.4484
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3834, Sigmoid: 0.8718, Alpha: 0.4485
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3836, Sigmoid: 0.8719, Alpha: 0.4486
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3838, Sigmoid: 0.8720, Alpha: 0.4486
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3840, Sigmoid: 0.8722, Alpha: 0.4487
+┃           1  ┃      1.0377  │     53.05 %  ┃   1.000e-01  │   00:12 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3842, Sigmoid: 0.8723, Alpha: 0.4487
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3844, Sigmoid: 0.8724, Alpha: 0.4488
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3846, Sigmoid: 0.8725, Alpha: 0.4488
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3848, Sigmoid: 0.8726, Alpha: 0.4489
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3850, Sigmoid: 0.8727, Alpha: 0.4489
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3852, Sigmoid: 0.8728, Alpha: 0.4489
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3854, Sigmoid: 0.8729, Alpha: 0.4490
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3855, Sigmoid: 0.8730, Alpha: 0.4490
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3857, Sigmoid: 0.8731, Alpha: 0.4491
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3859, Sigmoid: 0.8732, Alpha: 0.4491
+┃           1  ┃      0.9811  │     54.22 %  ┃   1.000e-01  │   00:13 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3860, Sigmoid: 0.8733, Alpha: 0.4491
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3862, Sigmoid: 0.8733, Alpha: 0.4492
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3863, Sigmoid: 0.8734, Alpha: 0.4492
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3865, Sigmoid: 0.8735, Alpha: 0.4493
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3866, Sigmoid: 0.8736, Alpha: 0.4493
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3868, Sigmoid: 0.8737, Alpha: 0.4493
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3869, Sigmoid: 0.8737, Alpha: 0.4494
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3870, Sigmoid: 0.8738, Alpha: 0.4494
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3872, Sigmoid: 0.8739, Alpha: 0.4494
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3873, Sigmoid: 0.8740, Alpha: 0.4495
+┃           1  ┃      0.9231  │     57.34 %  ┃   1.000e-01  │   00:15 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3874, Sigmoid: 0.8740, Alpha: 0.4495
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3875, Sigmoid: 0.8741, Alpha: 0.4495
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3877, Sigmoid: 0.8742, Alpha: 0.4495
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3878, Sigmoid: 0.8742, Alpha: 0.4496
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3879, Sigmoid: 0.8743, Alpha: 0.4496
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3880, Sigmoid: 0.8744, Alpha: 0.4496
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3881, Sigmoid: 0.8744, Alpha: 0.4497
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3882, Sigmoid: 0.8745, Alpha: 0.4497
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3884, Sigmoid: 0.8745, Alpha: 0.4497
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3885, Sigmoid: 0.8746, Alpha: 0.4497
+┃           1  ┃      1.0132  │     53.75 %  ┃   1.000e-01  │   00:16 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3886, Sigmoid: 0.8747, Alpha: 0.4498
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3887, Sigmoid: 0.8747, Alpha: 0.4498
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3888, Sigmoid: 0.8748, Alpha: 0.4498
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3889, Sigmoid: 0.8748, Alpha: 0.4498
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3890, Sigmoid: 0.8749, Alpha: 0.4499
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3891, Sigmoid: 0.8749, Alpha: 0.4499
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3892, Sigmoid: 0.8750, Alpha: 0.4499
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3893, Sigmoid: 0.8750, Alpha: 0.4499
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3893, Sigmoid: 0.8751, Alpha: 0.4499
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3894, Sigmoid: 0.8751, Alpha: 0.4500
+┃           1  ┃      0.9633  │     57.27 %  ┃   1.000e-01  │   00:18 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3895, Sigmoid: 0.8752, Alpha: 0.4500
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3896, Sigmoid: 0.8752, Alpha: 0.4500
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3897, Sigmoid: 0.8753, Alpha: 0.4500
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3898, Sigmoid: 0.8753, Alpha: 0.4501
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3899, Sigmoid: 0.8754, Alpha: 0.4501
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3899, Sigmoid: 0.8754, Alpha: 0.4501
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3900, Sigmoid: 0.8755, Alpha: 0.4501
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3901, Sigmoid: 0.8755, Alpha: 0.4501
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3902, Sigmoid: 0.8755, Alpha: 0.4501
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3903, Sigmoid: 0.8756, Alpha: 0.4502
+┃           1  ┃      0.9449  │     57.34 %  ┃   1.000e-01  │   00:19 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3903, Sigmoid: 0.8756, Alpha: 0.4502
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3904, Sigmoid: 0.8757, Alpha: 0.4502
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3905, Sigmoid: 0.8757, Alpha: 0.4502
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3906, Sigmoid: 0.8757, Alpha: 0.4502
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3906, Sigmoid: 0.8758, Alpha: 0.4502
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3907, Sigmoid: 0.8758, Alpha: 0.4503
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3908, Sigmoid: 0.8759, Alpha: 0.4503
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3908, Sigmoid: 0.8759, Alpha: 0.4503
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3909, Sigmoid: 0.8759, Alpha: 0.4503
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3910, Sigmoid: 0.8760, Alpha: 0.4503
+┃           1  ┃      0.9049  │     59.30 %  ┃   1.000e-01  │   00:20 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3910, Sigmoid: 0.8760, Alpha: 0.4503
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3911, Sigmoid: 0.8760, Alpha: 0.4504
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3912, Sigmoid: 0.8761, Alpha: 0.4504
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3912, Sigmoid: 0.8761, Alpha: 0.4504
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3913, Sigmoid: 0.8761, Alpha: 0.4504
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3913, Sigmoid: 0.8762, Alpha: 0.4504
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3914, Sigmoid: 0.8762, Alpha: 0.4504
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3915, Sigmoid: 0.8762, Alpha: 0.4504
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3915, Sigmoid: 0.8763, Alpha: 0.4505
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3916, Sigmoid: 0.8763, Alpha: 0.4505
+┃           1  ┃      0.9132  │     56.25 %  ┃   1.000e-01  │   00:22 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3916, Sigmoid: 0.8763, Alpha: 0.4505
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3917, Sigmoid: 0.8764, Alpha: 0.4505
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3917, Sigmoid: 0.8764, Alpha: 0.4505
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3918, Sigmoid: 0.8764, Alpha: 0.4505
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3918, Sigmoid: 0.8765, Alpha: 0.4505
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3919, Sigmoid: 0.8765, Alpha: 0.4505
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3920, Sigmoid: 0.8765, Alpha: 0.4506
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3920, Sigmoid: 0.8765, Alpha: 0.4506
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3921, Sigmoid: 0.8766, Alpha: 0.4506
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3921, Sigmoid: 0.8766, Alpha: 0.4506
+┃           1  ┃      0.9581  │     55.16 %  ┃   1.000e-01  │   00:23 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3922, Sigmoid: 0.8766, Alpha: 0.4506
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3922, Sigmoid: 0.8766, Alpha: 0.4506
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3923, Sigmoid: 0.8767, Alpha: 0.4506
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3923, Sigmoid: 0.8767, Alpha: 0.4506
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3923, Sigmoid: 0.8767, Alpha: 0.4506
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3924, Sigmoid: 0.8767, Alpha: 0.4507
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3924, Sigmoid: 0.8768, Alpha: 0.4507
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3925, Sigmoid: 0.8768, Alpha: 0.4507
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3925, Sigmoid: 0.8768, Alpha: 0.4507
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3926, Sigmoid: 0.8768, Alpha: 0.4507
+┃           1  ┃      0.9355  │     54.37 %  ┃   1.000e-01  │   00:25 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3926, Sigmoid: 0.8769, Alpha: 0.4507
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3927, Sigmoid: 0.8769, Alpha: 0.4507
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3927, Sigmoid: 0.8769, Alpha: 0.4507
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3927, Sigmoid: 0.8769, Alpha: 0.4507
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3928, Sigmoid: 0.8770, Alpha: 0.4507
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3928, Sigmoid: 0.8770, Alpha: 0.4508
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3929, Sigmoid: 0.8770, Alpha: 0.4508
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3929, Sigmoid: 0.8770, Alpha: 0.4508
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3930, Sigmoid: 0.8770, Alpha: 0.4508
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3930, Sigmoid: 0.8771, Alpha: 0.4508
+┃           1  ┃      0.8636  │     60.39 %  ┃   1.000e-01  │   00:26 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3930, Sigmoid: 0.8771, Alpha: 0.4508
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3931, Sigmoid: 0.8771, Alpha: 0.4508
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3931, Sigmoid: 0.8771, Alpha: 0.4508
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3931, Sigmoid: 0.8772, Alpha: 0.4508
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3932, Sigmoid: 0.8772, Alpha: 0.4508
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3932, Sigmoid: 0.8772, Alpha: 0.4508
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3933, Sigmoid: 0.8772, Alpha: 0.4509
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3933, Sigmoid: 0.8772, Alpha: 0.4509
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3933, Sigmoid: 0.8772, Alpha: 0.4509
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3934, Sigmoid: 0.8773, Alpha: 0.4509
+┃           1  ┃      0.8405  │     61.41 %  ┃   1.000e-01  │   00:28 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3934, Sigmoid: 0.8773, Alpha: 0.4509
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3934, Sigmoid: 0.8773, Alpha: 0.4509
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3935, Sigmoid: 0.8773, Alpha: 0.4509
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3935, Sigmoid: 0.8773, Alpha: 0.4509
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3935, Sigmoid: 0.8774, Alpha: 0.4509
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3936, Sigmoid: 0.8774, Alpha: 0.4509
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3936, Sigmoid: 0.8774, Alpha: 0.4509
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3936, Sigmoid: 0.8774, Alpha: 0.4509
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3937, Sigmoid: 0.8774, Alpha: 0.4509
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3937, Sigmoid: 0.8774, Alpha: 0.4510
+┃           1  ┃      0.8926  │     58.75 %  ┃   1.000e-01  │   00:29 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3937, Sigmoid: 0.8775, Alpha: 0.4510
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3938, Sigmoid: 0.8775, Alpha: 0.4510
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3938, Sigmoid: 0.8775, Alpha: 0.4510
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3938, Sigmoid: 0.8775, Alpha: 0.4510
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3939, Sigmoid: 0.8775, Alpha: 0.4510
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3939, Sigmoid: 0.8775, Alpha: 0.4510
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3939, Sigmoid: 0.8776, Alpha: 0.4510
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3939, Sigmoid: 0.8776, Alpha: 0.4510
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3940, Sigmoid: 0.8776, Alpha: 0.4510
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3940, Sigmoid: 0.8776, Alpha: 0.4510
+┃           1  ┃      0.8429  │     62.27 %  ┃   1.000e-01  │   00:31 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3940, Sigmoid: 0.8776, Alpha: 0.4510
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3941, Sigmoid: 0.8776, Alpha: 0.4510
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3941, Sigmoid: 0.8777, Alpha: 0.4510
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3941, Sigmoid: 0.8777, Alpha: 0.4510
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3941, Sigmoid: 0.8777, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3942, Sigmoid: 0.8777, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3942, Sigmoid: 0.8777, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3942, Sigmoid: 0.8777, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3942, Sigmoid: 0.8777, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3943, Sigmoid: 0.8778, Alpha: 0.4511
+┃           1  ┃      0.9127  │     56.88 %  ┃   1.000e-01  │   00:32 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3943, Sigmoid: 0.8778, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3943, Sigmoid: 0.8778, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3944, Sigmoid: 0.8778, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3944, Sigmoid: 0.8778, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3944, Sigmoid: 0.8778, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3944, Sigmoid: 0.8778, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3945, Sigmoid: 0.8779, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3945, Sigmoid: 0.8779, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3945, Sigmoid: 0.8779, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3945, Sigmoid: 0.8779, Alpha: 0.4511
+┃           1  ┃      0.8414  │     59.61 %  ┃   1.000e-01  │   00:33 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3945, Sigmoid: 0.8779, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3946, Sigmoid: 0.8779, Alpha: 0.4511
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3946, Sigmoid: 0.8779, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3946, Sigmoid: 0.8779, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3946, Sigmoid: 0.8780, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3947, Sigmoid: 0.8780, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3947, Sigmoid: 0.8780, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3947, Sigmoid: 0.8780, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3947, Sigmoid: 0.8780, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3948, Sigmoid: 0.8780, Alpha: 0.4512
+┃           1  ┃      0.8725  │     58.98 %  ┃   1.000e-01  │   00:35 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3948, Sigmoid: 0.8780, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3948, Sigmoid: 0.8780, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3948, Sigmoid: 0.8781, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3948, Sigmoid: 0.8781, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3949, Sigmoid: 0.8781, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3949, Sigmoid: 0.8781, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3949, Sigmoid: 0.8781, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3949, Sigmoid: 0.8781, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3949, Sigmoid: 0.8781, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3950, Sigmoid: 0.8781, Alpha: 0.4512
+┃           1  ┃      0.8812  │     60.00 %  ┃   1.000e-01  │   00:36 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3950, Sigmoid: 0.8781, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3950, Sigmoid: 0.8782, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3950, Sigmoid: 0.8782, Alpha: 0.4512
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3950, Sigmoid: 0.8782, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3951, Sigmoid: 0.8782, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3951, Sigmoid: 0.8782, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3951, Sigmoid: 0.8782, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3951, Sigmoid: 0.8782, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3951, Sigmoid: 0.8782, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3952, Sigmoid: 0.8782, Alpha: 0.4513
+┃           1  ┃      0.8366  │     61.56 %  ┃   1.000e-01  │   00:38 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3952, Sigmoid: 0.8782, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3952, Sigmoid: 0.8783, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3952, Sigmoid: 0.8783, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3952, Sigmoid: 0.8783, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3953, Sigmoid: 0.8783, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3953, Sigmoid: 0.8783, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3953, Sigmoid: 0.8783, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3953, Sigmoid: 0.8783, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3953, Sigmoid: 0.8783, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3953, Sigmoid: 0.8783, Alpha: 0.4513
+┃           1  ┃      0.8088  │     64.06 %  ┃   1.000e-01  │   00:39 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3954, Sigmoid: 0.8783, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3954, Sigmoid: 0.8783, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3954, Sigmoid: 0.8784, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3954, Sigmoid: 0.8784, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3954, Sigmoid: 0.8784, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3954, Sigmoid: 0.8784, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3955, Sigmoid: 0.8784, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3955, Sigmoid: 0.8784, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3955, Sigmoid: 0.8784, Alpha: 0.4513
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3955, Sigmoid: 0.8784, Alpha: 0.4514
+┃           1  ┃      0.7938  │     64.77 %  ┃   1.000e-01  │   00:41 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3955, Sigmoid: 0.8784, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3955, Sigmoid: 0.8784, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3956, Sigmoid: 0.8784, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3956, Sigmoid: 0.8785, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3956, Sigmoid: 0.8785, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3956, Sigmoid: 0.8785, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3956, Sigmoid: 0.8785, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3956, Sigmoid: 0.8785, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3956, Sigmoid: 0.8785, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3957, Sigmoid: 0.8785, Alpha: 0.4514
+┃           1  ┃      0.7907  │     63.75 %  ┃   1.000e-01  │   00:42 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3957, Sigmoid: 0.8785, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3957, Sigmoid: 0.8785, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3957, Sigmoid: 0.8785, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3957, Sigmoid: 0.8785, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3957, Sigmoid: 0.8785, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3958, Sigmoid: 0.8785, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3958, Sigmoid: 0.8786, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3958, Sigmoid: 0.8786, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3958, Sigmoid: 0.8786, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3958, Sigmoid: 0.8786, Alpha: 0.4514
+┃           1  ┃      0.8424  │     60.78 %  ┃   1.000e-01  │   00:44 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3958, Sigmoid: 0.8786, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3958, Sigmoid: 0.8786, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3959, Sigmoid: 0.8786, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3959, Sigmoid: 0.8786, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3959, Sigmoid: 0.8786, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3959, Sigmoid: 0.8786, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3959, Sigmoid: 0.8786, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3959, Sigmoid: 0.8786, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3959, Sigmoid: 0.8786, Alpha: 0.4514
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3959, Sigmoid: 0.8787, Alpha: 0.4514
+┃           1  ┃      0.8023  │     63.98 %  ┃   1.000e-01  │   00:45 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3960, Sigmoid: 0.8787, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3960, Sigmoid: 0.8787, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3960, Sigmoid: 0.8787, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3960, Sigmoid: 0.8787, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3960, Sigmoid: 0.8787, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3960, Sigmoid: 0.8787, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3960, Sigmoid: 0.8787, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3960, Sigmoid: 0.8787, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3961, Sigmoid: 0.8787, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3961, Sigmoid: 0.8787, Alpha: 0.4515
+┃           1  ┃      0.8638  │     59.92 %  ┃   1.000e-01  │   00:47 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3961, Sigmoid: 0.8787, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3961, Sigmoid: 0.8787, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3961, Sigmoid: 0.8787, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3961, Sigmoid: 0.8787, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3961, Sigmoid: 0.8788, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3961, Sigmoid: 0.8788, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3962, Sigmoid: 0.8788, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3962, Sigmoid: 0.8788, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3962, Sigmoid: 0.8788, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3962, Sigmoid: 0.8788, Alpha: 0.4515
+┃           1  ┃      0.7794  │     65.86 %  ┃   1.000e-01  │   00:48 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3962, Sigmoid: 0.8788, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3962, Sigmoid: 0.8788, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3962, Sigmoid: 0.8788, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3962, Sigmoid: 0.8788, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3963, Sigmoid: 0.8788, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3963, Sigmoid: 0.8788, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3963, Sigmoid: 0.8788, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3963, Sigmoid: 0.8788, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3963, Sigmoid: 0.8788, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3963, Sigmoid: 0.8788, Alpha: 0.4515
+┃           1  ┃      0.7480  │     66.95 %  ┃   1.000e-01  │   00:49 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3963, Sigmoid: 0.8788, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3963, Sigmoid: 0.8789, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3963, Sigmoid: 0.8789, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3963, Sigmoid: 0.8789, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3964, Sigmoid: 0.8789, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3964, Sigmoid: 0.8789, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3964, Sigmoid: 0.8789, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3964, Sigmoid: 0.8789, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3964, Sigmoid: 0.8789, Alpha: 0.4515
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3964, Sigmoid: 0.8789, Alpha: 0.4516
+┃           1  ┃      0.7972  │     62.27 %  ┃   1.000e-01  │   00:51 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3964, Sigmoid: 0.8789, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3964, Sigmoid: 0.8789, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3964, Sigmoid: 0.8789, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3965, Sigmoid: 0.8789, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3965, Sigmoid: 0.8789, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3965, Sigmoid: 0.8789, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3965, Sigmoid: 0.8789, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3965, Sigmoid: 0.8789, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3965, Sigmoid: 0.8789, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3965, Sigmoid: 0.8790, Alpha: 0.4516
+┃           1  ┃      0.7991  │     64.53 %  ┃   1.000e-01  │   00:52 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3965, Sigmoid: 0.8790, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3965, Sigmoid: 0.8790, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3965, Sigmoid: 0.8790, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3966, Sigmoid: 0.8790, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3966, Sigmoid: 0.8790, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3966, Sigmoid: 0.8790, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3966, Sigmoid: 0.8790, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3966, Sigmoid: 0.8790, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3966, Sigmoid: 0.8790, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3966, Sigmoid: 0.8790, Alpha: 0.4516
+┃           1  ┃      0.8078  │     65.16 %  ┃   1.000e-01  │   00:54 min  ┠┈░┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3966, Sigmoid: 0.8790, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3966, Sigmoid: 0.8790, Alpha: 0.4516
+
+
+Val Loss: 1.248044, Running Avg: 1.248044, Best: 1.248044
+Signal: 0.3966, Sigmoid: 0.8790, Alpha: 0.4516
+┃           1  ┃      0.8961  │     58.89 %  ┃   1.000e-01  │   00:54 min  ┃Epoch 2/200 - Validation Loss: 0.940685
+Epoch 2/200 - Test Loss: 0.900485, Test Accuracy: 61.12%
+      0.9419  │     58.56 %  ┃
+
+
+Val Loss: 0.940685, Running Avg: 1.186572, Best: 0.940685
+Signal: 0.2551, Sigmoid: 0.7817, Alpha: 0.4438
+
+
+Val Loss: 0.940685, Running Avg: 1.125100, Best: 0.940685
+Signal: 0.3156, Sigmoid: 0.8289, Alpha: 0.4414
+
+
+Val Loss: 0.940685, Running Avg: 1.063629, Best: 0.940685
+Signal: 0.2357, Sigmoid: 0.7647, Alpha: 0.4343
+
+
+Val Loss: 0.940685, Running Avg: 1.002157, Best: 0.940685
+Signal: 0.3119, Sigmoid: 0.8263, Alpha: 0.4335
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3977, Sigmoid: 0.8796, Alpha: 0.4372
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3977, Sigmoid: 0.8796, Alpha: 0.4401
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3977, Sigmoid: 0.8796, Alpha: 0.4425
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3977, Sigmoid: 0.8796, Alpha: 0.4443
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3977, Sigmoid: 0.8796, Alpha: 0.4458
+┃           2  ┃      0.8082  │     63.89 %  ┃   1.000e-01  │   00:01 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3977, Sigmoid: 0.8796, Alpha: 0.4470
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3977, Sigmoid: 0.8796, Alpha: 0.4480
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3977, Sigmoid: 0.8796, Alpha: 0.4488
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8796, Alpha: 0.4494
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8796, Alpha: 0.4499
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8796, Alpha: 0.4503
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8796, Alpha: 0.4506
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8796, Alpha: 0.4508
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8796, Alpha: 0.4510
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8796, Alpha: 0.4512
+┃           2  ┃      0.7718  │     66.48 %  ┃   1.000e-01  │   00:03 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8796, Alpha: 0.4513
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8796, Alpha: 0.4514
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8796, Alpha: 0.4515
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8796, Alpha: 0.4516
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8796, Alpha: 0.4516
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8796, Alpha: 0.4517
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8797, Alpha: 0.4517
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8797, Alpha: 0.4517
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8797, Alpha: 0.4518
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8797, Alpha: 0.4518
+┃           2  ┃      0.7677  │     65.16 %  ┃   1.000e-01  │   00:04 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3978, Sigmoid: 0.8797, Alpha: 0.4518
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3979, Sigmoid: 0.8797, Alpha: 0.4518
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3979, Sigmoid: 0.8797, Alpha: 0.4518
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3979, Sigmoid: 0.8797, Alpha: 0.4518
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3979, Sigmoid: 0.8797, Alpha: 0.4518
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3979, Sigmoid: 0.8797, Alpha: 0.4518
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3979, Sigmoid: 0.8797, Alpha: 0.4519
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3979, Sigmoid: 0.8797, Alpha: 0.4519
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3979, Sigmoid: 0.8797, Alpha: 0.4519
+
+
+Val Loss: 0.940685, Running Avg: 0.940685, Best: 0.940685
+Signal: 0.3979, Sigmoid: 0.8797, Alpha: 0.4519
+┃           2  ┃      0.7296  │     66.64 %  ┃   1.000e-01  │   00:06 min  ┠┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┨slurmstepd: error: *** JOB 35579979 ON ra5-6 CANCELLED AT 2025-03-10T14:22:38 ***
