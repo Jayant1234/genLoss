@@ -1,7 +1,7 @@
 #!/bin/bash 
-#SBATCH --job-name=adaptive_alpha_v4_lr0.2seed25_3
-#SBATCH --error=adaptive_alpha_v4__lr0.2seed25_3error.log
-#SBATCH --output=adaptive_alpha_v4__lr0.2seed_25_3output.log
+#SBATCH --job-name=adaptive_alpha_v4_finetuning
+#SBATCH --error=adaptive_alpha_v4__finetuning__lr0.1error.log
+#SBATCH --output=adaptive_alpha_v4__finetuning__lr0.1output.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
@@ -17,5 +17,5 @@ module load cuDNN/8.9.2.26-CUDA-12.1.1
 #activate your environment
 source /home/bg91882/environments/gen/bin/activate
 
-python adaptive_alpha_v4.py --label adaptive_alpha_v4lr0.2_seed25_3 --seed 25
+python adaptive_alpha_v4_finetuning.py 
 

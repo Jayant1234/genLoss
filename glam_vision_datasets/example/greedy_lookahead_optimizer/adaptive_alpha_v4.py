@@ -213,7 +213,7 @@ if __name__ == "__main__":
     parser.add_argument("--width_factor", default=8, type=int, help="How many times wider compared to normal ResNet.")
     parser.add_argument("--label", default="AdaptiveLookahead", type=str, help="Label for the experiment.")
     parser.add_argument("--method_type", default="adaptive_lookahead", type=str, help="Method type for training.")
-    parser.add_argument("--alpha_min", default=0.1, type=float, help="Minimum alpha value for adaptive lookahead.")
+    parser.add_argument("--alpha_min", default=0.2, type=float, help="Minimum alpha value for adaptive lookahead.")
     parser.add_argument("--alpha_max", default=0.9, type=float, help="Maximum alpha value for adaptive lookahead.")
     parser.add_argument("--lookahead_k", default=10, type=int, help="Number of fast updates before slow update in lookahead.")
     parser.add_argument("--sigmoid_scale", default=5.0, type=float, help="Controls the steepness of the sigmoid function.")
