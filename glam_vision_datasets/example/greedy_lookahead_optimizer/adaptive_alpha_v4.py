@@ -226,14 +226,18 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     lr = [0.2]
-    alpha = [0.5,0.6,0.7]
+    alpha = [0.5]
     for i in range(len(lr)):
         for j in range(len(alpha)):
             args.learning_rate = lr[i]
-            args.alpha_max = alpha[j]
+            if (alpha[j] + 0.3) <=0.9:
+                    args.alpha_max = alpha[j]+0.2
+            else:
+                   args.alpha_max = alpha[j]
+	
             seed = args.seed
             if args.alpha_max - 0.2 > 0.1:
-                args.alpha_min = args.alpha_max - 0.2
+                args.alpha_min = alpha[j] - 0.2
         
             args.label = f"AdaptiveLookahead6_lr{args.learning_rate}_alpha{args.alpha_max}_seed{seed}"
             print(args.label)
@@ -284,7 +288,7 @@ if __name__ == "__main__":
                                         alpha_min=args.alpha_min, 
                                         alpha_max=args.alpha_max, 
                                         k=args.lookahead_k)
-                optimizer.current_alpha = args.alpha_max
+                optimizer.current_alpha = alpha[j]
                 
                 # Set sigmoid parameters if provided
                 if hasattr(optimizer, 'sigmoid_scale'):
