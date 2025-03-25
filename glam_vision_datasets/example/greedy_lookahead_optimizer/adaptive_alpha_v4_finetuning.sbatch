@@ -1,7 +1,7 @@
 #!/bin/bash 
 #SBATCH --job-name=adaptive_alpha_v4_validation_batch_finetuning
-#SBATCH --error=adaptive_alpha_v4_finetuning_validation_batch_lr0.1_error.log
-#SBATCH --output=adaptive_alpha_v4_finetuning_validation_batch_lr0.outputlog
+#SBATCH --error=adaptive_alpha_v4_finetuning_validation_batch_lr0.1_alpha0.7error.log
+#SBATCH --output=adaptive_alpha_v4_finetuning_validation_batch_lr0.1alpha0.7outputlog
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1

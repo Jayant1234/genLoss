@@ -226,7 +226,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     lr = [0.1]
-    alpha = [0.5]
+    alpha = [0.7]
     for i in range(len(lr)):
         for j in range(len(alpha)):
             args.learning_rate = lr[i]
@@ -299,9 +299,10 @@ if __name__ == "__main__":
             # Track validation loss for adaptive alpha
             current_val_loss = None
 
-            for epoch in range(args.epochs+20):
+            for epoch in range(args.epochs):
                 # Training phase
                 model.train()
+                log.train(len_dataset=len(train_loader.dataset))
                 if args.method_type in ['lookahead', 'adaptive_lookahead'] and epoch< args.epochs: 
                     for batch in train_loader:
                         inputs, targets = (b.to(device) for b in batch)
@@ -412,15 +413,16 @@ if __name__ == "__main__":
                 print(f"Fine-tuning Epoch {ft_epoch+1}/{finetune_epochs} complete")
                 avg_train_loss = sum(validation_set_train_losses) / len(validation_set_train_losses)
                 train_accuracy = 100.0 * validation_set_train_correct / validation_set_train_total if validation_set_train_total > 0 else 0
+                print(f"Train Accuracy of the Validation Set Finetuneing: {train_accuracy:.2f}%")  
+                print(f"Train Loss : {avg_train_loss:.6f}")
+                # Test phase (optional)
+                model.eval()
+                test_losses = []
+                test_correct = 0
+                test_total = 0
                 
-             # Test phase (optional)
-            model.eval()
-            test_losses = []
-            test_correct = 0
-            test_total = 0
-                
-            with torch.no_grad():
-                for batch in test_loader:
+                with torch.no_grad():
+                   for batch in test_loader:
                         inputs, targets = (b.to(device) for b in batch)
                         
                         predictions = model(inputs)
@@ -431,9 +433,9 @@ if __name__ == "__main__":
                         test_correct += (pred == targets).sum().item()
                         test_total += targets.size(0)
                 
-            test_loss = sum(test_losses) / len(test_losses) if test_losses else 0
-            test_accuracy = 100.0 * test_correct / test_total if test_total > 0 else 0
-            print(f"Epoch {epoch+1}/{args.epochs} - Test Loss: {test_loss:.6f}, Test Accuracy: {test_accuracy:.2f}%")
+                test_loss = sum(test_losses) / len(test_losses) if test_losses else 0
+                test_accuracy = 100.0 * test_correct / test_total if test_total > 0 else 0
+                print(f" Test Loss: {test_loss:.6f}, Test Accuracy: {test_accuracy:.2f}%")
             log.flush()
             # Save the plots after all epochs
             log.save_loss_plot(log.train_losses, log.val_losses, filename=f'{args.label}_training_validation_loss.png')
