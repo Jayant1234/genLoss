@@ -299,12 +299,10 @@ if __name__ == "__main__":
             # Track validation loss for adaptive alpha
             current_val_loss = None
 
-            for epoch in range(args.epochs):
+            for epoch in range(args.epochs+20):
                 # Training phase
                 model.train()
-                log.train(len_dataset=len(train_loader.dataset))
-
-                if args.method_type in ['lookahead', 'adaptive_lookahead']: 
+                if args.method_type in ['lookahead', 'adaptive_lookahead'] and epoch< args.epochs: 
                     for batch in train_loader:
                         inputs, targets = (b.to(device) for b in batch)
 
@@ -393,11 +391,12 @@ if __name__ == "__main__":
                 param_group['lr'] = last_lr
 
             # 2. Fine-tune for 20 epochs on the 5% validation data
-            finetune_epochs = 20
+            finetune_epochs = 25
             for ft_epoch in range(finetune_epochs):
                 model.train()
-                running_loss = 0.0
-                correct = 0
+                validation_set_train_losses = []
+                validation_set_train_correct = 0
+                validation_set_train_total = 0
                 for batch in val_loader:  # use the validation set as training data
                     inputs, targets = (b.to(device) for b in batch)
                     predictions = model(inputs)
@@ -405,8 +404,16 @@ if __name__ == "__main__":
                     optimizer.zero_grad()
                     loss.mean().backward()
                     optimizer.step()
-                    print(f"Fine-tuning Epoch {ft_epoch+1}/{finetune_epochs} complete")
-                                            # Test phase (optional)
+
+                    validation_set_train_losses.append(loss.mean().item())
+                    pred = torch.argmax(predictions, 1)
+                    validation_set_train_correct += (pred == targets).sum().item()
+                    validation_set_train_total += targets.size(0)
+                print(f"Fine-tuning Epoch {ft_epoch+1}/{finetune_epochs} complete")
+                avg_train_loss = sum(validation_set_train_losses) / len(validation_set_train_losses)
+                train_accuracy = 100.0 * validation_set_train_correct / validation_set_train_total if validation_set_train_total > 0 else 0
+                
+             # Test phase (optional)
             model.eval()
             test_losses = []
             test_correct = 0
