@@ -101,7 +101,7 @@ class AdaptiveLookahead(torch.optim.Optimizer):
         # Map ratio to a normalized value using a sigmoid function centered at 0.5.
         normalized = 1.0 / (1.0 + np.exp(-self.sigmoid_scale * (ratio - 0.5)))
         new_alpha = self.alpha_min + normalized * (self.alpha_max - self.alpha_min)
-
+        self.damping = 0.9
         # Apply damping to smooth the update.
         self.current_alpha = self.damping * self.current_alpha + (1 - self.damping) * new_alpha
 
@@ -282,6 +282,11 @@ if __name__ == "__main__":
                         print(f"Epoch {epoch+1}/{args.epochs}, Batch Loss: {loss.mean().item():.6f}, "
                               f"Val Loss: {current_val_loss:.6f}, Alpha: {optimizer.current_alpha:.4f}")
                         
+                        with torch.no_grad():
+                            correct = torch.argmax(predictions.data, 1) == targets
+                            log(model, loss.cpu(), correct.cpu(), scheduler.lr())
+                            scheduler(epoch)
+                        
                 # Test phase (optional)
                 model.eval()
                 test_losses = []
@@ -311,3 +316,4 @@ if __name__ == "__main__":
             # Save the plots after all epochs
             log.save_loss_plot(log.train_losses, log.val_losses, filename=f'{args.label}_training_validation_loss.png')
             log.save_accuracy_plot(log.train_accuracies, log.val_accuracies, filename=f'{args.label}_training_validation_accuracy.png')
+

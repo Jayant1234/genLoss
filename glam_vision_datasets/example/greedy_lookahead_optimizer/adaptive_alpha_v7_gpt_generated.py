@@ -101,7 +101,8 @@ class AdaptiveLookahead(torch.optim.Optimizer):
         # Map ratio to a normalized value using a sigmoid function centered at 0.5.
         normalized = 1.0 / (1.0 + np.exp(-self.sigmoid_scale * (ratio - 0.5)))
         new_alpha = self.alpha_min + normalized * (self.alpha_max - self.alpha_min)
-
+	
+        self.damping = 0.8
         # Apply damping to smooth the update.
         self.current_alpha = self.damping * self.current_alpha + (1 - self.damping) * new_alpha
 
