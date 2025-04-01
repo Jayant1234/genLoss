@@ -1,0 +1,3 @@
+/var/lib/slurmd/job32347236/slurm_script: line 18: /home/jp98084/environments/gen/bin/activate: Permission denied
+/var/lib/slurmd/job32347236/slurm_script: line 22: 2768875 Killed                  python main_mnist_with_sam.py --label baseline_sam_with_main_mnist
+slurmstepd: error: Detected 4 oom_kill events in StepId=32347236.batch. Some of the step tasks have been OOM Killed.
