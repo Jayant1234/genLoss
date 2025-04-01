@@ -1,7 +1,7 @@
 #!/bin/bash 
 #SBATCH --job-name=adaptive_alpha_v7
-#SBATCH --error=adaptive_alpha_v7__lr0.1error.log
-#SBATCH --output=adaptive_alpha_v7__lr0.1output.log
+#SBATCH --error=adaptive_alpha_v7_lr0.1error.log
+#SBATCH --output=adaptive_alpha_v7_lr0.1output.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1

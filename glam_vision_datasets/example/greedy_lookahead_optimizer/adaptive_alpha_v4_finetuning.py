@@ -230,10 +230,10 @@ if __name__ == "__main__":
     for i in range(len(lr)):
         for j in range(len(alpha)):
             args.learning_rate = lr[i]
-            args.alpha_max = alpha[j]
+            args.alpha_min = alpha[j]
+            args.alpha_max = 1.0
             seed = args.seed
-            if args.alpha_max - 0.2 > 0.1:
-                args.alpha_min = args.alpha_max - 0.2
+ 
         
             args.label = f"AdaptiveLookahead4finetunine_lr{args.learning_rate}_alpha{args.alpha_max}_seed{seed}"
             print(args.label)
